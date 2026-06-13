@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { configStore } from '@/store/config'
 import Auth from '../view/auth/Login.vue'
 import Panel from '../view/panel/Panel.vue'
 import Sub from '../view/sub/Sub.vue'
@@ -12,12 +13,12 @@ const router = createRouter({
       meta: { title: 'SLINX · 登录' }
     },
     {
-      path: '/panel',
+      path: '/',
       component: Panel,
       children: [
         {
           path: '',
-          redirect: '/panel/dashboard'
+          redirect: '/dashboard'
         },
         {
           path: 'dashboard',
@@ -74,11 +75,11 @@ router.beforeEach((to) => {
   const token = localStorage.getItem('token')
 
   if (token && to.path === '/login') {
-    return '/panel'
+    return '/'
   }
 
-  if (!token && to.path.startsWith('/panel')) {
-    return '/login'
+  if (!token && to.path !== '/login' && !to.path.startsWith(configStore.SubPath)) {
+      return '/login'
   }
 })
 

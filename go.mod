@@ -1,4 +1,4 @@
-module github.com/seekky/slinx-node
+module github.com/slinxlink/node
 
 go 1.26.3
 

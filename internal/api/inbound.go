@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/seekky/slinx-node/internal/core"
-	"github.com/seekky/slinx-node/internal/database"
-	"github.com/seekky/slinx-node/internal/util"
+	"github.com/slinxlink/node/internal/core"
+	"github.com/slinxlink/node/internal/database"
+	"github.com/slinxlink/node/internal/util"
 )
 
 func GetInbounds(c *gin.Context) {
@@ -24,25 +24,19 @@ func SaveInbound(c *gin.Context) {
 		return
 	}
 
-	var cfg database.Config
-	database.DB.First(&cfg)
+	usedPorts := database.UsedPorts(ib.ID)
 
-	var usedPorts []int
-	database.DB.Model(&database.Inbound{}).Where("id != ?", ib.ID).Pluck("port", &usedPorts)
-
-	if msg := util.ValidatePort(ib.Port, cfg.Port, usedPorts); msg != "" {
+	if msg := util.ValidatePort(ib.Port, usedPorts); msg != "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 		return
 	}
 
 	if ib.TLSType == "tls" {
 		var ids []int
-		json.Unmarshal([]byte(ib.Certificates), &ids)
-		for _, id := range ids {
-			if id == 0 {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "请选择证书"})
-				return
-			}
+		json.Unmarshal([]byte(ib.Certs), &ids)
+		if len(ids) == 0 || ids[0] == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "请选择证书"})
+			return
 		}
 	}
 

@@ -16,6 +16,7 @@
                     </div>
                 </div>
                 <CoreCard />
+                <PanelCard />
                 <div class="card md">
                     <div class="header">
                         <div class="title">运行时间</div>
@@ -145,15 +146,20 @@
                 <div class="card fluid">
                     <Chart :logs="logs" />
                 </div>
+                <Quick />
+                <Ad />
             </div>
         </div>
     </main>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts">PanelCard
 import Gauge from '@/component/widget/Gauge.vue'
 import CoreCard from '@/component/widget/CoreCard.vue'
+import PanelCard from '@/component/widget/PanelCard.vue'
 import Chart from '@/component/widget/Chart.vue'
+import Quick from '@/view/panel/dashboard/widget/Quick.vue'
+import Ad from '@/view/panel/dashboard/widget/Ad.vue'
 import { getConfig } from '@/api/config'
 import { getCore, getCoreProcess } from '@/api/core'
 import { getSystem, getStats, getSystemLog } from '@/api/system'

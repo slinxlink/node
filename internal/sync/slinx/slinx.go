@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/seekky/slinx-node/internal/core"
-	"github.com/seekky/slinx-node/internal/database"
-	"github.com/seekky/slinx-node/internal/util"
+	"github.com/slinxlink/node/internal/core"
+	"github.com/slinxlink/node/internal/database"
+	"github.com/slinxlink/node/internal/util"
 	"gorm.io/gorm"
 )
 
@@ -70,11 +70,9 @@ func Sync(b database.Board) {
 		util.Error("[board:%s] 获取在线用户失败: %v", b.Name, err)
 	}
 
-	util.Info("[board:%s] 拉取到 %d 个用户，上报 %d 条流量 %d 个在线IP", b.Name, len(users), len(traffic), len(onlineUsers))
+	reported := reportTraffic(b, traffic)
 
-	if len(traffic) > 0 {
-		reportTraffic(b, traffic)
-	}
+	util.Info("[board:%s] 拉取到 %d 个用户，上报 %d 条流量 %d 个在线IP", b.Name, len(users), reported, len(onlineUsers))
 
 	if err == nil {
 		reportAliveIP(b, onlineUsers)
@@ -137,7 +135,7 @@ func getUsers(b database.Board) ([]UserResponse, error) {
 	return users, nil
 }
 
-func reportTraffic(b database.Board, traffic []core.UserTraffic) {
+func reportTraffic(b database.Board, traffic []core.UserTraffic) int {
 	trafficMap := make(map[int]core.UserTraffic)
 	for _, t := range traffic {
 		var uid int
@@ -163,12 +161,13 @@ func reportTraffic(b database.Board, traffic []core.UserTraffic) {
 	}
 
 	if len(data) == 0 {
-		return
+		return 0
 	}
 
 	url := fmt.Sprintf("%s/mod_mu/users/traffic?node_id=%d&key=%s", b.Host, b.NodeID, b.Key)
 	body, _ := json.Marshal(PostData{Data: data})
 	http.Post(url, "application/json", bytes.NewReader(body))
+	return len(data)
 }
 
 func reportAliveIP(b database.Board, users []core.OnlineUser) {

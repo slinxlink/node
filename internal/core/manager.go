@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/seekky/slinx-node/internal/database"
-	"github.com/seekky/slinx-node/internal/util"
+	"github.com/slinxlink/node/internal/database"
+	"github.com/slinxlink/node/internal/util"
 )
 
 type Manager struct {

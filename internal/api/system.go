@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/seekky/slinx-node/internal/database"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shirou/gopsutil/v3/net"
+	"github.com/slinxlink/node/internal/database"
 )
 
 var lastNetIO []net.IOCountersStat

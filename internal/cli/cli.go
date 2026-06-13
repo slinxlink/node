@@ -8,13 +8,18 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var Version = "dev"
+
+type updateResultMsg string
+
 type item struct {
-	label      string
-	labelFunc  func() string
-	action     func() string
-	quit       bool
-	divider    bool
-	selectable bool
+	label       string
+	labelFunc   func() string
+	action      func() string
+	asyncAction func() tea.Cmd
+	quit        bool
+	divider     bool
+	selectable  bool
 }
 
 func (it item) getLabel() string {
@@ -29,6 +34,7 @@ type model struct {
 	cursor      int
 	startCursor int
 	output      string
+	loading     bool
 }
 
 func (m model) Init() tea.Cmd {
@@ -37,7 +43,14 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case updateResultMsg:
+		m.loading = false
+		m.output = string(msg)
+		return m, nil
 	case tea.KeyMsg:
+		if m.loading {
+			return m, nil
+		}
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
@@ -61,6 +74,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if m.items[m.cursor].quit {
 				return m, tea.Quit
+			}
+			if m.items[m.cursor].asyncAction != nil {
+				m.loading = true
+				m.output = ""
+				return m, m.items[m.cursor].asyncAction()
 			}
 			m.output = m.items[m.cursor].action()
 			return m, nil
@@ -114,14 +132,18 @@ func (m model) View() string {
 	}
 
 	result := strings.Join(renderedLines, "\n") + "\n"
-	if m.output != "" {
+	if m.loading {
+		result += renderStatus("更新", "下载中，请稍候...", true) + "\n"
+	} else if m.output != "" {
 		result += m.output + "\n"
 	}
 	return result
 }
 
-func Start() {
+func Start(version string) {
+	Version = version
 	items := []item{
+		{labelFunc: func() string { return "版本                " + Version }, selectable: false},
 		{labelFunc: func() string { return "面板                " + panelStatus() }, selectable: false},
 		{labelFunc: func() string { return "核心                " + coreStatus() }, selectable: false},
 		{labelFunc: func() string { return "自动重启            " + autoRestartStatus() }, selectable: false},
@@ -142,7 +164,7 @@ func Start() {
 		{label: "重置用户名&密码", selectable: true, action: func() string { return resetCredentials() }},
 		{label: "查看登录信息", selectable: true, action: func() string { return showLoginInfo() }},
 		{divider: true},
-		{label: "更新", selectable: true, action: func() string { return update() }},
+		{label: "更新", selectable: true, asyncAction: update()},
 		{label: "卸载", selectable: true, action: func() string { return uninstall() }},
 	}
 

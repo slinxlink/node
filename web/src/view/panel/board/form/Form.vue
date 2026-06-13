@@ -87,12 +87,12 @@ const inboundOptions = computed(() =>
     gap: 16px;
 
     &.half :deep(.input-wrap),
-    &.half :deep(.select-wrap) {
+    &.half :deep(.select) {
         max-width: 50%;
     }
 
     &.quarter :deep(.input-wrap),
-    &.quarter :deep(.select-wrap) {
+    &.quarter :deep(.select) {
         max-width: 25%;
     }
 }

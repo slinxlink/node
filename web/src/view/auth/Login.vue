@@ -38,7 +38,6 @@ const modal = inject<any>('modal')
 const form = ref({ username: '', password: '' })
 
 const handleLogin = async () => {
-    console.log('modal:', modal?.value)
     if (!form.value.username || !form.value.password) {
         modal.value.show('error', '请输入用户名和密码')
         return
@@ -47,7 +46,7 @@ const handleLogin = async () => {
     try {
         const res = await login(form.value.username, form.value.password)
         localStorage.setItem('token', res.token)
-        router.push('/panel')
+        router.push('/')
     } catch (err: any) {
         modal.value.show('error', err?.error)
     } finally {

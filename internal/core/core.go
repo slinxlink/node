@@ -3,7 +3,7 @@ package core
 import (
 	"strings"
 
-	"github.com/seekky/slinx-node/internal/database"
+	"github.com/slinxlink/node/internal/database"
 )
 
 var validLogLevels = map[string]bool{

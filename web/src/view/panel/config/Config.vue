@@ -11,11 +11,25 @@
                         <Row title="域名" subtitle="选择证书域名，设置后自动启用HTTPS">
                             <Select v-model="Config.Domain" :options="domainOptions" placeholder="选择域名" />
                         </Row>
-                        <Row title="端口" subtitle="重启面板生效「范围1024 ~ 65535」">
+                        <Row title="端口" subtitle="范围1024 ~ 65535">
                             <Input v-model="Config.Port" type="number" :min="1" :max="65535" placeholder="端口" />
                         </Row>
                         <Row title="路径" subtitle="必须以 '/' 开头">
                             <Input v-model="Config.Path" placeholder="路径" />
+                        </Row>
+                    </Section>
+                    <Section title="订阅">
+                        <Row title="启用" subtitle="关闭后订阅服务停止">
+                            <Toggle v-model="Config.SubEnable" />
+                        </Row>
+                        <Row title="端口" subtitle="范围1024 ~ 65535">
+                            <Input v-model="Config.SubPort" type="number" :min="1" :max="65535" placeholder="2096" />
+                        </Row>
+                        <Row title="路径" subtitle="必须以 '/' 开头">
+                            <Input v-model="Config.SubPath" placeholder="/link" />
+                        </Row>
+                        <Row title="Clash路径" subtitle="必须以 '/' 开头">
+                            <Input v-model="Config.ClashPath" placeholder="/clash" />
                         </Row>
                     </Section>
                     <Section title="日志">
@@ -23,7 +37,7 @@
                             <Toggle v-model="Config.LogEnable" />
                         </Row>
                         <Row title="路径" subtitle="日志文件仅支持保存在面板根目录下">
-                            <Input v-model="Config.LogPath" prefix="/etc/slinx/" placeholder="日志路径" />
+                            <Input v-model="Config.LogPath" :prefix="Config.Dir + '/'" placeholder="日志路径" />
                         </Row>
                         <Row title="等级" subtitle="等级越高，记录的日志越少">
                             <Select v-model="Config.LogLevel" :options="logLevelOptions" placeholder="日志等级" />
@@ -55,6 +69,11 @@
                             <Toggle v-model="Config.BoardEnable" />
                         </Row>
                     </Section>
+                    <Section title="重置" :default-open="false">
+                        <Row title="恢复默认" subtitle="重置所有面板配置为默认值并重启核心">
+                            <button class="reset" @click="reset">重置</button>
+                        </Row>
+                    </Section>
                 </div>
                 <div v-if="activeTab === 'certs'" class="body">
                     <Cert />
@@ -80,7 +99,7 @@ import Log from '@/component/widget/Log.vue'
 import Cert from '@/view/panel/config/cert/Cert.vue'
 
 // API
-import { getConfig, updateConfig, Log as log } from '@/api/config'
+import { getConfig, updateConfig, resetConfig, Log as log } from '@/api/config'
 import { getCert } from '@/api/cert'
 import { changeCredentials } from '@/api/auth'
 import { restartPanel } from '@/api/bootstrap'
@@ -180,6 +199,14 @@ async function restart() {
     }
 }
 
+async function reset() {
+    modal.value?.show('confirm', '确认重置所有面板配置为默认值？\n\n此操作将重置面板端口、路径、用户名及密码为随机值\n重置后将无法通过当前地址访问面板\n请前往服务器终端命令获取新的登录信息', async () => {
+        await resetConfig()
+        Config.value = await getConfig()
+        modal.value?.show('success', '已重置')
+    })
+}
+
 async function submitCredentials() {
     try {
         await changeCredentials(credentials.value)
@@ -206,5 +233,19 @@ button {
     height: calc(100vh - 180px);
     display: flex;
     flex-direction: column;
+}
+
+.reset {
+    padding: 10px 40px;
+    font-size: var(--font-size-sm);
+    border: 1px solid var(--color-red);
+    background-color: var(--color-bg-dark);
+    color: var(--color-red);
+    margin-left: 0;
+
+    &:hover {
+        border-color: var(--color-primary-light);
+        color: var(--color-primary-light);
+    }
 }
 </style>

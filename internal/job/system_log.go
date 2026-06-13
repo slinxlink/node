@@ -3,11 +3,11 @@ package job
 import (
 	"time"
 
-	"github.com/seekky/slinx-node/internal/database"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shirou/gopsutil/v3/net"
+	"github.com/slinxlink/node/internal/database"
 )
 
 var lastJobNetIO []net.IOCountersStat

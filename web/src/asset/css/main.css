@@ -65,6 +65,7 @@
 @font-face {
     font-family: 'Material Icons';
     src: url('../font/material-icons.woff2') format('woff2');
+    font-display: swap;
 }
 
 .icon {
@@ -240,32 +241,6 @@ body,
                     width: 100%;
                     gap: var(--gap-size);
                     z-index: 1;
-                }
-            }
-        }
-
-        footer {
-            width: 100%;
-            margin-top: auto;
-            padding: 20px;
-            color: var(--color-text-dark);
-            font-size: var(--font-size-sm);
-            display: flex;
-            flex-direction: row;
-            gap: var(--gap-size-half);
-
-            .switch {
-                padding: 10px;
-                border-radius: 50%;
-                background-color: var(--color-bg-dark);
-                box-shadow: var(--box-shadow);
-                margin-left: auto;
-
-                &:hover {
-                    background-color: var(--color-primary);
-                }
-                &:active {
-                    background-color: var(--color-primary-dark);
                 }
             }
         }
@@ -574,37 +549,37 @@ body,
     display: flex;
     gap: 5px;
     flex-wrap: nowrap;
+}
 
-    .tag {
-        display: inline-block;
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-size: var(--font-size-sm);
+.tag {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: var(--font-size-sm);
 
-        &.primary {
-            background: color-mix(in srgb, var(--color-primary) 15%, transparent);
-            color: var(--color-primary);
-        }
-        &.green {
-            background: color-mix(in srgb, var(--color-green) 15%, transparent);
-            color: var(--color-green);
-        }
-        &.blue {
-            background: color-mix(in srgb, var(--color-blue) 15%, transparent);
-            color: var(--color-blue);
-        }
-        &.yellow {
-            background: color-mix(in srgb, var(--color-yellow) 15%, transparent);
-            color: var(--color-yellow);
-        }
-        &.red {
-            background: color-mix(in srgb, var(--color-red) 15%, transparent);
-            color: var(--color-red);
-        }
-        &.gray {
-            background: color-mix(in srgb, var(--color-text-dark) 15%, transparent);
-            color: var(--color-text-dark);
-        }
+    &.primary {
+        background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+        color: var(--color-primary);
+    }
+    &.green {
+        background: color-mix(in srgb, var(--color-green) 15%, transparent);
+        color: var(--color-green);
+    }
+    &.blue {
+        background: color-mix(in srgb, var(--color-blue) 15%, transparent);
+        color: var(--color-blue);
+    }
+    &.yellow {
+        background: color-mix(in srgb, var(--color-yellow) 15%, transparent);
+        color: var(--color-yellow);
+    }
+    &.red {
+        background: color-mix(in srgb, var(--color-red) 15%, transparent);
+        color: var(--color-red);
+    }
+    &.gray {
+        background: color-mix(in srgb, var(--color-text-dark) 15%, transparent);
+        color: var(--color-text-dark);
     }
 }
 

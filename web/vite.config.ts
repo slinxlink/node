@@ -20,6 +20,15 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     assetsDir: 'assets',
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        sub: fileURLToPath(new URL('./sub.html', import.meta.url)),
+      },
+      output: {
+        entryFileNames: 'assets/[name]-[hash].js',
+      }
+    }
   },
   server: mode === 'development' ? {
     proxy: {

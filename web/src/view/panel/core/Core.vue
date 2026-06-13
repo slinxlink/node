@@ -17,7 +17,7 @@
                             <Toggle v-model="Core.LogEnable" />
                         </Row>
                         <Row title="路径" subtitle="日志文件仅支持保存在面板根目录下">
-                            <Input v-model="Core.LogPath" prefix="/etc/slinx/" placeholder="日志路径" />
+                            <Input v-model="Core.LogPath" :prefix="dir + '/'" placeholder="日志路径" />
                         </Row>
                         <Row title="等级" subtitle="等级越高，记录的日志越少">
                             <Select v-model="Core.LogLevel" :options="logLevelOptions" placeholder="日志等级" />
@@ -51,6 +51,7 @@ import Log from '@/component/widget/Log.vue'
 import JsonEditor from '@/component/widget/JsonEditor.vue'
 import RestartBar from '@/component/widget/RestartBar.vue'
 import CoreCard from '@/component/widget/CoreCard.vue'
+import { getConfig } from '@/api/config'
 import { Log as log, getCoreConfig, getCore, updateCore, resetCore, restartCore } from '@/api/core'
 
 const modal = inject<any>('modal')
@@ -78,6 +79,8 @@ const logLevelOptions = [
     { label: 'PANIC', value: 'panic' },
 ]
 
+const dir = ref('')
+
 watch(Core, () => {
     if (loaded.value) dirty.value = true
 }, { deep: true })
@@ -88,10 +91,12 @@ watch(activeTab, async (val) => {
     }
 })
 
-onMounted(async () => {
-    Core.value = await getCore()
-    await nextTick()
-    loaded.value = true
+onMounted(() => {
+    getConfig().then(cfg => dir.value = cfg.Dir)
+    getCore().then(core => {
+        Core.value = core
+        nextTick(() => loaded.value = true)
+    })
 })
 
 async function save() {

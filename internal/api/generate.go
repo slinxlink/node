@@ -4,29 +4,19 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/seekky/slinx-node/internal/database"
-	"github.com/seekky/slinx-node/internal/util"
+	"github.com/slinxlink/node/internal/database"
+	"github.com/slinxlink/node/internal/util"
 )
 
 func GeneratePort(c *gin.Context) {
-	var cfg database.Config
-	database.DB.First(&cfg)
-
+	usedPorts := database.UsedPorts()
 	for {
 		port := util.GeneratePort()
-
-		// 检查保留端口和面板端口
-		if msg := util.ValidatePort(port, cfg.Port, []int{}); msg != "" {
+		if msg := util.ValidatePort(port, usedPorts); msg != "" {
 			continue
 		}
-
-		// 检查是否被入站占用
-		var count int64
-		database.DB.Model(&database.Inbound{}).Where("port = ?", port).Count(&count)
-		if count == 0 {
-			c.JSON(http.StatusOK, gin.H{"port": port})
-			return
-		}
+		c.JSON(http.StatusOK, gin.H{"port": port})
+		return
 	}
 }
 

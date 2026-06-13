@@ -6,7 +6,7 @@
             </button>
             <div class="content">
                 <i class="icon" :class="iconClass">{{ iconName }}</i>
-                <p class="text">{{ message }}</p>
+                <p class="text" style="white-space: pre-line">{{ message }}</p>
             </div>
             <div class="actions" :class="{ split: mode === 'confirm' }">
                 <button v-if="mode === 'confirm'" class="cancel-btn" @click="close">取消</button>
@@ -19,30 +19,36 @@
 <script setup lang="ts">
 import { keyStack } from '@/composable/keyStack'
 
+// ── 状态 ──────────────────────────────────────────────────
+
 const visible = ref(false)
 const mode = ref<'success' | 'error' | 'confirm' | 'warn'>('success')
 const message = ref('')
 const onConfirm = ref<(() => void) | null>(null)
 
+// ── 计算属性 ───────────────────────────────────────────────
+
 const iconClass = computed(() => {
     if (mode.value === 'success') return 'c-yes'
     if (mode.value === 'error') return 'c-no'
-    if (mode.value === 'warn') return 'c-reject'
     return 'c-reject'
 })
 
 const iconName = computed(() => {
     if (mode.value === 'success') return 'check_circle'
     if (mode.value === 'error') return 'cancel'
-    if (mode.value === 'warn') return 'report'
     return 'report'
 })
+
+// ── 键盘快捷键 ─────────────────────────────────────────────
 
 keyStack(() => visible.value, (e) => {
     if (mode.value === 'warn') return
     if (e.key === 'Escape') close()
     if (e.key === 'Enter') confirm()
 })
+
+// ── 方法 ──────────────────────────────────────────────────
 
 function show(m: 'success' | 'error' | 'confirm' | 'warn', msg: string, callback?: () => void) {
     mode.value = m
@@ -51,16 +57,24 @@ function show(m: 'success' | 'error' | 'confirm' | 'warn', msg: string, callback
     visible.value = true
 }
 
+function update(m: 'success' | 'error' | 'warn', msg: string) {
+    mode.value = m
+    message.value = msg
+    visible.value = true
+}
+
 function close() {
     visible.value = false
 }
 
 function confirm() {
-    onConfirm.value?.()
+    const cb = onConfirm.value
+    onConfirm.value = null
     close()
+    cb?.()
 }
 
-defineExpose({ show })
+defineExpose({ show, update })
 </script>
 
 <style scoped>
