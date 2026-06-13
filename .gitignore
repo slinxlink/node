@@ -1,0 +1,17 @@
+# 运行时数据（数据库、日志、证书、核心二进制）
+var/
+
+# 编译产物
+dist/
+
+# 前端构建产物
+web/dist/
+
+# 前端依赖
+web/node_modules/
+
+# IDE
+.vscode/
+
+# macOS 系统文件
+.DS_Store
