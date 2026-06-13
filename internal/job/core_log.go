@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/seekky/slinx-node/internal/database"
+	"github.com/slinxlink/node/internal/database"
 )
 
 func CoreLogRotate() {

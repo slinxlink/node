@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/seekky/slinx-node/internal/database"
+	"github.com/slinxlink/node/internal/database"
 )
 
 func tailLines(path string, n int) ([]string, error) {

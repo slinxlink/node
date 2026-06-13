@@ -31,10 +31,8 @@
                             <Toggle :model-value="u.Enable" @update:model-value="toggle(u)" />
                         </td>
                         <td class="actions">
-                            <button class="icon-btn" title="二维码">
-                                <i class="icon">qr_code</i>
-                            </button>
-                            <button class="icon-btn" title="信息">
+                            <QRcode :name="u.Name || u.Token" :value="getSubUrl(u)" />
+                            <button class="icon-btn" title="信息" @click="openInfo(u)">
                                 <i class="icon">info</i>
                             </button>
                             <button class="icon-btn" @click="openEdit(u)" title="编辑">
@@ -52,6 +50,9 @@
             </div>
         </div>
     </main>
+    <Drawer v-model="showInfo" :title="infoUser?.Name || '用户信息'" :footer="false">
+        <Info v-if="infoUser" :user="infoUser" :inbounds="inbounds" />
+    </Drawer>
     <Drawer v-model="showDrawer" :title="drawerTitle" @save="handleSave">
         <Form v-model="defaultUser" :inbounds="inbounds" />
     </Drawer>
@@ -61,9 +62,12 @@
 import Toggle from '@/component/ui/Toggle.vue'
 import Drawer from '@/component/Drawer.vue'
 import List from '@/component/ui/List.vue'
+import QRcode from '@/component/widget/QRcode.vue'
 import Form from '@/view/panel/user/form/Form.vue'
+import Info from '@/view/panel/user/widget/Info.vue'
 import { getUsers, saveUser, deleteUser, toggleUser } from '@/api/user'
 import { getInbounds } from '@/api/inbound'
+import { getConfig } from '@/api/config'
 import { generateToken, generateUUID, generatePassword } from '@/api/generate'
 
 const modal = inject<any>('modal')
@@ -72,40 +76,32 @@ const modal = inject<any>('modal')
 
 const users = ref<any[]>([])
 const inbounds = ref<any[]>([])
+const config = ref<any>({})
 const showDrawer = ref(false)
-
-const baseUser = () => ({
-    Enable: true,
-    Name: '',
-    Token: '',
-    UUID: '',
-    Password: '',
-    Inbounds: [],
-})
-
-const generatedDefaults = ref<any>({})
+const showInfo = ref(false)
+const infoUser = ref<any>(null)
 const defaultUser = ref<any>(baseUser())
-
-// ── 生命周期 ───────────────────────────────────────────────
-
-onMounted(() => {
-    load()
-    
-    Promise.all([
-        generateToken(),
-        generateUUID(),
-        generatePassword(),
-    ]).then(([tokenRes, uuidRes, passwordRes]) => {
-        generatedDefaults.value = {
-            Token: tokenRes.token,
-            UUID: uuidRes.uuid,
-            Password: passwordRes.password,
-        }
-        defaultUser.value = { ...baseUser(), ...generatedDefaults.value }
-    })
-})
+const drawerTitle = ref('添加用户')
 
 // ── 工具函数 ───────────────────────────────────────────────
+
+function baseUser() {
+    return {
+        Enable: true,
+        Name: '',
+        Token: '',
+        UUID: '',
+        Password: '',
+        Inbounds: [],
+    }
+}
+
+function getSubUrl(u: any) {
+    const host = config.value.Domain
+        ? `https://${config.value.Domain}`
+        : `http://${config.value.IPv4}`
+    return `${host}:${config.value.SubPort}${config.value.SubPath}/${u.Token}`
+}
 
 function getInboundTags(inboundsJSON: string) {
     const colorMap: Record<string, string> = {
@@ -124,8 +120,20 @@ function getInboundTags(inboundsJSON: string) {
     }
 }
 
-// ── 列表操作 ───────────────────────────────────────────────
+// ── 生命周期 ───────────────────────────────────────────────
 
+onMounted(async () => {
+    const [, , cfg] = await Promise.all([
+        load(),
+        Promise.all([generateToken(), generateUUID(), generatePassword()]).then(([t, u, p]) => {
+            defaultUser.value = { ...baseUser(), Token: t.token, UUID: u.uuid, Password: p.password }
+        }),
+        getConfig(),
+    ])
+    config.value = cfg
+})
+
+// ── 列表操作 ───────────────────────────────────────────────
 
 async function load() {
     const [u, ib] = await Promise.all([getUsers(), getInbounds()])
@@ -147,23 +155,17 @@ async function remove(id: number) {
 
 // ── Drawer 操作 ────────────────────────────────────────────
 
-const drawerTitle = ref('添加用户')
-
 async function openCreate() {
     const [tokenRes, uuidRes, passwordRes] = await Promise.all([
         generateToken(),
         generateUUID(),
         generatePassword(),
     ])
-    generatedDefaults.value = {
-        Token: tokenRes.token,
-        UUID: uuidRes.uuid,
-        Password: passwordRes.password,
-    }
-    defaultUser.value = { ...baseUser(), ...generatedDefaults.value }
+    defaultUser.value = { ...baseUser(), Token: tokenRes.token, UUID: uuidRes.uuid, Password: passwordRes.password }
     drawerTitle.value = '添加用户'
     showDrawer.value = true
 }
+
 function openEdit(u: any) {
     defaultUser.value = {
         ...u,
@@ -173,20 +175,22 @@ function openEdit(u: any) {
     showDrawer.value = true
 }
 
+function openInfo(u: any) {
+    infoUser.value = u
+    showInfo.value = true
+}
+
 async function handleSave() {
     const data = { ...defaultUser.value }
-
     if (Array.isArray(data.Inbounds)) {
         data.Inbounds = JSON.stringify(data.Inbounds.map(Number))
     }
-
     try {
         await saveUser(data)
         await load()
         showDrawer.value = false
     } catch (err: any) {
-        const msg = err?.error
-        modal.value?.show('error', msg)
+        modal.value?.show('error', err?.error)
     }
 }
 </script>

@@ -6,8 +6,8 @@ import (
 	"syscall"
 
 	"github.com/gin-gonic/gin"
-	"github.com/seekky/slinx-node/internal/core"
-	"github.com/seekky/slinx-node/internal/util"
+	"github.com/slinxlink/node/internal/core"
+	"github.com/slinxlink/node/internal/util"
 )
 
 func Restart(c *gin.Context) {

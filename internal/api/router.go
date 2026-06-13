@@ -5,13 +5,13 @@ import (
 )
 
 func RegisterRoutes(r *gin.Engine) {
-	// 公开路由（不需要登录）
+	// 公开
 	public := r.Group("/api")
 	{
 		public.POST("/auth/login", Login)
 	}
 
-	// 需要登录的路由
+	// 内部
 	private := r.Group("/api")
 	private.Use(AuthMiddleware())
 	{
@@ -25,8 +25,23 @@ func RegisterRoutes(r *gin.Engine) {
 		// 配置
 		private.GET("/config", GetConfig)
 		private.PUT("/config", UpdateConfig)
-		private.POST("/config/cert/cf", ApplyCertCF)
-		private.POST("/config/cert/http", ApplyCertHTTP)
+		private.POST("/config/reset", ResetConfig)
+
+		// 更新
+		private.GET("/update/version", GetVersion)
+		private.GET("/update/check", CheckUpdate)
+		private.POST("/update", Update)
+
+		// 核心
+		private.GET("/core", GetCore)
+		private.PUT("/core", UpdateCore)
+		private.POST("/core/reset", ResetCore)
+		private.GET("/core/status", GetCoreStatus)
+		private.POST("/core/start", StartCore)
+		private.POST("/core/stop", StopCore)
+		private.POST("/core/restart", RestartCore)
+		private.GET("/core/config", GetCoreConfig)
+		private.GET("/core/process", GetCoreProcess)
 
 		// 入站
 		private.GET("/inbound", GetInbounds)
@@ -46,48 +61,7 @@ func RegisterRoutes(r *gin.Engine) {
 		private.PUT("/board/save", SaveBoard)
 		private.DELETE("/board/:id", DeleteBoard)
 		private.PUT("/board/:id/toggle", ToggleBoard)
-
 		private.GET("/board/:id/user", GetBoardUser)
-
-		// 生成
-		private.GET("/generate/port", GeneratePort)
-		private.GET("/generate/reality-target", GenerateRealityTarget)
-		private.GET("/generate/reality-keypair", GenerateRealityKeyPair)
-		private.GET("/generate/shortids", GenerateShortIDs)
-		private.GET("/generate/token", GenerateToken)
-		private.GET("/generate/uuid", GenerateUUID)
-		private.GET("/generate/password", GeneratePassword)
-
-		// 检测
-		private.POST("/detect/ip/fetch", FetchIP)
-		private.GET("/detect/ip", DetectIP)
-		private.POST("/detect/unlock/fetch", FetchUnlock)
-		private.GET("/detect/unlock", DetectUnlock)
-		private.GET("/detect/route", DetectRoute)
-		private.POST("/detect/route/fetch", FetchRoute)
-
-		// 系统
-		private.GET("/system/status", GetSystemStatus)
-		private.GET("/stats", GetStats)
-		private.GET("/system/log", GetSystemLog)
-
-		// 核心
-		private.GET("/core", GetCore)
-		private.PUT("/core", UpdateCore)
-		private.POST("/core/reset", ResetCore)
-		private.GET("/core/status", GetCoreStatus)
-		private.POST("/core/start", StartCore)
-		private.POST("/core/stop", StopCore)
-		private.POST("/core/restart", RestartCore)
-		private.GET("/core/config", GetCoreConfig)
-		private.GET("/core/process", GetCoreProcess)
-
-		// 日志
-		private.GET("/log/slinx", SlinxLog)
-		private.GET("/log/core", CoreLog)
-
-		// 推送
-		private.GET("/task/:id", TaskLog)
 
 		// 证书
 		private.GET("/cert", GetCert)
@@ -103,8 +77,41 @@ func RegisterRoutes(r *gin.Engine) {
 		private.GET("/dns", GetDnsAccount)
 		private.POST("/dns", SaveDnsAccount)
 		private.DELETE("/dns/:id", DeleteDnsAccount)
-	}
 
-	// 订阅链接（公开）
-	// r.GET("/sub/:token", GetSubscription)
+		// 订阅
+		private.POST("/sub/uri", GetSubscriptionUri)
+		private.POST("/sub/url", GetSubscriptionUrl)
+
+		// 系统
+		private.GET("/system/status", GetSystemStatus)
+		private.GET("/stats", GetStats)
+		private.GET("/system/log", GetSystemLog)
+
+		// 日志
+		private.GET("/log/slinx", SlinxLog)
+		private.GET("/log/core", CoreLog)
+
+		// 检测
+		private.POST("/detect/ip/fetch", FetchIP)
+		private.GET("/detect/ip", DetectIP)
+		private.POST("/detect/unlock/fetch", FetchUnlock)
+		private.GET("/detect/unlock", DetectUnlock)
+		private.GET("/detect/route", DetectRoute)
+		private.POST("/detect/route/fetch", FetchRoute)
+
+		// 生成
+		private.GET("/generate/port", GeneratePort)
+		private.GET("/generate/reality-target", GenerateRealityTarget)
+		private.GET("/generate/reality-keypair", GenerateRealityKeyPair)
+		private.GET("/generate/shortids", GenerateShortIDs)
+		private.GET("/generate/token", GenerateToken)
+		private.GET("/generate/uuid", GenerateUUID)
+		private.GET("/generate/password", GeneratePassword)
+
+		// 推送
+		private.GET("/task/:id", TaskLog)
+
+		// 快速
+		private.POST("/quick", Quick)
+	}
 }

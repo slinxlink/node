@@ -16,7 +16,7 @@
                             <div class="tags">
                                 <span class="tag primary">{{ ib.Protocol }}</span>
                                 <span class="tag green">
-                                    {{ ib.Protocol === 'hysteria' ? 'UDP' : (ib.Transport === 'WebSocket' ? 'WS' : 'TCP') }}
+                                    {{ ib.Protocol === 'hysteria' ? 'UDP' : (ib.Transport === 'websocket' ? 'WS' : 'TCP') }}
                                 </span>
                                 <span v-if="ib.TLSType !== 'none'" class="tag blue">{{ formatTLS(ib.TLSType) }}</span>
                             </div>
@@ -67,7 +67,7 @@ const baseInbound = () => ({
     Protocol: 'vless',
     Port: 0,
 
-    Transport: 'RAW',
+    Transport: 'raw',
     WsPath: '/',
     WsHost: '',
     WsPingInterval: 0,
@@ -166,7 +166,6 @@ async function openCreate() {
     const res = await generatePort()
     generatedDefaults.value.Port = res.port
     defaultInbound.value = { ...baseInbound(), ...generatedDefaults.value }
-    console.log('TLSType:', defaultInbound.value.TLSType)
     drawerTitle.value = '添加入站'
     showDrawer.value = true
 }

@@ -23,7 +23,7 @@ function handleClick() {
     align-items: center;
 
     :deep(.input),
-    :deep(.select-btn),
+    :deep(.select .btn),
     :deep(.multiselect-input) {
         padding-right: 36px;
     }

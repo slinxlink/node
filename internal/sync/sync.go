@@ -3,8 +3,8 @@ package sync
 import (
 	"time"
 
-	"github.com/seekky/slinx-node/internal/database"
-	"github.com/seekky/slinx-node/internal/sync/slinx"
+	"github.com/slinxlink/node/internal/database"
+	"github.com/slinxlink/node/internal/sync/slinx"
 )
 
 var stopChans = map[uint]chan struct{}{}

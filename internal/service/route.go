@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/seekky/slinx-node/internal/database"
+	"github.com/slinxlink/node/internal/database"
 )
 
 // 每个目标：城市、运营商、3个备用IP

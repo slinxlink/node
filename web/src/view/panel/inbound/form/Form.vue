@@ -31,11 +31,11 @@
                 <div class="form-row half">
                     <span class="form-label">传输</span>
                     <Select v-model="form.Transport" :options="[
-                        { label: 'RAW', value: 'RAW' },
-                        { label: 'WebSocket', value: 'WebSocket' },
+                        { label: 'RAW', value: 'raw' },
+                        { label: 'WebSocket', value: 'websocket' },
                     ]" />
                 </div>
-                <template v-if="form.Transport === 'WebSocket'">
+                <template v-if="form.Transport === 'websocket'">
                     <div class="form-row">
                         <span class="form-label">路径</span>
                         <Input v-model="form.WsPath" placeholder="/path" />
@@ -353,12 +353,12 @@ async function genShortIDs() {
     gap: 16px;
 
     &.half :deep(.input-wrap),
-    &.half :deep(.select-wrap) {
+    &.half :deep(.select) {
         max-width: 50%;
     }
 
     &.quarter :deep(.input-wrap),
-    &.quarter :deep(.select-wrap) {
+    &.quarter :deep(.select) {
         max-width: 25%;
     }
 }
@@ -374,5 +374,20 @@ async function genShortIDs() {
 .action-btn {
     gap: 5px;
     padding: 8px 16px;
+}
+
+.select-pair {
+    display: flex;
+    gap: 2px;
+    flex: 1;
+
+    &:deep(.select) {
+        &:first-child .btn {
+            border-radius: 999px 0 0 999px;
+        }
+        &:last-child .btn {
+            border-radius: 0 999px 999px 0;
+        }
+    }
 }
 </style>

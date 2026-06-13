@@ -10,9 +10,7 @@
                 <td>{{ cert.Domain }}</td>
                 <td>{{ formatMode(cert.Mode) }}</td>
                 <td>
-                    <div class="tags">
-                        <span class="tag" :class="certStatus(cert).cls">{{ certStatus(cert).label }}</span>
-                    </div>
+                    <span class="tag" :class="certStatus(cert).cls">{{ certStatus(cert).label }}</span>
                 </td>
                 <td class="muted">{{ formatTime(cert.ExpireAt) }}</td>
                 <td><Toggle :model-value="cert.AutoRenew" :disabled="cert.Mode === 'manual'" @update:model-value="toggleRenew(cert)" /></td>

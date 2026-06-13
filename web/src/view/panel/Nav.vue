@@ -55,15 +55,15 @@ const navFooter = ref(false)
 const route = useRoute()
 
 const links = computed(() => [
-    { to: '/panel/dashboard', icon: 'dashboard',      label: '仪表盘' },
+    { to: '/dashboard', icon: 'dashboard',      label: '仪表盘' },
     { divider: true },
-    { to: '/panel/inbound',   icon: 'add_link',       label: '入站' },
-    { to: '/panel/user',      icon: 'rss_feed',       label: '用户' },
-    ...(configStore.BoardEnable ? [{ to: '/panel/board', icon: 'flight', label: '面板对接' }] : []),
+    { to: '/inbound',   icon: 'add_link',       label: '入站' },
+    { to: '/user',      icon: 'rss_feed',       label: '用户' },
+    ...(configStore.BoardEnable ? [{ to: '/board', icon: 'flight', label: '面板对接' }] : []),
     { divider: true },
-    { to: '/panel/detect',    icon: 'travel_explore', label: 'IP检测' },
-    { to: '/panel/core',      icon: 'handyman',       label: '核心配置' },
-    { to: '/panel/config',    icon: 'settings',       label: '面板设置' },
+    { to: '/detect',    icon: 'travel_explore', label: 'IP检测' },
+    { to: '/core',      icon: 'handyman',       label: '核心配置' },
+    { to: '/config',    icon: 'settings',       label: '面板设置' },
 ])
 
 onMounted(() => loadConfig())

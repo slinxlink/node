@@ -19,7 +19,7 @@
                     </RefreshBtn>
                 </div>
                 <div class="form-row">
-                    <span class="form-label">密码</span>
+                    <span class="form-label">认证</span>
                     <RefreshBtn @click="genPassword">
                         <Input v-model="form.Password" />
                     </RefreshBtn>

@@ -95,7 +95,7 @@ defineProps<{ headers: string[] }>()
             color: var(--color-text-dark);
 
             &:hover {
-                background-color: var(--color-bg);
+                background-color: var(--color-bg-light);
                 color: var(--color-text-light);
             }
 

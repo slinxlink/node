@@ -1,0 +1,113 @@
+<template>
+    <div class="info">
+        <FormRow label="启用">
+            <span class="tag" :class="props.data.user.Enable ? 'green' : 'red'">{{ props.data.user.Enable ? '开启' : '关闭' }}</span>
+        </FormRow>
+        <FormRow label="名称">
+            <span>{{ props.data.user.Name || '-' }}</span>
+        </FormRow>
+        <FormRow label="Token">
+            <span class="mono">{{ props.data.user.Token }}</span>
+            <Copy :value="props.data.user.Token" size="sm" />
+        </FormRow>
+        <FormRow label="UUID">
+            <span class="mono">{{ props.data.user.UUID }}</span>
+            <Copy :value="props.data.user.UUID" size="sm" />
+        </FormRow>
+        <FormRow label="认证">
+            <span class="mono">{{ props.data.user.Password }}</span>
+            <Copy :value="props.data.user.Password" size="sm" />
+        </FormRow>
+        <FormRow label="创建时间">
+            <span>{{ formatTime(props.data.user.CreatedAt) }}</span>
+        </FormRow>
+        <FormRow label="更新时间">
+            <span>{{ formatTime(props.data.user.UpdatedAt) }}</span>
+        </FormRow>
+        <FormRow label="关联入站">
+            <div class="tags">
+                <span
+                    v-for="ib in inboundTags"
+                    :key="ib.id"
+                    class="tag"
+                    :class="ib.color"
+                >
+                    {{ ib.port }}
+                </span>
+            </div>
+        </FormRow>
+        <div class="divider">复制链接</div>
+        <Link v-for="uri in uris" :key="uri.value" :label="uri.label" :color="uri.color" :name="uri.name" :value="uri.value" />
+        <div class="divider">订阅信息</div>
+        <Link v-for="url in urls" :key="url.value" :label="url.label" :color="url.color" :name="url.name" :value="url.value" />
+    </div>
+</template>
+
+<script setup lang="ts">
+import FormRow from '@/component/ui/FormRow.vue'
+import Copy from '@/component/widget/Copy.vue'
+import Link from '@/component/widget/Link.vue'
+import { formatTime } from '@/util/format.ts'
+
+const props = defineProps<{
+    data: any
+}>()
+
+const colorMap: Record<string, string> = {
+    vless: 'primary',
+    vmess: 'green',
+    hysteria: 'blue',
+}
+
+const inboundTags = computed(() => {
+    try {
+        const ids: number[] = JSON.parse(props.data.user.Inbounds || '[]')
+        return ids.map(id => {
+            const ib = props.data.inbounds.find((i: any) => i.ID === id)
+            return ib ? { id, port: ib.Port, name: ib.Name, protocol: ib.Protocol, color: colorMap[ib.Protocol] ?? 'gray' } : null
+        }).filter((ib): ib is { id: number, port: any, name: string, protocol: string, color: string } => ib !== null)
+    } catch {
+        return []
+    }
+})
+
+const uris = computed(() => 
+    (props.data.uris ?? []).map((uri: string) => {
+        const protocol = (uri.split('://')[0] ?? '').replace('2', '')
+        const name = decodeURIComponent(uri.split('#')[1] ?? '')
+        return {
+            label: protocol.toUpperCase(),
+            color: colorMap[protocol] ?? 'gray',
+            name,
+            value: uri,
+        }
+    })
+)
+
+const urls = computed(() =>
+    (props.data.urls ?? []).map((url: string, i: number) => ({
+        label: i === 0 ? 'SUB' : 'CLASH',
+        color: i === 0 ? 'green' : 'blue',
+        name: props.data.user.Name || props.data.user.Token,
+        value: url,
+    }))
+)
+</script>
+
+<style scoped>
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    width: min(800px, 90vw);
+    background-color: var(--color-bg-dark);
+    border-radius: 20px;
+}
+
+.mono {
+    font-family: monospace;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-dark);
+}
+</style>

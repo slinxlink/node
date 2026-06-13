@@ -4,9 +4,13 @@ import (
 	"embed"
 	"os"
 
-	"github.com/seekky/slinx-node/internal/bootstrap"
-	"github.com/seekky/slinx-node/internal/cli"
+	"github.com/slinxlink/node/internal/bootstrap"
+	"github.com/slinxlink/node/internal/cli"
+	"github.com/slinxlink/node/internal/config"
+	"github.com/slinxlink/node/internal/server"
 )
+
+var Version = "dev"
 
 //go:embed web/dist
 var webFS embed.FS
@@ -15,8 +19,10 @@ func main() {
 	os.Chdir("var")
 
 	if len(os.Args) > 1 && os.Args[1] == "cli" {
-		cli.Start()
+		cli.Start(Version)
 		return
 	}
-	bootstrap.Start(webFS)
+	config.Version = Version
+	server.Init(webFS)
+	bootstrap.Start()
 }

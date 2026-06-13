@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/seekky/slinx-node/internal/database"
+	"github.com/slinxlink/node/internal/database"
 )
 
 // ── sing-box config structs ──────────────────────────────────────────────────
@@ -303,7 +303,7 @@ func buildBase(ib database.Inbound) inbounds {
 
 func buildTransport(ib database.Inbound) *transport {
 	switch ib.Transport {
-	case "WebSocket":
+	case "websocket":
 		t := &transport{
 			Type: "ws",
 			Path: ib.WsPath,
@@ -348,7 +348,7 @@ func buildTLS(ib database.Inbound) *tls {
 	switch ib.TLSType {
 	case "tls":
 		var ids []int
-		json.Unmarshal([]byte(ib.Certificates), &ids)
+		json.Unmarshal([]byte(ib.Certs), &ids)
 		if len(ids) == 0 || ids[0] == 0 {
 			return nil
 		}

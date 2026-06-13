@@ -2,7 +2,7 @@
     <div class="section">
         <div class="header" @click="toggle">
             <div class="title">{{ title }}</div>
-            <i class="icon">{{ open ? 'expand_less' : 'expand_more' }}</i>
+            <i class="icon">expand_less</i>
         </div>
         <div class="body" ref="bodyRef">
             <div class="content">

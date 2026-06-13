@@ -2,19 +2,28 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/seekky/slinx-node/internal/database"
-	"github.com/seekky/slinx-node/internal/util"
+	"github.com/slinxlink/node/internal/database"
+	"github.com/slinxlink/node/internal/util"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-const releasesURL = "https://slinx.ink/sh"
+const releasesURL = "https://github.com/slinxlink/node/releases"
+const releasesAPIURL = "https://api.github.com/repos/slinxlink/node/releases/latest"
+
+var dir = func() string {
+	exe, _ := os.Executable()
+	return filepath.Dir(exe)
+}()
 
 func runCmd(name string, args ...string) string {
 	out, err := exec.Command(name, args...).Output()
@@ -25,7 +34,7 @@ func runCmd(name string, args ...string) string {
 }
 
 func openDB() (*gorm.DB, error) {
-	return gorm.Open(sqlite.Open("data/slinx.db"), &gorm.Config{
+	return gorm.Open(sqlite.Open(filepath.Join(dir, "data/slinx.db")), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 }
@@ -163,29 +172,48 @@ func showLoginInfo() string {
 	)
 }
 
-func update() string {
-	arch := runCmd("uname", "-m")
-	if arch == "x86_64" {
-		arch = "amd64"
-	} else {
-		arch = "arm64"
-	}
+func update() func() tea.Cmd {
+	return func() tea.Cmd {
+		return func() tea.Msg {
+			out := runCmd("curl", "-s", releasesAPIURL)
+			for _, line := range strings.Split(out, "\n") {
+				line = strings.TrimSpace(line)
+				if strings.HasPrefix(line, `"tag_name"`) {
+					parts := strings.SplitN(line, ":", 2)
+					if len(parts) == 2 {
+						latestVersion := strings.Trim(strings.TrimSpace(parts[1]), `",`)
+						if latestVersion == Version {
+							return updateResultMsg(renderStatus("无需更新", "当前已为最新版本", true))
+						}
+					}
+					break
+				}
+			}
 
-	url := fmt.Sprintf("%s/slinx_linux_%s", releasesURL, arch)
-	out := runCmd("wget", "-O", "/etc/slinx/slinx", url)
-	if out != "" {
-		return renderStatus("更新", "下载失败", false)
+			arch := runCmd("uname", "-m")
+			if arch == "x86_64" {
+				arch = "amd64"
+			} else {
+				arch = "arm64"
+			}
+
+			url := fmt.Sprintf("%s/latest/download/slinx_linux_%s", releasesURL, arch)
+			if err := exec.Command("wget", "-q", "-O", filepath.Join(dir, "slinx"), url).Run(); err != nil {
+				return updateResultMsg(renderStatus("更新", "下载失败", false))
+			}
+
+			runCmd("chmod", "+x", filepath.Join(dir, "slinx"))
+			runCmd("systemctl", "restart", "slinx")
+			return updateResultMsg(renderStatus("更新", "更新成功", true))
+		}
 	}
-	runCmd("chmod", "+x", "/etc/slinx/slinx")
-	runCmd("systemctl", "restart", "slinx")
-	return renderStatus("更新", "更新成功", true)
 }
 
 func uninstall() string {
 	runCmd("systemctl", "stop", "slinx")
 	runCmd("systemctl", "disable", "slinx")
 	runCmd("rm", "-f", "/etc/systemd/system/slinx.service")
-	runCmd("rm", "-rf", "/etc/slinx")
+	runCmd("rm", "-rf", dir)
 	runCmd("rm", "-f", "/usr/local/bin/slinx")
 	runCmd("systemctl", "daemon-reload")
 	time.Sleep(5 * time.Second)
@@ -203,7 +231,7 @@ func firstRun() string {
 	var cfg database.Config
 	db.First(&cfg)
 
-	if !cfg.StartedAt.IsZero() {
+	if cfg.StartedAt.IsZero() || time.Since(cfg.StartedAt) > 10*time.Minute {
 		return ""
 	}
 

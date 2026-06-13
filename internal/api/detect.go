@@ -2,9 +2,9 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/seekky/slinx-node/internal/database"
-	"github.com/seekky/slinx-node/internal/service"
-	"github.com/seekky/slinx-node/internal/util"
+	"github.com/slinxlink/node/internal/database"
+	"github.com/slinxlink/node/internal/service"
+	"github.com/slinxlink/node/internal/util"
 )
 
 // GET /detect/ip 读库返回

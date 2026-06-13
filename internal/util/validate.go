@@ -23,16 +23,13 @@ var reservedPorts = map[int]bool{
 	9090: true, // sing-box Clash API
 }
 
-func ValidatePort(port int, panelPort int, usedPorts []int) string {
+func ValidatePort(port int, usedPorts []int) string {
 	if reservedPorts[port] {
 		return "不能使用系统保留端口"
 	}
-	if panelPort != 0 && port == panelPort {
-		return "不能使用面板端口"
-	}
 	for _, p := range usedPorts {
 		if port == p {
-			return "端口已被入站协议占用"
+			return "端口已被占用"
 		}
 	}
 	return ""

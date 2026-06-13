@@ -13,9 +13,9 @@ import (
 	"github.com/go-acme/lego/v4/lego"
 	legolog "github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/registration"
-	"github.com/seekky/slinx-node/internal/database"
-	"github.com/seekky/slinx-node/internal/task"
-	"github.com/seekky/slinx-node/internal/util"
+	"github.com/slinxlink/node/internal/database"
+	"github.com/slinxlink/node/internal/task"
+	"github.com/slinxlink/node/internal/util"
 )
 
 // ── ACME 用户 ─────────────────────────────────────────────────────────────────

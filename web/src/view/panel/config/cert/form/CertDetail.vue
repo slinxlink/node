@@ -10,9 +10,7 @@
         </div>
         <div class="form-row">
             <span class="form-label">状态</span>
-            <div class="tags">
-                <span class="tag" :class="certStatus(cert).cls">{{ certStatus(cert).label }}</span>
-            </div>
+            <span class="tag" :class="certStatus(cert).cls">{{ certStatus(cert).label }}</span>
         </div>
         <div class="form-row">
             <span class="form-label">过期时间</span>

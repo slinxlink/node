@@ -5,10 +5,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/seekky/slinx-node/internal/core"
-	"github.com/seekky/slinx-node/internal/database"
-	syncer "github.com/seekky/slinx-node/internal/sync"
-	"github.com/seekky/slinx-node/internal/util"
+	"github.com/slinxlink/node/internal/core"
+	"github.com/slinxlink/node/internal/database"
+	syncer "github.com/slinxlink/node/internal/sync"
+	"github.com/slinxlink/node/internal/util"
 )
 
 func GetBoards(c *gin.Context) {
@@ -36,8 +36,8 @@ func SaveBoard(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "通讯密钥不能为空"})
 		return
 	}
-	if p.SyncInterval == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "同步间隔不能为 0"})
+	if p.SyncInterval < 30 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "同步间隔不能小于 30 秒"})
 		return
 	}
 

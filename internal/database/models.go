@@ -3,20 +3,32 @@ package database
 import "time"
 
 type Config struct {
-	ID          uint `gorm:"primarykey"`
-	SecretKey   string
-	Username    string
-	Password    string
-	Port        int
-	Path        string
-	IPv4        string
-	IPv6        string
-	Domain      string
-	LogEnable   bool
-	LogLevel    string
-	LogPath     string
+	ID        uint `gorm:"primarykey"`
+	Username  string
+	Password  string
+	SecretKey string
+
+	Port   int
+	Path   string
+	Domain string
+	IPv4   string
+	IPv6   string
+
+	SubEnable bool
+	SubPath   string
+	SubPort   int
+	ClashPath string
+
+	LogEnable bool
+	LogLevel  string
+	LogPath   string
+
 	BoardEnable bool
-	StartedAt   time.Time
+
+	Repo      string
+	StartedAt time.Time
+
+	Dir string `gorm:"-" json:"Dir"`
 }
 
 func (Config) TableName() string { return "config" }
@@ -29,7 +41,6 @@ type Core struct {
 	LogEnable  bool
 	LogLevel   string // trace / debug / info / warn / error / fatal / panic
 	LogPath    string // data/sing-box.log
-	Repo       string // github.com/SagerNet/sing-box
 	Version    string // 当前版本号
 	StartedAt  time.Time
 	UpdatedAt  time.Time
@@ -39,7 +50,7 @@ func (Core) TableName() string { return "core" }
 
 type Stats struct {
 	ID        uint `gorm:"primarykey"`
-	InboundID int  `gorm:"default:0"`
+	InboundID int
 	Upload    int64
 	Download  int64
 	Online    int
@@ -84,19 +95,19 @@ type DnsAccount struct {
 func (DnsAccount) TableName() string { return "dns_account" }
 
 type Inbound struct {
-	ID        uint   `gorm:"primarykey"`
+	ID        uint `gorm:"primarykey"`
+	Enable    bool
 	Name      string // 备注名
 	Protocol  string // vless / vmess / hysteria
 	Port      int    // 监听端口
-	Enable    bool   `gorm:"default:true"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
 	// 传输层
-	Transport      string // RAW / WebSocket
-	WsPath         string // WebSocket 路径，如 /ray
-	WsHost         string // WebSocket Host header
-	WsPingInterval int    // WebSocket 心跳周期，秒，0 表示禁用
+	Transport      string // raw / websocket
+	WsPath         string // websocket 路径，如 /ray
+	WsHost         string // websocket Host header
+	WsPingInterval int    // websocket 心跳周期，秒，0 表示禁用
 
 	// Hysteria
 	UDPTimeout        int    // UDP 空闲超时，秒，0 表示默认
@@ -110,7 +121,7 @@ type Inbound struct {
 	MasqueradeBody    string `gorm:"type:text"` // 伪装内容，配合 string 类型使用
 
 	// 通用 TLS
-	TLSType       string `gorm:"default:'none'"` // none / TLS / Reality
+	TLSType       string // none / TLS / Reality
 	ServerName    string // 域名
 	CipherSuites  string // 加密套件，逗号分隔，如 TLS_AES_128_GCM_SHA256
 	TLSMinVersion string // TLS 最小版本，如 1.0 / 1.1 / 1.2 / 1.3
@@ -118,7 +129,7 @@ type Inbound struct {
 	UTLS          string // uTLS 指纹，如 chrome / firefox / safari / ios / android / edge / 360 / qq / random
 	Insecure      bool   // 跳过 TLS 验证，下发给客户端订阅使用
 	ALPN          string // ALPN，逗号分隔，h3, h2, http/1.1
-	Certificates  string // JSON 数组，如 [1, 2, 3]，关联 Certificate 表 ID
+	Certs         string // JSON 数组，如 [1, 2, 3]，关联 Cert 表 ID
 
 	// Reality（VLESS 专用）
 	RealityServerName  string // SNI，如 www.amd.com
@@ -134,13 +145,13 @@ type Inbound struct {
 func (Inbound) TableName() string { return "inbound" }
 
 type User struct {
-	ID        uint   `gorm:"primarykey"`
+	ID        uint `gorm:"primarykey"`
+	Enable    bool
 	Name      string // 备注名
 	Token     string `gorm:"unique"` // 订阅 token
 	Inbounds  string // JSON 数组 [1, 3, 5]，绑定的入站 ID
 	UUID      string // VLESS / VMess 用
 	Password  string // Hysteria 用
-	Enable    bool   `gorm:"default:true"`
 	ExpireAt  time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -149,15 +160,15 @@ type User struct {
 func (User) TableName() string { return "user" }
 
 type Board struct {
-	ID           uint   `gorm:"primarykey"`
+	ID           uint `gorm:"primarykey"`
+	Enable       bool
 	Name         string // 备注名，如 "slinx.link"
 	Host         string // 面板地址，如 "https://slinx.link"
 	NodeID       int    // 节点ID
 	Key          string // 通讯密钥
 	Inbound      int    // 对接的入站ID
-	Enable       bool   `gorm:"default:true"`
-	Type         string `gorm:"default:'SLINX'"` // SSPanel / v2board ...
-	SyncInterval int    `gorm:"default:60"`      // 同步间隔，秒
+	Type         string // SSPanel / v2board ...
+	SyncInterval int    // 同步间隔，秒
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

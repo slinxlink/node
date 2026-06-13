@@ -7,6 +7,10 @@ export const updateConfig = (data: any) => request('/api/config', {
     body: JSON.stringify(data)
 })
 
+export const resetConfig = () => request('/api/config/reset', {
+    method: 'POST'
+})
+
 export const Log = () => {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
     const token = localStorage.getItem('token') ?? ''

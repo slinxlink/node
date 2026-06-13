@@ -62,6 +62,7 @@ onMounted(() => {
 <style scoped>
 .header {
     justify-content: space-between;
+    margin-bottom: 10px;
 
     .status {
         display: flex;
@@ -86,7 +87,7 @@ onMounted(() => {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 5px;
         padding: 10px;
         background: transparent;
         border-right: 1px solid var(--color-bg);
