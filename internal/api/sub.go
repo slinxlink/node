@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -42,13 +43,14 @@ func GetSubscription(c *gin.Context) {
 
 func GetClashSubscription(c *gin.Context) {
 	token := c.Param("token")
-	result := sub.Clash(token)
+	result, name := sub.Clash(token)
 	if result == "" {
 		c.Status(http.StatusNotFound)
 		return
 	}
 	c.Header("Content-Type", "text/plain; charset=utf-8")
-	c.Header("Content-Disposition", "attachment; filename=clash.yaml")
+	c.Header("Content-Disposition",
+		fmt.Sprintf("attachment; filename*=UTF-8''%s", url.QueryEscape(name)))
 	c.String(http.StatusOK, result)
 }
 

@@ -112,6 +112,7 @@ import { formatTime } from '@/util/format'
 import { getCert, saveCert, deleteCert, applyCert, getCertContent, getAcme, saveAcme, deleteAcme, getDns, saveDns, deleteDns } from '@/api/cert'
 
 const modal = inject<any>('modal')
+const emit = defineEmits<{ changed: [] }>()
 
 const certs = ref<any[]>([])
 const acmes = ref<any[]>([])
@@ -135,6 +136,7 @@ function onCertTaskDone() {
     certTask.value.loading = false
     certTask.value.done = true
     loadCert()
+    emit('changed')
 }
 
 function onCertTaskError() {
@@ -251,6 +253,7 @@ async function addCert() {
         }
         if (certForm.value.Mode === 'manual') {
             await loadCert()
+            emit('changed')
             showCertDrawer.value = false
             modal.value?.show('success', '证书上传成功')
             return
@@ -282,6 +285,7 @@ async function removeCert(id: number) {
     modal.value?.show('confirm', '确认删除该证书？', async () => {
         await deleteCert(id)
         await loadCert()
+        emit('changed')
     })
 }
 

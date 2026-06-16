@@ -30,10 +30,10 @@ func Sub(token string) string {
 	return strings.Join(uris, "\n")
 }
 
-func Clash(token string) string {
+func Clash(token string) (string, string) {
 	user, inbounds := getUser(token)
 	if user == nil {
-		return ""
+		return "", ""
 	}
 
 	host := getHost()
@@ -44,7 +44,12 @@ func Clash(token string) string {
 			proxies = append(proxies, proxy)
 		}
 	}
-	return renderClash(proxies)
+
+	name := util.SanitizeFileName(user.Name)
+	if name == "" {
+		name = "SLINX"
+	}
+	return renderClash(proxies), name
 }
 
 // ── 信息查询 ─────────────────────────────────────────────────────────

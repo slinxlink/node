@@ -106,6 +106,31 @@
                         </div>
                     </template>
                 </template>
+                <div class="form-row half">
+                    <span class="form-label">混淆</span>
+                    <Select v-model="form.ObfsType" :options="[
+                        { label: '不启用', value: '' },
+                        { label: 'Salamander', value: 'salamander' },
+                        { label: 'Gecko (实验性)', value: 'gecko' },
+                    ]" />
+                </div>
+                <template v-if="form.ObfsType">
+                    <div class="form-row">
+                        <span class="form-label">混淆密码</span>
+                        <RefreshBtn @click="genObfsPassword">
+                            <Input v-model="form.ObfsPassword" />
+                        </RefreshBtn>
+                    </div>
+                    <template v-if="form.ObfsType === 'gecko'">
+                        <div class="form-row">
+                            <span class="form-label">最小/最大包大小</span>
+                            <div class="pair">
+                                <Input v-model="form.ObfsMinPacketSize" type="number" :min="1" />
+                                <Input v-model="form.ObfsMaxPacketSize" type="number" :min="1" />
+                            </div>
+                        </div>
+                    </template>
+                </template>
             </template>
         </Section>
 
@@ -169,7 +194,7 @@
                 </div>
                 <div class="form-row">
                     <span class="form-label">最小/最大版本</span>
-                    <div class="select-pair">
+                    <div class="pair">
                         <Select v-model="form.TLSMinVersion" :options="tlsVersions" />
                         <Select v-model="form.TLSMaxVersion" :options="tlsVersions" />
                     </div>
@@ -254,7 +279,7 @@ import Text from '@/component/ui/Text.vue'
 import RadioGroup from '@/component/ui/Radio.vue'
 import MultiSelect from '@/component/ui/MultiSelect.vue'
 import RefreshBtn from '@/component/ui/RefreshBtn.vue'
-import { generateRealityTarget, generateRealityKeyPair, generateShortIDs } from '@/api/generate'
+import { generatePassword, generateRealityTarget, generateRealityKeyPair, generateShortIDs } from '@/api/generate'
 import { getCert } from '@/api/cert'
 
 const form = defineModel<any>({ default: () => ({
@@ -323,6 +348,11 @@ async function genShortIDs() {
     form.value.RealityShortIDs = res.short_ids
     shortIDOptions.value = res.short_ids.map((id: string) => ({ label: id, value: id }))
 }
+
+async function genObfsPassword() {
+    const res = await generatePassword()
+    form.value.ObfsPassword = res.password
+}
 </script>
 
 <style scoped>
@@ -376,7 +406,7 @@ async function genShortIDs() {
     padding: 8px 16px;
 }
 
-.select-pair {
+.pair {
     display: flex;
     gap: 2px;
     flex: 1;
@@ -386,6 +416,14 @@ async function genShortIDs() {
             border-radius: 999px 0 0 999px;
         }
         &:last-child .btn {
+            border-radius: 0 999px 999px 0;
+        }
+    }
+    &:deep(.input-wrap) {
+        &:first-child .input {
+            border-radius: 999px 0 0 999px;
+        }
+        &:last-child .input {
             border-radius: 0 999px 999px 0;
         }
     }

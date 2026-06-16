@@ -55,6 +55,7 @@ type inbounds struct {
 	UDPTimeout string      `json:"udp_timeout,omitempty"`
 	Transport  *transport  `json:"transport,omitempty"`
 	Masquerade interface{} `json:"masquerade,omitempty"`
+	Obfs       *obfs       `json:"obfs,omitempty"`
 	TLS        *tls        `json:"tls,omitempty"`
 	Users      []user      `json:"users,omitempty"`
 }
@@ -63,6 +64,13 @@ type transport struct {
 	Type    string            `json:"type"`
 	Path    string            `json:"path,omitempty"`
 	Headers map[string]string `json:"headers,omitempty"`
+}
+
+type obfs struct {
+	Type          string `json:"type"`
+	Password      string `json:"password"`
+	MinPacketSize int    `json:"min_packet_size,omitempty"`
+	MaxPacketSize int    `json:"max_packet_size,omitempty"`
 }
 
 type tls struct {
@@ -265,6 +273,7 @@ func buildHysteria(ib database.Inbound, users []user) (inbounds, error) {
 	ic := buildBase(ib)
 	ic.UDPTimeout = fmt.Sprintf("%ds", ib.UDPTimeout)
 	ic.Masquerade = buildMasquerade(ib)
+	ic.Obfs = buildObfs(ib)
 	ic.TLS = buildTLS(ib)
 	ic.Users = users
 	return ic, nil
@@ -342,6 +351,21 @@ func buildMasquerade(ib database.Inbound) interface{} {
 	default:
 		return nil
 	}
+}
+
+func buildObfs(ib database.Inbound) *obfs {
+	if ib.ObfsType == "" {
+		return nil
+	}
+	o := &obfs{
+		Type:     ib.ObfsType,
+		Password: ib.ObfsPassword,
+	}
+	if ib.ObfsType == "gecko" {
+		o.MinPacketSize = ib.ObfsMinPacketSize
+		o.MaxPacketSize = ib.ObfsMaxPacketSize
+	}
+	return o
 }
 
 func buildTLS(ib database.Inbound) *tls {
