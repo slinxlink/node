@@ -2,6 +2,7 @@ package cert
 
 import (
 	"crypto"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
@@ -156,14 +157,17 @@ func buildClient(cert *database.Cert, t *task.Task) (*lego.Client, error) {
 }
 
 func ApplyManual(cert *database.Cert, certContent, keyContent string) error {
-	block, _ := pem.Decode([]byte(certContent))
-	if block == nil {
-		return fmt.Errorf("无法解析证书")
+	// 同时解析证书+私钥，并校验两者是否配对
+	tlsCert, err := tls.X509KeyPair([]byte(certContent), []byte(keyContent))
+	if err != nil {
+		return fmt.Errorf("证书与私钥不匹配或格式错误: %w", err)
 	}
-	x509cert, err := x509.ParseCertificate(block.Bytes)
+
+	x509cert, err := x509.ParseCertificate(tlsCert.Certificate[0])
 	if err != nil {
 		return fmt.Errorf("解析证书失败: %w", err)
 	}
+
 	if len(x509cert.DNSNames) > 0 {
 		cert.Domain = x509cert.DNSNames[0]
 	} else {

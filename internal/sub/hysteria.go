@@ -14,6 +14,11 @@ func hysteria(password string, host string, inbound database.Inbound) string {
 
 	params := url.Values{}
 
+	if inbound.ObfsType != "" {
+		params.Set("obfs", inbound.ObfsType)
+		params.Set("obfs-password", inbound.ObfsPassword)
+	}
+
 	if inbound.ServerName != "" {
 		params.Set("sni", inbound.ServerName)
 	}
@@ -40,6 +45,11 @@ func hysteriaClash(password string, host string, inbound database.Inbound) strin
 	fmt.Fprintf(&sb, "    server: %s\n", host)
 	fmt.Fprintf(&sb, "    port: %d\n", inbound.Port)
 	fmt.Fprintf(&sb, "    password: %s\n", password)
+
+	if inbound.ObfsType != "" {
+		fmt.Fprintf(&sb, "    obfs: %s\n", inbound.ObfsType)
+		fmt.Fprintf(&sb, "    obfs-password: %s\n", inbound.ObfsPassword)
+	}
 
 	if inbound.ServerName != "" {
 		fmt.Fprintf(&sb, "    sni: %s\n", inbound.ServerName)

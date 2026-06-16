@@ -119,6 +119,10 @@ type Inbound struct {
 	MasqueradePath    string // 伪装路径，配合 file 类型使用
 	MasqueradeCode    int    // 状态码，配合 string 类型使用
 	MasqueradeBody    string `gorm:"type:text"` // 伪装内容，配合 string 类型使用
+	ObfsType          string // 空 / salamander / gecko
+	ObfsPassword      string // 混淆密码
+	ObfsMinPacketSize int    // 最小线上包大小，字节，仅 gecko，0 表示默认 512
+	ObfsMaxPacketSize int    // 最大线上包大小，字节，仅 gecko，0 表示默认 1200
 
 	// 通用 TLS
 	TLSType       string // none / TLS / Reality

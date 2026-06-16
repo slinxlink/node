@@ -76,7 +76,7 @@
                     </Section>
                 </div>
                 <div v-if="activeTab === 'certs'" class="body">
-                    <Cert />
+                    <Cert @changed="refreshCerts" />
                 </div>
                 <div v-if="activeTab === 'log'" class="log-wrap">
                     <Log :ws="log" />
@@ -217,6 +217,11 @@ async function submitCredentials() {
         modal.value?.show('error', err?.error)
     }
 }
+
+async function refreshCerts() {
+    certs.value = await getCert()
+}
+
 </script>
 
 <style scoped>

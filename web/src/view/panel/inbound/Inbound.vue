@@ -81,6 +81,10 @@ const baseInbound = () => ({
     MasqueradePath: '',
     MasqueradeCode: 200,
     MasqueradeBody: '',
+    ObfsType: '',
+    ObfsPassword: '',
+    ObfsMinPacketSize: 512,
+    ObfsMaxPacketSize: 1200,
 
     TLSType: 'none',
     ServerName: '',

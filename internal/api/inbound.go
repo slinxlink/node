@@ -31,6 +31,23 @@ func SaveInbound(c *gin.Context) {
 		return
 	}
 
+	if ib.ObfsType != "" {
+		if ib.ObfsPassword == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "请填写混淆密码"})
+			return
+		}
+		if ib.ObfsType == "gecko" {
+			if ib.ObfsMinPacketSize <= 0 || ib.ObfsMaxPacketSize <= 0 {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "包大小必须大于 0"})
+				return
+			}
+			if ib.ObfsMaxPacketSize <= ib.ObfsMinPacketSize {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "最大包大小必须大于最小包大小"})
+				return
+			}
+		}
+	}
+
 	if ib.TLSType == "tls" {
 		var ids []int
 		json.Unmarshal([]byte(ib.Certs), &ids)
