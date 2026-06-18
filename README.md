@@ -96,6 +96,10 @@ v3 版本计划支持：繁体中文、English、Русский、فارسی
 - [ACL4SSR](https://github.com/ACL4SSR/ACL4SSR) — Clash 规则集
 - [Claude](https://claude.ai) — AI 编程助手，本项目大量代码由 Claude 协助完成
 
+## 友情链接
+
+- [LINUX DO](https://linux.do)
+
 ## License
 
 [MIT](LICENSE)
