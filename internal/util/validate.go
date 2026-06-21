@@ -1,6 +1,10 @@
 package util
 
-import "strings"
+import (
+	"net"
+	"regexp"
+	"strings"
+)
 
 var reservedPorts = map[int]bool{
 	21:   true, // FTP 文件传输
@@ -48,4 +52,32 @@ func ValidateDomain(domain string) bool {
 		return false
 	}
 	return true
+}
+
+var tagPattern = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_-]*$`)
+
+func ValidateTag(tag string) string {
+	if tag == "" {
+		return "请填写标签"
+	}
+	if !tagPattern.MatchString(tag) {
+		return "标签必须以字母开头，只能包含字母、数字、下划线、横杠"
+	}
+	return ""
+}
+
+func ValidateIPv4CIDR(addr string) bool {
+	ip, _, err := net.ParseCIDR(addr)
+	if err != nil {
+		return false
+	}
+	return ip.To4() != nil
+}
+
+func ValidateIPv6CIDR(addr string) bool {
+	ip, _, err := net.ParseCIDR(addr)
+	if err != nil {
+		return false
+	}
+	return ip.To4() == nil && ip.To16() != nil
 }

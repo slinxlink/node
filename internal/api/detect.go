@@ -50,9 +50,9 @@ func FetchUnlock(c *gin.Context) {
 	c.JSON(200, gin.H{"data": records})
 }
 
-// GET /detect/route 读库返回
-func DetectRoute(c *gin.Context) {
-	records, err := service.GetRouteInfo()
+// GET /detect/back-route 读库返回
+func DetectBackRoute(c *gin.Context) {
+	records, err := service.GetBackRouteInfo()
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -60,10 +60,10 @@ func DetectRoute(c *gin.Context) {
 	c.JSON(200, gin.H{"data": records})
 }
 
-// POST /detect/route/fetch 触发查询
-func FetchRoute(c *gin.Context) {
+// POST /detect/back-route/fetch 触发查询
+func FetchBackRoute(c *gin.Context) {
 	util.Info("[detect] 查询回程路由")
-	records, err := service.FetchRouteInfo()
+	records, err := service.FetchBackRouteInfo()
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return

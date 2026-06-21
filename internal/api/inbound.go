@@ -2,12 +2,14 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/slinxlink/node/internal/core"
 	"github.com/slinxlink/node/internal/database"
+	"github.com/slinxlink/node/internal/route"
 	"github.com/slinxlink/node/internal/util"
 )
 
@@ -84,8 +86,14 @@ func SaveInbound(c *gin.Context) {
 		database.DB.Create(&ib)
 		util.Info("[inbound] 添加入站: %s:%d", ib.Protocol, ib.Port)
 	} else {
+		var old database.Inbound
+		database.DB.First(&old, ib.ID)
 		database.DB.Save(&ib)
 		util.Info("[inbound] 更新入站: %s:%d", ib.Protocol, ib.Port)
+
+		if old.Port != ib.Port {
+			route.CleanupRule("inbound", fmt.Sprintf("%d", old.Port), fmt.Sprintf("%d", ib.Port))
+		}
 	}
 
 	go core.Default.Apply()
@@ -94,6 +102,9 @@ func SaveInbound(c *gin.Context) {
 
 func DeleteInbound(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
+
+	var ib database.Inbound
+	database.DB.First(&ib, id)
 
 	// 清理 User 表里关联该入站的引用
 	var users []database.User
@@ -114,6 +125,9 @@ func DeleteInbound(c *gin.Context) {
 	// 清理 Board 表里关联该入站的引用
 	database.DB.Where("inbound = ?", id).Update("inbound", 0)
 
+	// 清理 Rule 表里关联该入站的引用
+	route.CleanupRule("inbound", fmt.Sprintf("%d", ib.Port), "")
+
 	database.DB.Delete(&database.Inbound{}, id)
 	util.Info("[inbound] 删除入站: %d", id)
 	go core.Default.Apply()
@@ -130,6 +144,11 @@ func ToggleInbound(c *gin.Context) {
 	ib.Enable = !ib.Enable
 	database.DB.Save(&ib)
 	util.Info("[inbound] %s入站: %s:%d", map[bool]string{true: "启用", false: "禁用"}[ib.Enable], ib.Protocol, ib.Port)
+
+	if !ib.Enable {
+		route.CleanupRule("inbound", fmt.Sprintf("%d", ib.Port), "")
+	}
+
 	go core.Default.Apply()
 	c.JSON(http.StatusOK, ib)
 }

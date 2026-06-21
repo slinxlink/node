@@ -168,7 +168,7 @@ type routeResult struct {
 	Line string
 }
 
-func FetchRouteInfo() ([]database.Route, error) {
+func FetchBackRouteInfo() ([]database.BackRoute, error) {
 	results := make([]routeResult, len(routeTargets))
 	var wg sync.WaitGroup
 
@@ -188,10 +188,10 @@ func FetchRouteInfo() ([]database.Route, error) {
 	wg.Wait()
 
 	// 按城市汇总
-	cityMap := map[string]*database.Route{}
+	cityMap := map[string]*database.BackRoute{}
 	for _, r := range results {
 		if _, ok := cityMap[r.City]; !ok {
-			cityMap[r.City] = &database.Route{City: r.City, UpdatedAt: time.Now()}
+			cityMap[r.City] = &database.BackRoute{City: r.City, UpdatedAt: time.Now()}
 		}
 		switch r.ISP {
 		case "telecom":
@@ -203,11 +203,11 @@ func FetchRouteInfo() ([]database.Route, error) {
 		}
 	}
 
-	var routes []database.Route
+	var routes []database.BackRoute
 	for _, city := range []string{"shanghai", "beijing", "guangzhou"} {
 		if r, ok := cityMap[city]; ok {
-			var existing database.Route
-			database.DB.Where(database.Route{City: city}).First(&existing)
+			var existing database.BackRoute
+			database.DB.Where(database.BackRoute{City: city}).First(&existing)
 			if existing.ID == 0 {
 				database.DB.Create(r)
 			} else {
@@ -221,8 +221,8 @@ func FetchRouteInfo() ([]database.Route, error) {
 	return routes, nil
 }
 
-func GetRouteInfo() ([]database.Route, error) {
-	var routes []database.Route
+func GetBackRouteInfo() ([]database.BackRoute, error) {
+	var routes []database.BackRoute
 	database.DB.Order("id asc").Find(&routes)
 	return routes, nil
 }

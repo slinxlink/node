@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/slinxlink/node/internal/database"
@@ -16,6 +17,7 @@ type config struct {
 	Experimental *experimental `json:"experimental,omitempty"`
 	Inbounds     []inbounds    `json:"inbounds"`
 	Outbounds    []outbounds   `json:"outbounds"`
+	Endpoints    []endpoints   `json:"endpoints,omitempty"`
 	Route        route         `json:"route"`
 }
 
@@ -110,9 +112,28 @@ type outbounds struct {
 	Tag  string `json:"tag"`
 }
 
+type endpoints struct {
+	Type       string         `json:"type"`
+	Tag        string         `json:"tag"`
+	MTU        int            `json:"mtu,omitempty"`
+	Address    []string       `json:"address,omitempty"`
+	PrivateKey string         `json:"private_key,omitempty"`
+	Peers      []endpointPeer `json:"peers,omitempty"`
+	UDPTimeout string         `json:"udp_timeout,omitempty"`
+	Workers    int            `json:"workers,omitempty"`
+}
+
+type endpointPeer struct {
+	Address    string   `json:"address"`
+	Port       int      `json:"port"`
+	PublicKey  string   `json:"public_key"`
+	AllowedIPs []string `json:"allowed_ips,omitempty"`
+	Reserved   []int    `json:"reserved,omitempty"`
+}
+
 type route struct {
-	Rules []routeRule `json:"rules"`
-	Final string      `json:"final,omitempty"`
+	Rules []map[string]any `json:"rules"`
+	Final string           `json:"final,omitempty"`
 }
 
 type routeRule struct {
@@ -128,6 +149,8 @@ type db struct {
 	Users      []database.User
 	Boards     []database.Board
 	BoardUsers map[uint][]database.BoardUser
+	Endpoints  []database.Endpoint
+	Rules      []database.Rule
 	UserNames  []string
 }
 
@@ -136,6 +159,8 @@ func loadDatabase() (db, error) {
 	database.DB.First(&d.Core)
 	database.DB.Where("enable = ?", true).Find(&d.Inbounds)
 	database.DB.Where("enable = ?", true).Find(&d.Users)
+	database.DB.Where("enable = ?", true).Find(&d.Endpoints)
+	database.DB.Order("sort asc, `index` asc").Find(&d.Rules)
 
 	var cfg database.Config
 	database.DB.First(&cfg)
@@ -236,14 +261,16 @@ func generateConfig() error {
 		},
 	}
 
-	private := true
+	for _, ep := range d.Endpoints {
+		ec, err := buildEndpoint(ep)
+		if err != nil {
+			continue
+		}
+		cfg.Endpoints = append(cfg.Endpoints, ec)
+	}
+
 	cfg.Route = route{
-		Rules: []routeRule{
-			{
-				IPIsPrivate: &private,
-				Outbound:    "block",
-			},
-		},
+		Rules: buildRouteRules(d.Rules),
 		Final: "direct",
 	}
 
@@ -302,7 +329,7 @@ func buildBase(ib database.Inbound) inbounds {
 	}
 	return inbounds{
 		Type:   protocol,
-		Tag:    fmt.Sprintf("%s-%d", ib.Protocol, ib.Port),
+		Tag:    fmt.Sprintf("%d", ib.Port),
 		Listen: "::",
 		Port:   ib.Port,
 	}
@@ -451,4 +478,77 @@ func buildUser(protocol, name, uuid, password, flow string) user {
 		u.Password = password
 	}
 	return u
+}
+
+// ── endpoint builders ────────────────────────────────────────────────────────────
+
+func buildEndpoint(ep database.Endpoint) (endpoints, error) {
+	switch ep.Type {
+	case "wireguard":
+		return buildWireguardEndpoint(ep)
+	}
+	return endpoints{}, fmt.Errorf("unsupported endpoint type: %s", ep.Type)
+}
+
+func buildWireguardEndpoint(ep database.Endpoint) (endpoints, error) {
+	var address []string
+	json.Unmarshal([]byte(ep.Address), &address)
+
+	var reserved []int
+	json.Unmarshal([]byte(ep.Reserved), &reserved)
+
+	var allowedIPs []string
+	if ep.AllowedIPs != "" {
+		allowedIPs = strings.Split(ep.AllowedIPs, ",")
+	}
+
+	var udpTimeout string
+	if ep.UDPTimeout > 0 {
+		udpTimeout = fmt.Sprintf("%ds", ep.UDPTimeout)
+	}
+
+	ec := endpoints{
+		Type:       "wireguard",
+		Tag:        ep.Tag,
+		MTU:        ep.MTU,
+		Address:    address,
+		PrivateKey: ep.PrivateKey,
+		Peers: []endpointPeer{
+			{
+				Address:    ep.PeerAddress,
+				Port:       ep.PeerPort,
+				PublicKey:  ep.PeerPublicKey,
+				AllowedIPs: allowedIPs,
+				Reserved:   reserved,
+			},
+		},
+		UDPTimeout: udpTimeout,
+		Workers:    ep.Workers,
+	}
+	return ec, nil
+}
+
+func buildRouteRules(rules []database.Rule) []map[string]any {
+	result := []map[string]any{
+		{"ip_is_private": true, "outbound": "block"},
+	}
+
+	grouped := map[int]map[string]any{}
+	var sorts []int
+	for _, r := range rules {
+		if _, ok := grouped[r.Sort]; !ok {
+			grouped[r.Sort] = map[string]any{}
+			sorts = append(sorts, r.Sort)
+		}
+		var v any
+		if err := json.Unmarshal([]byte(r.Value), &v); err == nil {
+			grouped[r.Sort][r.Key] = v
+		}
+	}
+	sort.Ints(sorts)
+
+	for _, s := range sorts {
+		result = append(result, grouped[s])
+	}
+	return result
 }

@@ -96,8 +96,27 @@ func RegisterRoutes(r *gin.Engine) {
 		private.GET("/detect/ip", DetectIP)
 		private.POST("/detect/unlock/fetch", FetchUnlock)
 		private.GET("/detect/unlock", DetectUnlock)
-		private.GET("/detect/route", DetectRoute)
-		private.POST("/detect/route/fetch", FetchRoute)
+		private.GET("/detect/back-route", DetectBackRoute)
+		private.POST("/detect/back-route/fetch", FetchBackRoute)
+
+		// WARP
+		private.GET("/warp", GetWarp)
+		private.POST("/warp/register", RegisterWarp)
+		private.POST("/warp/refresh", RefreshWarp)
+		private.DELETE("/warp", DeleteWarp)
+		private.PUT("/warp/auto-update", SetWarpAutoUpdate)
+		private.PUT("/warp/license", SetWarpLicense)
+
+		// 端点
+		private.GET("/endpoint", GetEndpoints)
+		private.PUT("/endpoint/save", SaveEndpoint)
+		private.DELETE("/endpoint/:id", DeleteEndpoint)
+		private.PUT("/endpoint/:id/toggle", ToggleEndpoint)
+		private.POST("/endpoint/warp", CreateWarpEndpoint)
+
+		// 路由
+		private.GET("/rule", GetRule)
+		private.PUT("/rule", SaveRule)
 
 		// 生成
 		private.GET("/generate/port", GeneratePort)
@@ -107,6 +126,7 @@ func RegisterRoutes(r *gin.Engine) {
 		private.GET("/generate/token", GenerateToken)
 		private.GET("/generate/uuid", GenerateUUID)
 		private.GET("/generate/password", GeneratePassword)
+		private.GET("/generate/wireguard-keypair", GenerateWireguardKeyPair)
 
 		// 推送
 		private.GET("/task/:id", TaskLog)

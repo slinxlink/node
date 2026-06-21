@@ -92,3 +92,21 @@ func GenerateUUID() (string, error) {
 	}
 	return strings.TrimSpace(string(out)), nil
 }
+
+// 生成 WireGuard 密钥对
+func GenerateWireguardKeyPair() (privateKey, publicKey string, err error) {
+	out, err := exec.Command("bin/sing-box", "generate", "wg-keypair").Output()
+	if err != nil {
+		return "", "", err
+	}
+	lines := strings.Split(string(out), "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "PrivateKey:") {
+			privateKey = strings.TrimSpace(strings.TrimPrefix(line, "PrivateKey:"))
+		}
+		if strings.HasPrefix(line, "PublicKey:") {
+			publicKey = strings.TrimSpace(strings.TrimPrefix(line, "PublicKey:"))
+		}
+	}
+	return
+}

@@ -194,6 +194,56 @@ type BoardUser struct {
 
 func (BoardUser) TableName() string { return "board_user" }
 
+type Endpoint struct {
+	ID        uint `gorm:"primarykey"`
+	Enable    bool
+	Tag       string // 端点标签，对应 sing-box config 里 endpoints[].tag，需唯一
+	Type      string // wireguard / tailscale
+	CreatedAt time.Time
+	UpdatedAt time.Time
+
+	// WireGuard
+	MTU        int    // MTU，0 表示默认
+	Address    string // 本地隧道地址，JSON 数组，如 ["172.16.0.2/32", "2606:4700::/128"]
+	PrivateKey string // 本地私钥
+	PublicKey  string // 本地公钥，仅展示用，不写入配置
+	UDPTimeout int    // UDP 空闲超时，秒，0 表示默认
+	Workers    int    // 加解密并发 worker 数，0 表示默认（按 CPU 核心数）
+
+	// WireGuard - Peer（目前只支持单 peer）
+	PeerAddress   string // 对端地址，如 engage.cloudflareclient.com
+	PeerPort      int    // 对端端口
+	PeerPublicKey string // 对端公钥
+	AllowedIPs    string // 允许的 IP，逗号分隔，如 0.0.0.0/0,::/0
+	Reserved      string // JSON 数组，如 [128, 236, 36]
+}
+
+func (Endpoint) TableName() string { return "endpoint" }
+
+type Warp struct {
+	ID          uint   `gorm:"primarykey"`
+	AccessToken string // Cloudflare 返回的 access token
+	DeviceID    string // 设备 ID
+	LicenseKey  string // WARP/WARP+ 许可证密钥
+	PublicKey   string // 本地公钥，仅展示/补全端点用
+	PrivateKey  string // 本地生成的私钥，用于找回/重建端点
+	AutoUpdate  int    // 自动更新IP周期，单位天，0 表示关闭
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
+func (Warp) TableName() string { return "warp" }
+
+type Rule struct {
+	ID    uint   `gorm:"primarykey"`
+	Sort  int    // 规则组顺序，同一个 Sort 的所有行属于同一条规则，决定 rules[] 数组中的位置
+	Index int    // 同一规则组内，这个条件字段的展示顺序
+	Key   string // 字段名，如 "inbound" / "outbound" / "domain_suffix"
+	Value string // JSON 编码后的值
+}
+
+func (Rule) TableName() string { return "rule" }
+
 type SystemLog struct {
 	ID        uint `gorm:"primarykey"`
 	CPU       float64
@@ -235,7 +285,7 @@ type Unlock struct {
 
 func (Unlock) TableName() string { return "unlock" }
 
-type Route struct {
+type BackRoute struct {
 	ID        uint   `gorm:"primarykey"`
 	City      string // shanghai / beijing / guangzhou
 	Telecom   string // 线路类型，如 "电信163" / "电信CN2GT" / "电信CN2GIA"
@@ -244,4 +294,4 @@ type Route struct {
 	UpdatedAt time.Time
 }
 
-func (Route) TableName() string { return "route" }
+func (BackRoute) TableName() string { return "back_route" }

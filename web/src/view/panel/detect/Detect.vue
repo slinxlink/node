@@ -4,7 +4,7 @@
             <div class="body">
                 <IPDetect />
                 <UnlockDetect />
-                <RouteDetect />
+                <BackRouteDetect />
             </div>
         </div>
     </main>
@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import IPDetect from '@/view/panel/detect/widget/IP.vue'
 import UnlockDetect from '@/view/panel/detect/widget/Unlock.vue'
-import RouteDetect from '@/view/panel/detect/widget/Route.vue'
+import BackRouteDetect from '@/view/panel/detect/widget/BackRoute.vue'
 </script>
 
 <style scoped>

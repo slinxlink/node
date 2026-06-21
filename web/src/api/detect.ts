@@ -11,7 +11,7 @@ export const fetchUnlock = () => request('/api/detect/unlock/fetch', {
     method: 'POST'
 })
 
-export const getRoute = () => request('/api/detect/route')
-export const fetchRoute = () => request('/api/detect/route/fetch', {
+export const getBackRoute = () => request('/api/detect/back-route')
+export const fetchBackRoute = () => request('/api/detect/back-route/fetch', {
     method: 'POST'
 })

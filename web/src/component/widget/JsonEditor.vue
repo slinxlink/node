@@ -32,6 +32,7 @@ const sections = [
     { label: '全部', value: 'all' },
     { label: '入站', value: 'inbounds' },
     { label: '出站', value: 'outbounds' },
+    { label: '端点', value: 'endpoints' },
     { label: '路由', value: 'route' },
 ]
 
@@ -97,8 +98,15 @@ onUnmounted(() => {
 
     .header {
         display: flex;
+        flex-direction: row;
         align-items: center;
         justify-content: space-between;
+        gap: 10px;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+            align-items: flex-start;
+        }
 
         .title-wrap {
             display: flex;

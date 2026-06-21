@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { getRoute, fetchRoute } from '@/api/detect'
+import { getBackRoute, fetchBackRoute } from '@/api/detect'
 import { formatTime } from '@/util/format'
 
 const loading = ref(false)
@@ -86,7 +86,7 @@ function lineClass(isp: string, line: string): string {
 async function handleFetch() {
     loading.value = true
     try {
-        const res = await fetchRoute()
+        const res = await fetchBackRoute()
         data.value = res.data ?? []
     } finally {
         loading.value = false
@@ -94,7 +94,7 @@ async function handleFetch() {
 }
 
 onMounted(async () => {
-    const res = await getRoute()
+    const res = await getBackRoute()
     data.value = res.data ?? []
 })
 

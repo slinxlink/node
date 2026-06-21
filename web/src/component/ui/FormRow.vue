@@ -1,6 +1,9 @@
 <template>
     <div class="form-row">
-        <span class="label">{{ label }}</span>
+        <div class="title-warp">
+            <span class="title">{{ title }}</span>
+            <span class="subtitle">{{ subtitle }}</span>
+        </div>
         <div class="content">
             <slot />
         </div>
@@ -9,7 +12,8 @@
 
 <script setup lang="ts">
 defineProps<{
-    label?: string
+    title?: string
+    subtitle?: string
 }>()
 </script>
 
@@ -20,12 +24,20 @@ defineProps<{
     gap: 10px;
     min-height: 30px;
 
-    .label {
+    .title-warp {
         width: 100px;
         flex-shrink: 0;
         font-size: var(--font-size-sm);
         color: var(--color-text-dark);
         text-align: right;
+        display: flex;
+        flex-direction: column;
+        gap: 0px;
+            color: var(--color-text-dark);
+
+        .subtitle {
+            font-size: 8px;
+        }
     }
 
     .content {

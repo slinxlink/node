@@ -59,3 +59,12 @@ func GenerateUUID(c *gin.Context) {
 func GeneratePassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"password": util.GenerateString(16)})
 }
+
+func GenerateWireguardKeyPair(c *gin.Context) {
+	priv, pub, err := util.GenerateWireguardKeyPair()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"private_key": priv, "public_key": pub})
+}

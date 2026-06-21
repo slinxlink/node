@@ -1,30 +1,30 @@
 <template>
     <div class="info">
-        <FormRow label="启用">
+        <FormRow title="启用">
             <span class="tag" :class="user.Enable ? 'green' : 'red'">{{ user.Enable ? '开启' : '关闭' }}</span>
         </FormRow>
-        <FormRow label="名称">
+        <FormRow title="名称">
             <span>{{ user.Name || '-' }}</span>
         </FormRow>
-        <FormRow label="Token">
+        <FormRow title="Token">
             <span class="mono">{{ user.Token }}</span>
             <Copy :value="user.Token" size="sm" />
         </FormRow>
-        <FormRow label="UUID">
+        <FormRow title="UUID">
             <span class="mono">{{ user.UUID }}</span>
             <Copy :value="user.UUID" size="sm" />
         </FormRow>
-        <FormRow label="认证">
+        <FormRow title="认证">
             <span class="mono">{{ user.Password }}</span>
             <Copy :value="user.Password" size="sm" />
         </FormRow>
-        <FormRow label="创建时间">
+        <FormRow title="创建时间">
             <span>{{ formatTime(user.CreatedAt) }}</span>
         </FormRow>
-        <FormRow label="更新时间">
+        <FormRow title="更新时间">
             <span>{{ formatTime(user.UpdatedAt) }}</span>
         </FormRow>
-        <FormRow label="关联入站">
+        <FormRow title="关联入站">
             <div class="tags">
                 <span
                     v-for="ib in inboundTags"

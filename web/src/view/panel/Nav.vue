@@ -59,6 +59,7 @@ const links = computed(() => [
     { divider: true },
     { to: '/inbound',   icon: 'add_link',       label: '入站' },
     { to: '/user',      icon: 'rss_feed',       label: '用户' },
+    { to: '/endpoint',  icon: 'cloud_sync',     label: '端点' },
     ...(configStore.BoardEnable ? [{ to: '/board', icon: 'flight', label: '面板对接' }] : []),
     { divider: true },
     { to: '/detect',    icon: 'travel_explore', label: 'IP检测' },
