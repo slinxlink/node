@@ -81,6 +81,10 @@ func RegisterRoutes(r *gin.Engine) {
 		// 订阅
 		private.POST("/sub/uri", GetSubscriptionUri)
 		private.POST("/sub/url", GetSubscriptionUrl)
+		private.POST("/sub/json", GetSubscriptionJson)
+
+		// 规则集
+		private.POST("/ruleset/refresh", RefreshRuleset)
 
 		// 系统
 		private.GET("/system/status", GetSystemStatus)

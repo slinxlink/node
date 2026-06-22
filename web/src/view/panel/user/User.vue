@@ -108,6 +108,7 @@ function getInboundTags(inboundsJSON: string) {
         vless: 'primary',
         vmess: 'green',
         hysteria: 'blue',
+        trojan: 'purple',
     }
     try {
         const ids: number[] = JSON.parse(inboundsJSON || '[]')

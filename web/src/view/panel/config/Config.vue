@@ -28,8 +28,13 @@
                         <Row title="路径" subtitle="必须以 '/' 开头">
                             <Input v-model="Config.SubPath" placeholder="/link" />
                         </Row>
-                        <Row title="Clash路径" subtitle="必须以 '/' 开头">
-                            <Input v-model="Config.ClashPath" placeholder="/clash" />
+                    </Section>
+                    <Section title="规则集">
+                        <Row title="自动更新" subtitle="每周一自动更新规则集">
+                            <Toggle v-model="Config.RulesetAutoUpdate" />
+                        </Row>
+                        <Row title="手动更新" subtitle="立即下载并更新规则集">
+                            <button @click="refreshRuleset">更新</button>
                         </Row>
                     </Section>
                     <Section title="日志">
@@ -60,9 +65,14 @@
                                 <Input v-model="credentials.new_password" autocomplete="new-password" placeholder="新密码" type="password" />
                             </Row>
                             <Row title="">
-                                <button @click="submitCredentials">确定</button>
+                                <button @click="submitCredentials">提交修改</button>
                             </Row>
                         </form>
+                    </Section>
+                    <Section title="系统">
+                        <Row title="BBR 加速" subtitle="TCP 拥塞控制优化">
+                            <Toggle v-model="Config.BBR" />
+                        </Row>
                     </Section>
                     <Section title="面板对接">
                         <Row title="启用" subtitle="关闭后停止所有面板对接与同步">
@@ -103,6 +113,7 @@ import { getConfig, updateConfig, resetConfig, Log as log } from '@/api/config'
 import { getCert } from '@/api/cert'
 import { changeCredentials } from '@/api/auth'
 import { restartPanel } from '@/api/bootstrap'
+import { refreshRuleset as doRefreshRuleset } from '@/api/ruleset'
 
 // Store
 import { loadConfig } from '@/store/config'
@@ -222,6 +233,15 @@ async function refreshCerts() {
     certs.value = await getCert()
 }
 
+async function refreshRuleset() {
+    modal.value?.show('warn', '规则集更新中，请稍候...')
+    try {
+        await doRefreshRuleset()
+        modal.value?.show('success', '规则集更新完成')
+    } catch (err: any) {
+        modal.value?.show('error', err?.error)
+    }
+}
 </script>
 
 <style scoped>
@@ -229,7 +249,6 @@ form {
     gap: 10px;
 }
 button {
-    margin-left: auto;
     font-size: var(--font-size-sm);
     padding: 10px 20px;
     line-height: 1;
@@ -246,7 +265,6 @@ button {
     border: 1px solid var(--color-red);
     background-color: var(--color-bg-dark);
     color: var(--color-red);
-    margin-left: 0;
 
     &:hover {
         border-color: var(--color-primary-light);

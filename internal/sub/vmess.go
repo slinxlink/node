@@ -109,3 +109,89 @@ func vmessClash(uuid string, host string, inbound database.Inbound) string {
 
 	return sb.String()
 }
+
+func vmessSurge(uuid string, host string, inbound database.Inbound) string {
+	var sb strings.Builder
+
+	fmt.Fprintf(&sb, "%s = vmess, %s, %d, username=%s, vmess-aead=true", inbound.Name, host, inbound.Port, uuid)
+
+	switch inbound.Transport {
+	case "websocket":
+		fmt.Fprintf(&sb, ", ws=true")
+		if inbound.WsPath != "" {
+			fmt.Fprintf(&sb, ", ws-path=%s", inbound.WsPath)
+		}
+		if inbound.WsHost != "" {
+			fmt.Fprintf(&sb, ", ws-headers=Host:%s", inbound.WsHost)
+		}
+	}
+
+	switch inbound.TLSType {
+	case "tls":
+		fmt.Fprintf(&sb, ", tls=true")
+		if inbound.ServerName != "" {
+			fmt.Fprintf(&sb, ", sni=%s", inbound.ServerName)
+		}
+		if inbound.UTLS != "" {
+			fmt.Fprintf(&sb, ", client-fingerprint=%s", inbound.UTLS)
+		}
+		if inbound.Insecure {
+			fmt.Fprintf(&sb, ", skip-cert-verify=true")
+		}
+	}
+
+	sb.WriteString("\n")
+	return sb.String()
+}
+
+func vmessSingBox(uuid string, host string, inbound database.Inbound) string {
+	out := map[string]any{
+		"type":        "vmess",
+		"tag":         "proxy",
+		"server":      host,
+		"server_port": inbound.Port,
+		"uuid":        uuid,
+		"security":    "auto",
+		"network":     "tcp",
+	}
+
+	if inbound.Transport == "websocket" {
+		t := map[string]any{"type": "ws"}
+		if inbound.WsPath != "" {
+			t["path"] = inbound.WsPath
+		}
+		if inbound.WsHost != "" {
+			t["headers"] = map[string]string{"Host": inbound.WsHost}
+		}
+		out["transport"] = t
+	}
+
+	if inbound.TLSType == "tls" {
+		tls := map[string]any{"enabled": true}
+		if inbound.ServerName != "" {
+			tls["server_name"] = inbound.ServerName
+		}
+		if inbound.UTLS != "" {
+			tls["utls"] = map[string]any{"enabled": true, "fingerprint": inbound.UTLS}
+		}
+		if inbound.Insecure {
+			tls["insecure"] = true
+		}
+		if inbound.ALPN != "" {
+			tls["alpn"] = strings.Split(inbound.ALPN, ",")
+		}
+		if inbound.CipherSuites != "" {
+			tls["cipher_suites"] = strings.Split(inbound.CipherSuites, ",")
+		}
+		if inbound.TLSMinVersion != "" {
+			tls["min_version"] = inbound.TLSMinVersion
+		}
+		if inbound.TLSMaxVersion != "" {
+			tls["max_version"] = inbound.TLSMaxVersion
+		}
+		out["tls"] = tls
+	}
+
+	data, _ := json.MarshalIndent(out, "        ", "    ")
+	return string(data)
+}

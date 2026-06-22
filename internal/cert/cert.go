@@ -22,12 +22,7 @@ import (
 	"github.com/slinxlink/node/internal/util"
 )
 
-var certDir string
-
-func init() {
-	wd, _ := os.Getwd()
-	certDir = wd + "/cert"
-}
+var certDir = "cert"
 
 // ── 申请证书 ──────────────────────────────────────────────────────────────────
 

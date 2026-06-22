@@ -3,11 +3,11 @@ package sub
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 
+	"github.com/slinxlink/node/internal/config"
 	"github.com/slinxlink/node/internal/database"
-	"github.com/slinxlink/node/internal/job"
+	tpl "github.com/slinxlink/node/internal/sub/template"
 	"github.com/slinxlink/node/internal/util"
 )
 
@@ -39,7 +39,7 @@ func Clash(token string) (string, string) {
 	host := getHost()
 	var proxies []string
 	for _, inbound := range inbounds {
-		proxy := clashProxy(*user, inbound, host)
+		proxy := dispatchClash(*user, inbound, host)
 		if proxy != "" {
 			proxies = append(proxies, proxy)
 		}
@@ -49,7 +49,31 @@ func Clash(token string) (string, string) {
 	if name == "" {
 		name = "SLINX"
 	}
-	return renderClash(proxies), name
+	return tpl.RenderClash(proxies), name
+}
+
+func Surge(token string) (string, string) {
+	user, inbounds := getUser(token)
+	if user == nil {
+		return "", ""
+	}
+
+	host := getHost()
+	var proxies []string
+	var names []string
+	for _, inbound := range inbounds {
+		proxy := dispatchSurge(*user, inbound, host)
+		if proxy != "" {
+			proxies = append(proxies, proxy)
+			names = append(names, inbound.Name)
+		}
+	}
+
+	name := util.SanitizeFileName(user.Name)
+	if name == "" {
+		name = "SLINX"
+	}
+	return tpl.RenderSurge(proxies, names), name
 }
 
 // ── 信息查询 ─────────────────────────────────────────────────────────
@@ -59,6 +83,7 @@ type Data struct {
 	Inbounds []database.Inbound `json:"inbounds"`
 	Uris     []string           `json:"uris"`
 	Urls     []string           `json:"urls"`
+	Jsons    []string           `json:"jsons"`
 }
 
 func Info(token string) *Data {
@@ -77,11 +102,13 @@ func Info(token string) *Data {
 
 	host := getHost()
 	var uris []string
+	var jsons []string
 	for _, inbound := range inbounds {
 		uri := dispatch(user, inbound, host)
 		if uri != "" {
 			uris = append(uris, uri)
 		}
+		jsons = append(jsons, Json(user, inbound, "singbox"))
 	}
 
 	return &Data{
@@ -89,12 +116,12 @@ func Info(token string) *Data {
 		Inbounds: inbounds,
 		Uris:     uris,
 		Urls:     Url(token),
+		Jsons:    jsons,
 	}
 }
 
 func Url(token string) []string {
-	var cfg database.Config
-	database.DB.First(&cfg)
+	cfg := config.Config
 
 	host := cfg.Domain
 	if host == "" {
@@ -107,16 +134,32 @@ func Url(token string) []string {
 	}
 
 	base := fmt.Sprintf("%s://%s:%d", scheme, host, cfg.SubPort)
+	sub := fmt.Sprintf("%s%s/%s", base, cfg.SubPath, token)
 
 	return []string{
-		fmt.Sprintf("%s%s/%s", base, cfg.SubPath, token),
-		fmt.Sprintf("%s%s/%s", base, cfg.ClashPath, token),
+		sub,
+		sub + "/clash",
+		sub + "/surge",
 	}
 }
 
 func Uri(user database.User, inbound database.Inbound) string {
 	host := getHost()
 	return dispatch(user, inbound, host)
+}
+
+func Json(user database.User, inbound database.Inbound, format string) string {
+	host := getHost()
+	switch format {
+	case "singbox":
+		outbound := dispatchSingBox(user, inbound, host)
+		if outbound == "" {
+			return ""
+		}
+		return tpl.RenderSingBox([]string{outbound})
+	default:
+		return ""
+	}
 }
 
 // ── 协议分发 ─────────────────────────────────────────────────────────
@@ -129,12 +172,14 @@ func dispatch(user database.User, inbound database.Inbound, host string) string 
 		return vmess(user.UUID, host, inbound)
 	case "hysteria":
 		return hysteria(user.Password, host, inbound)
+	case "trojan":
+		return trojan(user.Password, host, inbound)
 	default:
 		return ""
 	}
 }
 
-func clashProxy(user database.User, inbound database.Inbound, host string) string {
+func dispatchClash(user database.User, inbound database.Inbound, host string) string {
 	switch inbound.Protocol {
 	case "vless":
 		return vlessClash(user.UUID, host, inbound)
@@ -142,6 +187,36 @@ func clashProxy(user database.User, inbound database.Inbound, host string) strin
 		return vmessClash(user.UUID, host, inbound)
 	case "hysteria":
 		return hysteriaClash(user.Password, host, inbound)
+	case "trojan":
+		return trojanClash(user.Password, host, inbound)
+	default:
+		return ""
+	}
+}
+
+func dispatchSurge(user database.User, inbound database.Inbound, host string) string {
+	switch inbound.Protocol {
+	case "vmess":
+		return vmessSurge(user.UUID, host, inbound)
+	case "hysteria":
+		return hysteriaSurge(user.Password, host, inbound)
+	case "trojan":
+		return trojanSurge(user.Password, host, inbound)
+	default:
+		return ""
+	}
+}
+
+func dispatchSingBox(user database.User, inbound database.Inbound, host string) string {
+	switch inbound.Protocol {
+	case "vless":
+		return vlessSingBox(user.UUID, host, inbound)
+	case "vmess":
+		return vmessSingBox(user.UUID, host, inbound)
+	case "hysteria":
+		return hysteriaSingBox(user.Password, host, inbound)
+	case "trojan":
+		return trojanSingBox(user.Password, host, inbound)
 	default:
 		return ""
 	}
@@ -170,35 +245,4 @@ func getUser(token string) (*database.User, []database.Inbound) {
 	var inbounds []database.Inbound
 	database.DB.Where("id IN ? AND enable = ?", ids, true).Find(&inbounds)
 	return &user, inbounds
-}
-
-func renderClash(proxies []string) string {
-	data, err := os.ReadFile(job.ClashTemplatePath)
-	if err != nil {
-		util.Error("[clash] 读取模板失败: %v", err)
-		return ""
-	}
-
-	var names []string
-	for _, p := range proxies {
-		for _, line := range strings.Split(p, "\n") {
-			trimmed := strings.TrimSpace(line)
-			if strings.HasPrefix(trimmed, "- name: ") {
-				names = append(names, strings.TrimPrefix(trimmed, "- name: "))
-				break
-			}
-		}
-	}
-
-	nameBlock := ""
-	for _, name := range names {
-		nameBlock += "      - " + name + "\n"
-	}
-
-	yaml := string(data)
-	proxyBlock := strings.Join(proxies, "")
-	yaml = strings.Replace(yaml, "proxies: []", "proxies:\n"+proxyBlock, 1)
-	yaml = strings.ReplaceAll(yaml, "# __PROXIES__\n", nameBlock)
-
-	return yaml
 }

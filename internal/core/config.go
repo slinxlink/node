@@ -286,14 +286,32 @@ func generateConfig() error {
 
 func buildInbound(ib database.Inbound, users []user) (inbounds, error) {
 	switch ib.Protocol {
-	case "hysteria":
-		return buildHysteria(ib, users)
 	case "vless":
 		return buildVless(ib, users)
 	case "vmess":
 		return buildVmess(ib, users)
+	case "hysteria":
+		return buildHysteria(ib, users)
+	case "trojan":
+		return buildTrojan(ib, users)
 	}
 	return inbounds{}, fmt.Errorf("unsupported protocol: %s", ib.Protocol)
+}
+
+func buildVless(ib database.Inbound, users []user) (inbounds, error) {
+	ic := buildBase(ib)
+	ic.Transport = buildTransport(ib)
+	ic.TLS = buildTLS(ib)
+	ic.Users = users
+	return ic, nil
+}
+
+func buildVmess(ib database.Inbound, users []user) (inbounds, error) {
+	ic := buildBase(ib)
+	ic.Transport = buildTransport(ib)
+	ic.TLS = buildTLS(ib)
+	ic.Users = users
+	return ic, nil
 }
 
 func buildHysteria(ib database.Inbound, users []user) (inbounds, error) {
@@ -306,15 +324,7 @@ func buildHysteria(ib database.Inbound, users []user) (inbounds, error) {
 	return ic, nil
 }
 
-func buildVless(ib database.Inbound, users []user) (inbounds, error) {
-	ic := buildBase(ib)
-	ic.Transport = buildTransport(ib)
-	ic.TLS = buildTLS(ib)
-	ic.Users = users
-	return ic, nil
-}
-
-func buildVmess(ib database.Inbound, users []user) (inbounds, error) {
+func buildTrojan(ib database.Inbound, users []user) (inbounds, error) {
 	ic := buildBase(ib)
 	ic.Transport = buildTransport(ib)
 	ic.TLS = buildTLS(ib)
@@ -475,6 +485,8 @@ func buildUser(protocol, name, uuid, password, flow string) user {
 		u.UUID = uuid
 		u.Flow = flow
 	case "hysteria":
+		u.Password = password
+	case "trojan":
 		u.Password = password
 	}
 	return u

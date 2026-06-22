@@ -5,6 +5,7 @@
             <span class="name">{{ name }}</span>
         </div>
         <div class="right">
+            <Download v-if="download" :filename="name" :content="download" content-type="application/json" icon="data_object" />
             <Copy :value="value" />
             <QRcode :name="name" :value="value" />
         </div>
@@ -14,12 +15,14 @@
 <script setup lang="ts">
 import Copy from '@/component/widget/Copy.vue'
 import QRcode from '@/component/widget/QRcode.vue'
+import Download from '@/component/widget/Download.vue'
 
 defineProps<{
     label: string
     color?: string
     name: string
     value: string
+    download?: string
 }>()
 </script>
 

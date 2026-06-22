@@ -9,3 +9,8 @@ export const getUrl = (token: string) => request('/api/sub/url', {
     method: 'POST',
     body: JSON.stringify({ token })
 })
+
+export const getJson = (data: { user: any, inbound: any, format: string }) => request('/api/sub/json', {
+    method: 'POST',
+    body: JSON.stringify(data)
+})

@@ -129,3 +129,79 @@ func vlessClash(uuid string, host string, inbound database.Inbound) string {
 
 	return sb.String()
 }
+
+func vlessSingBox(uuid string, host string, inbound database.Inbound) string {
+	out := map[string]any{
+		"type":        "vless",
+		"tag":         "proxy",
+		"server":      host,
+		"server_port": inbound.Port,
+		"uuid":        uuid,
+		"network":     "tcp",
+	}
+
+	if inbound.Flow != "" {
+		out["flow"] = inbound.Flow
+	}
+
+	if inbound.Transport == "websocket" {
+		t := map[string]any{"type": "ws"}
+		if inbound.WsPath != "" {
+			t["path"] = inbound.WsPath
+		}
+		if inbound.WsHost != "" {
+			t["headers"] = map[string]string{"Host": inbound.WsHost}
+		}
+		out["transport"] = t
+	}
+
+	switch inbound.TLSType {
+	case "tls":
+		tls := map[string]any{"enabled": true}
+		if inbound.ServerName != "" {
+			tls["server_name"] = inbound.ServerName
+		}
+		if inbound.UTLS != "" {
+			tls["utls"] = map[string]any{"enabled": true, "fingerprint": inbound.UTLS}
+		}
+		if inbound.Insecure {
+			tls["insecure"] = true
+		}
+		if inbound.ALPN != "" {
+			tls["alpn"] = strings.Split(inbound.ALPN, ",")
+		}
+		if inbound.CipherSuites != "" {
+			tls["cipher_suites"] = strings.Split(inbound.CipherSuites, ",")
+		}
+		if inbound.TLSMinVersion != "" {
+			tls["min_version"] = inbound.TLSMinVersion
+		}
+		if inbound.TLSMaxVersion != "" {
+			tls["max_version"] = inbound.TLSMaxVersion
+		}
+		out["tls"] = tls
+	case "reality":
+		var shortIDs []string
+		json.Unmarshal([]byte(inbound.RealityShortIDs), &shortIDs)
+		shortID := ""
+		if len(shortIDs) > 0 {
+			shortID = shortIDs[0]
+		}
+		out["tls"] = map[string]any{
+			"enabled":     true,
+			"server_name": inbound.RealityServerName,
+			"utls": map[string]any{
+				"enabled":     true,
+				"fingerprint": inbound.UTLS,
+			},
+			"reality": map[string]any{
+				"enabled":    true,
+				"public_key": inbound.RealityPublicKey,
+				"short_id":   shortID,
+			},
+		}
+	}
+
+	data, _ := json.MarshalIndent(out, "        ", "    ")
+	return string(data)
+}

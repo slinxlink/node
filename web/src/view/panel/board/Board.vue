@@ -88,6 +88,7 @@ function getInboundTags(inboundID: number) {
         vless: 'primary',
         vmess: 'green',
         hysteria: 'blue',
+        trojan: 'purple',
     }
     const ib = inbounds.value.find(i => i.ID === inboundID)
     return ib ? [{ id: ib.ID, port: ib.Port, protocol: ib.Protocol, color: colorMap[ib.Protocol] ?? 'gray' }] : []

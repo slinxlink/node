@@ -1,6 +1,7 @@
 package sub
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -65,4 +66,73 @@ func hysteriaClash(password string, host string, inbound database.Inbound) strin
 	}
 
 	return sb.String()
+}
+
+func hysteriaSurge(password string, host string, inbound database.Inbound) string {
+	if inbound.ObfsType != "" {
+		return ""
+	}
+
+	var sb strings.Builder
+
+	fmt.Fprintf(&sb, "%s = hysteria2, %s, %d, password=%s", inbound.Name, host, inbound.Port, password)
+
+	if inbound.ServerName != "" {
+		fmt.Fprintf(&sb, ", sni=%s", inbound.ServerName)
+	}
+	if inbound.Insecure {
+		fmt.Fprintf(&sb, ", skip-cert-verify=true")
+	}
+	if inbound.UTLS != "" {
+		fmt.Fprintf(&sb, ", client-fingerprint=%s", inbound.UTLS)
+	}
+
+	fmt.Fprintf(&sb, ", download-bandwidth=0")
+
+	sb.WriteString("\n")
+	return sb.String()
+}
+
+func hysteriaSingBox(password string, host string, inbound database.Inbound) string {
+	out := map[string]any{
+		"type":        "hysteria2",
+		"tag":         "proxy",
+		"server":      host,
+		"server_port": inbound.Port,
+		"password":    password,
+	}
+
+	if inbound.ObfsType != "" {
+		out["obfs"] = map[string]any{
+			"type":     inbound.ObfsType,
+			"password": inbound.ObfsPassword,
+		}
+	}
+
+	tls := map[string]any{"enabled": true}
+	if inbound.ServerName != "" {
+		tls["server_name"] = inbound.ServerName
+	}
+	if inbound.UTLS != "" {
+		tls["utls"] = map[string]any{"enabled": true, "fingerprint": inbound.UTLS}
+	}
+	if inbound.Insecure {
+		tls["insecure"] = true
+	}
+	if inbound.ALPN != "" {
+		tls["alpn"] = strings.Split(inbound.ALPN, ",")
+	}
+	if inbound.CipherSuites != "" {
+		tls["cipher_suites"] = strings.Split(inbound.CipherSuites, ",")
+	}
+	if inbound.TLSMinVersion != "" {
+		tls["min_version"] = inbound.TLSMinVersion
+	}
+	if inbound.TLSMaxVersion != "" {
+		tls["max_version"] = inbound.TLSMaxVersion
+	}
+	out["tls"] = tls
+
+	data, _ := json.MarshalIndent(out, "        ", "    ")
+	return string(data)
 }

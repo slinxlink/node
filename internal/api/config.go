@@ -8,6 +8,7 @@ import (
 	"github.com/slinxlink/node/internal/config"
 	"github.com/slinxlink/node/internal/core"
 	"github.com/slinxlink/node/internal/database"
+	"github.com/slinxlink/node/internal/service"
 	"github.com/slinxlink/node/internal/sync"
 	"github.com/slinxlink/node/internal/util"
 )
@@ -49,27 +50,29 @@ func UpdateConfig(c *gin.Context) {
 		return
 	}
 
-	if !strings.HasPrefix(cfg.ClashPath, "/") || strings.Count(cfg.ClashPath, "/") != 1 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Clash路径必须以 '/' 开头且只能有一个 '/'"})
-		return
-	}
-
 	if cfg.LogPath != "" && !strings.HasSuffix(cfg.LogPath, ".log") {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "日志路径必须以 .log 结尾"})
 		return
 	}
 
-	prev := config.Config.BoardEnable
+	prev := config.Config
+
+	cfg.ID = config.Config.ID
 	database.DB.Save(&cfg)
+
 	config.Config = cfg
 	util.InitLog(cfg.LogPath, cfg.LogLevel, cfg.LogEnable)
 
-	if prev && !cfg.BoardEnable {
+	if prev.BoardEnable && !cfg.BoardEnable {
 		sync.Stop()
 		go core.Default.Apply()
-	} else if !prev && cfg.BoardEnable {
+	} else if !prev.BoardEnable && cfg.BoardEnable {
 		sync.Start()
 		go core.Default.Apply()
+	}
+
+	if cfg.BBR != prev.BBR {
+		service.BBRApply(cfg.BBR)
 	}
 
 	util.Info("[config] 面板配置已更新")
@@ -77,28 +80,27 @@ func UpdateConfig(c *gin.Context) {
 }
 
 func ResetConfig(c *gin.Context) {
-	var existing database.Config
-	database.DB.First(&existing)
-
 	ipv4, ipv6 := util.GetPublicIPs()
 	cfg := database.Config{
-		SecretKey:   util.GenerateString(32),
-		Username:    "admin",
-		Password:    util.GenerateString(12),
-		Port:        util.GeneratePort(),
-		Path:        "/" + util.GenerateString(8),
-		IPv4:        ipv4,
-		IPv6:        ipv6,
-		SubEnable:   true,
-		SubPath:     "/link",
-		SubPort:     2096,
-		ClashPath:   "/clash",
-		LogEnable:   true,
-		LogLevel:    "info",
-		LogPath:     "data/slinx.log",
-		BoardEnable: false,
+		SecretKey:         util.GenerateString(32),
+		Username:          "admin",
+		Password:          util.GenerateString(12),
+		Port:              util.GeneratePort(),
+		Path:              "/" + util.GenerateString(8),
+		IPv4:              ipv4,
+		IPv6:              ipv6,
+		SubEnable:         true,
+		SubPath:           "/link",
+		SubPort:           2096,
+		RulesetAutoUpdate: false,
+		LogEnable:         true,
+		LogLevel:          "info",
+		LogPath:           "data/slinx.log",
+		BBR:               true,
+		BoardEnable:       false,
+		Repo:              "https://github.com/slinxlink/node",
 	}
-	cfg.ID = existing.ID
+	cfg.ID = config.Config.ID
 
 	database.DB.Save(&cfg)
 	config.Config = cfg

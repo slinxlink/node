@@ -11,6 +11,7 @@ import (
 	"github.com/slinxlink/node/internal/database"
 	"github.com/slinxlink/node/internal/job"
 	"github.com/slinxlink/node/internal/server"
+	"github.com/slinxlink/node/internal/service"
 	syncer "github.com/slinxlink/node/internal/sync"
 	"github.com/slinxlink/node/internal/util"
 )
@@ -21,6 +22,10 @@ func Start() {
 	if err != nil {
 		cli.Status("数据库", "初始化失败", false)
 		log.Fatal(err)
+	}
+
+	if isFirstRun {
+		service.BBREnable()
 	}
 
 	// ── 2. 读取配置 ──────────────────────────────────────────────────────────
@@ -70,17 +75,22 @@ func Start() {
 	job.SystemLog()
 	job.CoreLogRotate()
 	job.CertRenew()
-	job.ClashTemplateRefresh()
+	job.RulesetRefresh()
 
 	// ── 10. 收尾：更新启动时间、获取公网 IP ──────────────────────────────────
 	database.DB.Model(&database.Config{}).Where("id = 1").Update("started_at", time.Now())
 
 	go func() {
 		ipv4, ipv6 := util.GetPublicIPs()
+		bbrStatus := service.BBRStatus()
 		database.DB.Model(&database.Config{}).Where("id = 1").Updates(map[string]interface{}{
 			"ipv4": ipv4,
 			"ipv6": ipv6,
+			"bbr":  bbrStatus,
 		})
+		config.Config.IPv4 = ipv4
+		config.Config.IPv6 = ipv6
+		config.Config.BBR = bbrStatus
 		if isFirstRun {
 			printFirstRun(ipv4)
 		}

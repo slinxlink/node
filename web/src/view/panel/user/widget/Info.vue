@@ -37,7 +37,7 @@
             </div>
         </FormRow>
         <div class="divider">复制链接</div>
-        <Link v-for="uri in uris" :key="uri.value" :label="uri.label" :color="uri.color" :name="uri.name" :value="uri.value" />
+        <Link v-for="uri in uris" :key="uri.value" :label="uri.label" :color="uri.color" :name="uri.name" :value="uri.value" :download="uri.download" />
         <div class="divider">订阅信息</div>
         <Link v-for="url in urls" :key="url.value" :label="url.label" :color="url.color" :name="url.name" :value="url.value" />
     </div>
@@ -48,7 +48,7 @@ import FormRow from '@/component/ui/FormRow.vue'
 import Copy from '@/component/widget/Copy.vue'
 import Link from '@/component/widget/Link.vue'
 import { formatTime } from '@/util/format.ts'
-import { getUri, getUrl } from '@/api/sub'
+import { getUri, getUrl, getJson } from '@/api/sub'
 
 const props = defineProps<{
     user: any
@@ -59,6 +59,7 @@ const colorMap: Record<string, string> = {
     vless: 'primary',
     vmess: 'green',
     hysteria: 'blue',
+    trojan: 'purple',
 }
 
 const inboundTags = computed(() => {
@@ -73,13 +74,14 @@ const inboundTags = computed(() => {
     }
 })
 
-const uris = ref<{ label: string, color: string, name: string, value: string }[]>([])
+const uris = ref<{ label: string, color: string, name: string, value: string, download?: string }[]>([])
 const urls = ref<{ label: string, color: string, name: string, value: string }[]>([])
 
 onMounted(async () => {
-    const [uriResults, urlResult] = await Promise.all([
+    const [uriResults, urlResult, jsonResults] = await Promise.all([
         Promise.all(inboundTags.value.map(ib => getUri({ user: props.user, inbound: ib.inbound }))),
-        getUrl(props.user.Token)
+        getUrl(props.user.Token),
+        Promise.all(inboundTags.value.map(ib => getJson({ user: props.user, inbound: ib.inbound, format: 'singbox' }))),
     ])
     
     uris.value = inboundTags.value.map((ib, i) => ({
@@ -87,14 +89,19 @@ onMounted(async () => {
         color: ib.color,
         name: ib.name,
         value: uriResults[i].uri,
+        download: jsonResults[i].json || undefined,
     }))
 
-    urls.value = urlResult.urls.map((url: string, i: number) => ({
-        label: i === 0 ? 'SUB' : 'CLASH',
-        color: i === 0 ? 'green' : 'yellow',
-        name: props.user.Name || props.user.Token,
-        value: url,
-    }))
+    urls.value = urlResult.urls.map((url: string, i: number) => {
+        const labels = ['SUB', 'CLASH', 'SURGE']
+        const colors = ['green', 'yellow', 'blue']
+        return {
+            label: labels[i] ?? 'SUB',
+            color: colors[i] ?? 'gray',
+            name: props.user.Name || props.user.Token,
+            value: url,
+        }
+    })
 })
 </script>
 

@@ -48,10 +48,21 @@ func GetClashSubscription(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 		return
 	}
-	c.Header("Content-Type", "text/plain; charset=utf-8")
 	c.Header("Content-Disposition",
 		fmt.Sprintf("attachment; filename*=UTF-8''%s", url.QueryEscape(name)))
-	c.String(http.StatusOK, result)
+	c.Data(http.StatusOK, "text/plain; charset=utf-8", []byte(result))
+}
+
+func GetSurgeSubscription(c *gin.Context) {
+	token := c.Param("token")
+	result, name := sub.Surge(token)
+	if result == "" {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	c.Header("Content-Disposition",
+		fmt.Sprintf("attachment; filename*=UTF-8''%s", url.QueryEscape(name)))
+	c.Data(http.StatusOK, "text/plain; charset=utf-8", []byte(result))
 }
 
 func GetSubscriptionUri(c *gin.Context) {
@@ -71,4 +82,15 @@ func GetSubscriptionUrl(c *gin.Context) {
 	c.ShouldBindJSON(&req)
 	urls := sub.Url(req.Token)
 	c.JSON(http.StatusOK, gin.H{"urls": urls})
+}
+
+func GetSubscriptionJson(c *gin.Context) {
+	var req struct {
+		User    database.User    `json:"user"`
+		Inbound database.Inbound `json:"inbound"`
+		Format  string           `json:"format"` // singbox / xray
+	}
+	c.ShouldBindJSON(&req)
+	result := sub.Json(req.User, req.Inbound, req.Format)
+	c.JSON(http.StatusOK, gin.H{"json": result})
 }

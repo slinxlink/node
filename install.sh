@@ -20,11 +20,23 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
+# 检测包管理器
+if command -v apt &>/dev/null; then
+    PKG="apt"
+elif command -v dnf &>/dev/null; then
+    PKG="dnf"
+elif command -v yum &>/dev/null; then
+    PKG="yum"
+else
+    echo -e "${RED}不支持的包管理器${PLAIN}"
+    exit 1
+fi
+
 step "更新系统"
-apt update
+$PKG update -y
 
 step "安装依赖"
-apt install -y curl chrony mtr gzip sqlite3
+$PKG install -y curl chrony mtr gzip sqlite3
 
 step "设置系统时间同步"
 timedatectl set-timezone Asia/Shanghai
@@ -50,6 +62,14 @@ if [[ -z "$RELEASE" ]]; then
 fi
 echo -e "${PINK}最新版本: ${RELEASE}${PLAIN}"
 
+step "检测最新 sing-box 核心版本"
+CORE_VERSION=$(curl -s "https://api.github.com/repos/slinxlink/node/releases" | grep '"tag_name"' | grep 'sing-box-' | head -1 | sed 's/.*"sing-box-\(.*\)".*/\1/')
+if [[ -z "$CORE_VERSION" ]]; then
+    echo -e "${RED}获取 sing-box 版本号失败${PLAIN}"
+    exit 1
+fi
+echo -e "${PINK}sing-box 版本: ${CORE_VERSION}${PLAIN}"
+
 step "创建目录"
 SLINX_DIR="/etc/slinx"
 BIN_DIR="$SLINX_DIR/bin"
@@ -64,23 +84,11 @@ curl -fLo $SLINX_DIR/slinx $SLINX_URL
 chmod +x $SLINX_DIR/slinx
 
 step "下载 sing-box"
-SINGBOX_URL="https://github.com/slinxlink/node/releases/download/${RELEASE}/sing-box_linux_${SLINX_ARCH}.gz"
+SINGBOX_URL="https://github.com/slinxlink/node/releases/download/sing-box-${CORE_VERSION}/sing-box_linux_${SLINX_ARCH}.gz"
 curl -fLo /tmp/sing-box.gz $SINGBOX_URL
 gunzip /tmp/sing-box.gz
 mv /tmp/sing-box $BIN_DIR/sing-box
 chmod +x $BIN_DIR/sing-box
-
-step "开启 BBR 加速"
-cat <<EOF > /etc/sysctl.d/99-bbr.conf
-net.core.default_qdisc=fq
-net.ipv4.tcp_congestion_control=bbr
-EOF
-sysctl --system
-if sysctl net.ipv4.tcp_congestion_control | grep -q bbr; then
-    echo -e "${PINK}BBR 启动成功${PLAIN}"
-else
-    echo -e "${RED}BBR 启用失败${PLAIN}"
-fi
 
 step "创建 systemd 服务"
 cat <<EOF > /etc/systemd/system/slinx.service

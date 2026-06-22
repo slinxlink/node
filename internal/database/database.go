@@ -93,14 +93,16 @@ func initConfig() (bool, error) {
 		IPv4: ipv4,
 		IPv6: ipv6,
 
-		SubEnable: true,
-		SubPath:   "/link",
-		SubPort:   2096,
-		ClashPath: "/clash",
+		SubEnable:         true,
+		SubPath:           "/link",
+		SubPort:           2096,
+		RulesetAutoUpdate: true,
 
 		LogEnable: true,
 		LogLevel:  "info",
 		LogPath:   "data/slinx.log",
+
+		BBR: true,
 
 		BoardEnable: false,
 
@@ -181,7 +183,6 @@ func patchDefaults() {
 	patchStr(&cfg.Path, "/"+util.GenerateString(8), &cfgDirty)
 	patchStr(&cfg.SubPath, "/link", &cfgDirty)
 	patchInt(&cfg.SubPort, 2096, &cfgDirty)
-	patchStr(&cfg.ClashPath, "/clash", &cfgDirty)
 	patchStr(&cfg.LogLevel, "info", &cfgDirty)
 	patchStr(&cfg.LogPath, "data/slinx.log", &cfgDirty)
 	patchStr(&cfg.Repo, "https://github.com/slinxlink/node", &cfgDirty)

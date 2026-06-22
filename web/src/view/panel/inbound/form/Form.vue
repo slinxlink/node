@@ -13,9 +13,10 @@
             <div class="form-row">
                 <span class="form-label">协议</span>
                 <Select v-model="form.Protocol" :options="[
-                    { label: 'vless', value: 'vless' },
-                    { label: 'vmess', value: 'vmess' },
-                    { label: 'hysteria', value: 'hysteria' },
+                    { label: 'VLESS', value: 'vless' },
+                    { label: 'VMess', value: 'vmess' },
+                    { label: 'Hysteria', value: 'hysteria' },
+                    { label: 'Trojan', value: 'trojan' },
                 ]" />
             </div>
             <div class="form-row quarter">
@@ -26,8 +27,8 @@
 
         <!-- 传输 -->
         <Section title="传输">
-            <!-- VLESS / VMess -->
-            <template v-if="form.Protocol === 'vless' || form.Protocol === 'vmess'">
+            <!-- VLESS / VMess / Trojan-->
+            <template v-if="form.Protocol === 'vless' || form.Protocol === 'vmess' || form.Protocol === 'trojan'">
                 <div class="form-row half">
                     <span class="form-label">传输</span>
                     <Select v-model="form.Transport" :options="[
@@ -145,7 +146,7 @@
                             { label: 'TLS', value: 'tls' },
                             { label: 'Reality', value: 'reality' },
                         ]"
-                        :disabled="form.Protocol === 'hysteria'"
+                        :disabled="form.Protocol === 'hysteria' || form.Protocol === 'trojan'"
                     />
             </div>
             <!-- tls 专用 -->
@@ -318,9 +319,11 @@ onMounted(async () => {
 })
 
 watch(() => form.value.Protocol, (val) => {
-    if (val === 'hysteria') {
+    if (val === 'hysteria' || val === 'trojan') {
         form.value.TLSType = 'tls'
-        form.value.ALPN = ['h3']
+        if (val === 'hysteria') {
+            form.value.ALPN = ['h3']
+        }
     }
 }, { immediate: true })
 

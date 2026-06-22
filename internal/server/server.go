@@ -82,8 +82,12 @@ func StartSub() error {
 		}
 	})
 
-	subEngine.GET(cfg.ClashPath+"/:token", func(c *gin.Context) {
+	subEngine.GET(cfg.SubPath+"/:token/clash", func(c *gin.Context) {
 		api.GetClashSubscription(c)
+	})
+
+	subEngine.GET(cfg.SubPath+"/:token/surge", func(c *gin.Context) {
+		api.GetSurgeSubscription(c)
 	})
 
 	return runEngine(subEngine, cfg.Domain, cfg.SubPort)

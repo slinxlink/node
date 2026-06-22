@@ -14,16 +14,18 @@ type Config struct {
 	IPv4   string
 	IPv6   string
 
-	SubEnable bool
-	SubPath   string
-	SubPort   int
-	ClashPath string
+	SubEnable         bool
+	SubPath           string
+	SubPort           int
+	RulesetAutoUpdate bool
 
 	LogEnable bool
 	LogLevel  string
 	LogPath   string
 
 	BoardEnable bool
+
+	BBR bool
 
 	Repo      string
 	StartedAt time.Time

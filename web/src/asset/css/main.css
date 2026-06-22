@@ -20,6 +20,7 @@
     --color-green: #2FB344;
     --color-blue: #2196f3;
     --color-yellow: #E0A030; 
+    --color-purple: #9C27B0;
 
     /* 字体 */
     --font-size-sm: 12px;
@@ -561,6 +562,14 @@ body,
         background: color-mix(in srgb, var(--color-primary) 15%, transparent);
         color: var(--color-primary);
     }
+    &.red {
+        background: color-mix(in srgb, var(--color-red) 15%, transparent);
+        color: var(--color-red);
+    }
+    &.yellow {
+        background: color-mix(in srgb, var(--color-yellow) 15%, transparent);
+        color: var(--color-yellow);
+    }
     &.green {
         background: color-mix(in srgb, var(--color-green) 15%, transparent);
         color: var(--color-green);
@@ -569,13 +578,9 @@ body,
         background: color-mix(in srgb, var(--color-blue) 15%, transparent);
         color: var(--color-blue);
     }
-    &.yellow {
-        background: color-mix(in srgb, var(--color-yellow) 15%, transparent);
-        color: var(--color-yellow);
-    }
-    &.red {
-        background: color-mix(in srgb, var(--color-red) 15%, transparent);
-        color: var(--color-red);
+    &.purple {
+        background: color-mix(in srgb, var(--color-purple) 15%, transparent);
+        color: var(--color-purple);
     }
     &.gray {
         background: color-mix(in srgb, var(--color-text-dark) 15%, transparent);

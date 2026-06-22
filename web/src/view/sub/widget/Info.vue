@@ -37,7 +37,7 @@
             </div>
         </FormRow>
         <div class="divider">复制链接</div>
-        <Link v-for="uri in uris" :key="uri.value" :label="uri.label" :color="uri.color" :name="uri.name" :value="uri.value" />
+        <Link v-for="uri in uris" :key="uri.value" :label="uri.label" :color="uri.color" :name="uri.name" :value="uri.value" :download="uri.download" />
         <div class="divider">订阅信息</div>
         <Link v-for="url in urls" :key="url.value" :label="url.label" :color="url.color" :name="url.name" :value="url.value" />
     </div>
@@ -57,6 +57,7 @@ const colorMap: Record<string, string> = {
     vless: 'primary',
     vmess: 'green',
     hysteria: 'blue',
+    trojan: 'purple',
 }
 
 const inboundTags = computed(() => {
@@ -72,7 +73,7 @@ const inboundTags = computed(() => {
 })
 
 const uris = computed(() => 
-    (props.data.uris ?? []).map((uri: string) => {
+    (props.data.uris ?? []).map((uri: string, i: number) => {
         const protocol = (uri.split('://')[0] ?? '').replace('2', '')
         const name = decodeURIComponent(uri.split('#')[1] ?? '')
         return {
@@ -80,17 +81,22 @@ const uris = computed(() =>
             color: colorMap[protocol] ?? 'gray',
             name,
             value: uri,
+            download: props.data.jsons?.[i],
         }
     })
 )
 
 const urls = computed(() =>
-    (props.data.urls ?? []).map((url: string, i: number) => ({
-        label: i === 0 ? 'SUB' : 'CLASH',
-        color: i === 0 ? 'green' : 'blue',
-        name: props.data.user.Name || props.data.user.Token,
-        value: url,
-    }))
+    (props.data.urls ?? []).map((url: string, i: number) => {
+        const labels = ['SUB', 'CLASH', 'SURGE']
+        const colors = ['green', 'yellow', 'blue']
+        return {
+            label: labels[i] ?? 'SUB',
+            color: colors[i] ?? 'gray',
+            name: props.data.user.Name || props.data.user.Token,
+            value: url,
+        }
+    })
 )
 </script>
 
