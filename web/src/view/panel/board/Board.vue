@@ -55,6 +55,7 @@ import Form from '@/view/panel/board/form/Form.vue'
 import User from '@/view/panel/board/widget/User.vue'
 import { getBoards, saveBoard, deleteBoard, toggleBoard } from '@/api/board'
 import { getInbounds } from '@/api/inbound'
+import { protocol } from '@/util/tag'
 
 const modal = inject<any>('modal')
 
@@ -84,14 +85,8 @@ onMounted(() => load())
 // ── 工具函数 ───────────────────────────────────────────────
 
 function getInboundTags(inboundID: number) {
-    const colorMap: Record<string, string> = {
-        vless: 'primary',
-        vmess: 'green',
-        hysteria: 'blue',
-        trojan: 'purple',
-    }
     const ib = inbounds.value.find(i => i.ID === inboundID)
-    return ib ? [{ id: ib.ID, port: ib.Port, protocol: ib.Protocol, color: colorMap[ib.Protocol] ?? 'gray' }] : []
+    return ib ? [{ id: ib.ID, port: ib.Port, protocol: ib.Protocol, color: protocol(ib.Protocol) }] : []
 }
 
 // ── 列表操作 ───────────────────────────────────────────────

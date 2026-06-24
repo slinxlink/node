@@ -4,9 +4,9 @@ import (
 	"embed"
 	"os"
 
+	"github.com/slinxlink/node/internal/app"
 	"github.com/slinxlink/node/internal/bootstrap"
 	"github.com/slinxlink/node/internal/cli"
-	"github.com/slinxlink/node/internal/config"
 	"github.com/slinxlink/node/internal/server"
 )
 
@@ -22,7 +22,7 @@ func main() {
 		cli.Start(Version)
 		return
 	}
-	config.Version = Version
+	app.Version = Version
 	server.Init(webFS)
 	bootstrap.Start()
 }

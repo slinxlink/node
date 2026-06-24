@@ -55,7 +55,17 @@ async function handleUpdate() {
         modal.value?.update('warn', '更新中...')
         try {
             await doUpdate()
-            modal.value?.update('success', '更新成功，面板正在重启！')
+            let countdown = 3
+            modal.value?.update('success', `更新成功，等待重启中...\n${countdown}`)
+            const timer = setInterval(() => {
+                countdown--
+                if (countdown <= 0) {
+                    clearInterval(timer)
+                    window.location.reload()
+                } else {
+                    modal.value?.update('success', `更新成功，等待重启中...\n${countdown}`)
+                }
+            }, 1000)
         } catch (err: any) {
             modal.value?.update('error', err?.error ?? '更新失败')
         }

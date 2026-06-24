@@ -172,22 +172,22 @@ func patchDefaults() {
 		}
 	}
 
-	var cfg Config
-	DB.First(&cfg)
-	var cfgDirty bool
+	var config Config
+	DB.First(&config)
+	var configDirty bool
 
-	patchStr(&cfg.Username, "admin", &cfgDirty)
-	patchStr(&cfg.Password, util.GenerateString(12), &cfgDirty)
-	patchStr(&cfg.SecretKey, util.GenerateString(32), &cfgDirty)
-	patchInt(&cfg.Port, util.GeneratePort(), &cfgDirty)
-	patchStr(&cfg.Path, "/"+util.GenerateString(8), &cfgDirty)
-	patchStr(&cfg.SubPath, "/link", &cfgDirty)
-	patchInt(&cfg.SubPort, 2096, &cfgDirty)
-	patchStr(&cfg.LogLevel, "info", &cfgDirty)
-	patchStr(&cfg.LogPath, "data/slinx.log", &cfgDirty)
-	patchStr(&cfg.Repo, "https://github.com/slinxlink/node", &cfgDirty)
-	if cfgDirty {
-		DB.Save(&cfg)
+	patchStr(&config.Username, "admin", &configDirty)
+	patchStr(&config.Password, util.GenerateString(12), &configDirty)
+	patchStr(&config.SecretKey, util.GenerateString(32), &configDirty)
+	patchInt(&config.Port, util.GeneratePort(), &configDirty)
+	patchStr(&config.Path, "/"+util.GenerateString(8), &configDirty)
+	patchStr(&config.SubPath, "/link", &configDirty)
+	patchInt(&config.SubPort, 2096, &configDirty)
+	patchStr(&config.LogLevel, "info", &configDirty)
+	patchStr(&config.LogPath, "data/slinx.log", &configDirty)
+	patchStr(&config.Repo, "https://github.com/slinxlink/node", &configDirty)
+	if configDirty {
+		DB.Save(&config)
 	}
 
 	var core Core

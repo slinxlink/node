@@ -69,6 +69,7 @@ import { getUsers, saveUser, deleteUser, toggleUser } from '@/api/user'
 import { getInbounds } from '@/api/inbound'
 import { getConfig } from '@/api/config'
 import { generateToken, generateUUID, generatePassword } from '@/api/generate'
+import { protocol } from '@/util/tag'
 
 const modal = inject<any>('modal')
 
@@ -104,17 +105,11 @@ function getSubUrl(u: any) {
 }
 
 function getInboundTags(inboundsJSON: string) {
-    const colorMap: Record<string, string> = {
-        vless: 'primary',
-        vmess: 'green',
-        hysteria: 'blue',
-        trojan: 'purple',
-    }
     try {
         const ids: number[] = JSON.parse(inboundsJSON || '[]')
         return ids.map(id => {
             const ib = inbounds.value.find(i => i.ID === id)
-            return ib ? { id, port: ib.Port, color: colorMap[ib.Protocol] ?? 'gray' } : null
+            return ib ? { id, port: ib.Port, color: protocol(ib.Protocol) } : null
         }).filter((ib): ib is { id: number, port: number, color: string } => ib !== null)
     } catch {
         return []
@@ -124,11 +119,8 @@ function getInboundTags(inboundsJSON: string) {
 // ── 生命周期 ───────────────────────────────────────────────
 
 onMounted(async () => {
-    const [, , cfg] = await Promise.all([
+    const [, cfg] = await Promise.all([
         load(),
-        Promise.all([generateToken(), generateUUID(), generatePassword()]).then(([t, u, p]) => {
-            defaultUser.value = { ...baseUser(), Token: t.token, UUID: u.uuid, Password: p.password }
-        }),
         getConfig(),
     ])
     config.value = cfg
@@ -157,14 +149,16 @@ async function remove(id: number) {
 // ── Drawer 操作 ────────────────────────────────────────────
 
 async function openCreate() {
+    drawerTitle.value = '添加用户'
+    defaultUser.value = baseUser()
+    showDrawer.value = true
+
     const [tokenRes, uuidRes, passwordRes] = await Promise.all([
         generateToken(),
         generateUUID(),
         generatePassword(),
     ])
-    defaultUser.value = { ...baseUser(), Token: tokenRes.token, UUID: uuidRes.uuid, Password: passwordRes.password }
-    drawerTitle.value = '添加用户'
-    showDrawer.value = true
+    defaultUser.value = { ...defaultUser.value, Token: tokenRes.token, UUID: uuidRes.uuid, Password: passwordRes.password }
 }
 
 function openEdit(u: any) {

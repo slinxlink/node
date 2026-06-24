@@ -9,7 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/slinxlink/node/internal/api"
-	"github.com/slinxlink/node/internal/config"
 	"github.com/slinxlink/node/internal/database"
 )
 
@@ -20,6 +19,9 @@ func Init(fs embed.FS) {
 }
 
 func StartWeb() error {
+	var config database.Config
+	database.DB.First(&config)
+
 	r := gin.Default()
 	r.RedirectTrailingSlash = false
 	r.RedirectFixedPath = false
@@ -35,7 +37,7 @@ func StartWeb() error {
 			return
 		}
 
-		if path == config.Config.Path || strings.HasPrefix(path, config.Config.Path+"/") {
+		if path == config.Path || strings.HasPrefix(path, config.Path+"/") {
 			data, err := fs.ReadFile(webFS, "web/dist/index.html")
 			if err != nil {
 				c.Status(500)
@@ -44,7 +46,7 @@ func StartWeb() error {
 			html := strings.Replace(
 				string(data),
 				"</head>",
-				fmt.Sprintf(`<script>window.__PANEL_PATH__ = '%s'</script></head>`, config.Config.Path),
+				fmt.Sprintf(`<script>window.__PANEL_PATH__ = '%s'</script></head>`, config.Path),
 				1,
 			)
 			c.Data(200, "text/html; charset=utf-8", []byte(html))
@@ -54,13 +56,14 @@ func StartWeb() error {
 		c.Status(404)
 	})
 
-	cfg := config.Config
-	return runEngine(r, cfg.Domain, cfg.Port)
+	return runEngine(r, config.Domain, config.Port)
 }
 
 func StartSub() error {
-	cfg := config.Config
-	if !cfg.SubEnable {
+	var config database.Config
+	database.DB.First(&config)
+
+	if !config.SubEnable {
 		return nil
 	}
 
@@ -73,7 +76,7 @@ func StartSub() error {
 		}
 	})
 
-	subEngine.GET(cfg.SubPath+"/:token", func(c *gin.Context) {
+	subEngine.GET(config.SubPath+"/:token", func(c *gin.Context) {
 		accept := c.GetHeader("Accept")
 		if strings.Contains(strings.ToLower(accept), "text/html") {
 			api.GetSubscriptionPage(c, webFS)
@@ -82,15 +85,15 @@ func StartSub() error {
 		}
 	})
 
-	subEngine.GET(cfg.SubPath+"/:token/clash", func(c *gin.Context) {
+	subEngine.GET(config.SubPath+"/:token/clash", func(c *gin.Context) {
 		api.GetClashSubscription(c)
 	})
 
-	subEngine.GET(cfg.SubPath+"/:token/surge", func(c *gin.Context) {
+	subEngine.GET(config.SubPath+"/:token/surge", func(c *gin.Context) {
 		api.GetSurgeSubscription(c)
 	})
 
-	return runEngine(subEngine, cfg.Domain, cfg.SubPort)
+	return runEngine(subEngine, config.Domain, config.SubPort)
 }
 
 func runEngine(r *gin.Engine, domain string, port int) error {

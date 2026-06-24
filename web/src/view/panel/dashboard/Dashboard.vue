@@ -181,8 +181,8 @@ async function fetchLog() { logs.value = await getSystemLog() }
 const timers: ReturnType<typeof setInterval>[] = []
 
 onMounted(async () => {
-    const [cfg] = await Promise.all([getConfig()])
-    Config.value = cfg
+    const [config] = await Promise.all([getConfig()])
+    Config.value = config
 
     fetchCore()
     fetchProcess()

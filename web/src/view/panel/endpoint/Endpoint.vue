@@ -72,7 +72,6 @@ const modal = inject<any>('modal')
 const endpoints = ref<any[]>([])
 const showWarp = ref(false)
 const showDrawer = ref(false)
-const generatedDefaults = ref<any>({})
 const defaultEndpoint = ref<any>(baseEndpoint())
 const drawerTitle = ref('添加端点')
 
@@ -101,11 +100,6 @@ function baseEndpoint() {
 
 onMounted(() => {
     load()
-
-    generateWireguardKeyPair().then((res) => {
-        generatedDefaults.value = { PrivateKey: res.private_key, PublicKey: res.public_key }
-        defaultEndpoint.value = { ...baseEndpoint(), ...generatedDefaults.value }
-    })
 })
 
 // ── 列表操作 ───────────────────────────────────────────────
@@ -130,11 +124,12 @@ function remove(id: number) {
 // ── Drawer 操作 ────────────────────────────────────────────
 
 async function create() {
-    const res = await generateWireguardKeyPair()
-    generatedDefaults.value = { PrivateKey: res.private_key, PublicKey: res.public_key }
-    defaultEndpoint.value = { ...baseEndpoint(), ...generatedDefaults.value }
     drawerTitle.value = '添加端点'
+    defaultEndpoint.value = baseEndpoint()
     showDrawer.value = true
+
+    const res = await generateWireguardKeyPair()
+    defaultEndpoint.value = { ...defaultEndpoint.value, PrivateKey: res.private_key, PublicKey: res.public_key }
 }
 
 function edit(ep: any) {

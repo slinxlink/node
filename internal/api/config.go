@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/slinxlink/node/internal/config"
 	"github.com/slinxlink/node/internal/core"
 	"github.com/slinxlink/node/internal/database"
 	"github.com/slinxlink/node/internal/service"
@@ -14,65 +13,67 @@ import (
 )
 
 func GetConfig(c *gin.Context) {
-	c.JSON(http.StatusOK, config.Config)
+	var config database.Config
+	database.DB.First(&config)
+	c.JSON(http.StatusOK, config)
 }
 
 func UpdateConfig(c *gin.Context) {
-	var cfg database.Config
-	if err := c.ShouldBindJSON(&cfg); err != nil {
+	var req database.Config
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
 		return
 	}
 
+	var prev database.Config
+	database.DB.First(&prev)
+
 	usedPorts := database.UsedPorts()
 
-	if cfg.Port != config.Config.Port {
-		if msg := util.ValidatePort(cfg.Port, usedPorts); msg != "" {
+	if req.Port != prev.Port {
+		if msg := util.ValidatePort(req.Port, usedPorts); msg != "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 			return
 		}
 	}
 
-	if !strings.HasPrefix(cfg.Path, "/") || strings.Count(cfg.Path, "/") != 1 {
+	if !strings.HasPrefix(req.Path, "/") || strings.Count(req.Path, "/") != 1 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "路径必须以 '/' 开头且只能有一个 '/'"})
 		return
 	}
 
-	if cfg.SubPort != config.Config.SubPort {
-		if msg := util.ValidatePort(cfg.SubPort, usedPorts); msg != "" {
+	if req.SubPort != prev.SubPort {
+		if msg := util.ValidatePort(req.SubPort, usedPorts); msg != "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 			return
 		}
 	}
 
-	if !strings.HasPrefix(cfg.SubPath, "/") || strings.Count(cfg.SubPath, "/") != 1 {
+	if !strings.HasPrefix(req.SubPath, "/") || strings.Count(req.SubPath, "/") != 1 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "订阅路径必须以 '/' 开头且只能有一个 '/'"})
 		return
 	}
 
-	if cfg.LogPath != "" && !strings.HasSuffix(cfg.LogPath, ".log") {
+	if req.LogPath != "" && !strings.HasSuffix(req.LogPath, ".log") {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "日志路径必须以 .log 结尾"})
 		return
 	}
 
-	prev := config.Config
+	req.ID = prev.ID
+	database.DB.Save(&req)
 
-	cfg.ID = config.Config.ID
-	database.DB.Save(&cfg)
+	util.InitLog(req.LogPath, req.LogLevel, req.LogEnable)
 
-	config.Config = cfg
-	util.InitLog(cfg.LogPath, cfg.LogLevel, cfg.LogEnable)
-
-	if prev.BoardEnable && !cfg.BoardEnable {
+	if prev.BoardEnable && !req.BoardEnable {
 		sync.Stop()
 		go core.Default.Apply()
-	} else if !prev.BoardEnable && cfg.BoardEnable {
+	} else if !prev.BoardEnable && req.BoardEnable {
 		sync.Start()
 		go core.Default.Apply()
 	}
 
-	if cfg.BBR != prev.BBR {
-		service.BBRApply(cfg.BBR)
+	if req.BBR != prev.BBR {
+		service.BBRApply(req.BBR)
 	}
 
 	util.Info("[config] 面板配置已更新")
@@ -80,8 +81,11 @@ func UpdateConfig(c *gin.Context) {
 }
 
 func ResetConfig(c *gin.Context) {
+	var prev database.Config
+	database.DB.First(&prev)
+
 	ipv4, ipv6 := util.GetPublicIPs()
-	cfg := database.Config{
+	config := database.Config{
 		SecretKey:         util.GenerateString(32),
 		Username:          "admin",
 		Password:          util.GenerateString(12),
@@ -100,11 +104,9 @@ func ResetConfig(c *gin.Context) {
 		BoardEnable:       false,
 		Repo:              "https://github.com/slinxlink/node",
 	}
-	cfg.ID = config.Config.ID
+	config.ID = prev.ID
 
-	database.DB.Save(&cfg)
-	config.Config = cfg
-
+	database.DB.Save(&config)
 	util.Info("[config] 面板配置已重置")
 	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }

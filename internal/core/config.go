@@ -50,16 +50,20 @@ type clashAPI struct {
 }
 
 type inbounds struct {
-	Type       string      `json:"type"`
-	Tag        string      `json:"tag"`
-	Listen     string      `json:"listen"`
-	Port       int         `json:"listen_port"`
-	UDPTimeout string      `json:"udp_timeout,omitempty"`
-	Transport  *transport  `json:"transport,omitempty"`
-	Masquerade interface{} `json:"masquerade,omitempty"`
-	Obfs       *obfs       `json:"obfs,omitempty"`
-	TLS        *tls        `json:"tls,omitempty"`
-	Users      []user      `json:"users,omitempty"`
+	Type              string      `json:"type"`
+	Tag               string      `json:"tag"`
+	Listen            string      `json:"listen"`
+	Port              int         `json:"listen_port"`
+	UDPTimeout        string      `json:"udp_timeout,omitempty"`
+	Transport         *transport  `json:"transport,omitempty"`
+	Masquerade        interface{} `json:"masquerade,omitempty"`
+	Obfs              *obfs       `json:"obfs,omitempty"`
+	CongestionControl string      `json:"congestion_control,omitempty"`
+	AuthTimeout       string      `json:"auth_timeout,omitempty"`
+	ZeroRTTHandshake  bool        `json:"zero_rtt_handshake,omitempty"`
+	Heartbeat         string      `json:"heartbeat,omitempty"`
+	TLS               *tls        `json:"tls,omitempty"`
+	Users             []user      `json:"users,omitempty"`
 }
 
 type transport struct {
@@ -162,10 +166,10 @@ func loadDatabase() (db, error) {
 	database.DB.Where("enable = ?", true).Find(&d.Endpoints)
 	database.DB.Order("sort asc, `index` asc").Find(&d.Rules)
 
-	var cfg database.Config
-	database.DB.First(&cfg)
+	var config database.Config
+	database.DB.First(&config)
 
-	if cfg.BoardEnable {
+	if config.BoardEnable {
 		database.DB.Where("enable = ?", true).Find(&d.Boards)
 		d.BoardUsers = make(map[uint][]database.BoardUser)
 		for _, b := range d.Boards {
@@ -294,6 +298,8 @@ func buildInbound(ib database.Inbound, users []user) (inbounds, error) {
 		return buildHysteria(ib, users)
 	case "trojan":
 		return buildTrojan(ib, users)
+	case "tuic":
+		return buildTuic(ib, users)
 	}
 	return inbounds{}, fmt.Errorf("unsupported protocol: %s", ib.Protocol)
 }
@@ -329,6 +335,21 @@ func buildTrojan(ib database.Inbound, users []user) (inbounds, error) {
 	ic.Transport = buildTransport(ib)
 	ic.TLS = buildTLS(ib)
 	ic.Users = users
+	return ic, nil
+}
+
+func buildTuic(ib database.Inbound, users []user) (inbounds, error) {
+	ic := buildBase(ib)
+	ic.TLS = buildTLS(ib)
+	ic.Users = users
+	ic.CongestionControl = ib.TuicCongestionControl
+	if ib.TuicAuthTimeout > 0 {
+		ic.AuthTimeout = fmt.Sprintf("%ds", ib.TuicAuthTimeout)
+	}
+	ic.ZeroRTTHandshake = ib.TuicZeroRTT
+	if ib.TuicHeartbeat > 0 {
+		ic.Heartbeat = fmt.Sprintf("%ds", ib.TuicHeartbeat)
+	}
 	return ic, nil
 }
 
@@ -481,12 +502,15 @@ func buildUsers(protocol string, users []database.User, boardUsers []database.Bo
 func buildUser(protocol, name, uuid, password, flow string) user {
 	u := user{Name: name}
 	switch protocol {
-	case "vless", "vmess":
+	case "vmess":
+		u.UUID = uuid
+	case "vless":
 		u.UUID = uuid
 		u.Flow = flow
-	case "hysteria":
+	case "hysteria", "trojan":
 		u.Password = password
-	case "trojan":
+	case "tuic":
+		u.UUID = uuid
 		u.Password = password
 	}
 	return u

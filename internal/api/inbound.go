@@ -50,6 +50,17 @@ func SaveInbound(c *gin.Context) {
 		}
 	}
 
+	if ib.Protocol == "tuic" {
+		if ib.TuicAuthTimeout < 1 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "认证超时不能小于 1 秒"})
+			return
+		}
+		if ib.TuicHeartbeat < 1 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "心跳间隔不能小于 1 秒"})
+			return
+		}
+	}
+
 	if ib.TLSType == "tls" {
 		var ids []int
 		json.Unmarshal([]byte(ib.Certs), &ids)

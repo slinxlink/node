@@ -17,6 +17,7 @@
     --color-bg-dark: rgb(23, 23, 23);
 
     --color-red: #D63939;
+    --color-orange: #FF6600;
     --color-green: #2FB344;
     --color-blue: #2196f3;
     --color-yellow: #E0A030; 
@@ -565,6 +566,10 @@ body,
     &.red {
         background: color-mix(in srgb, var(--color-red) 15%, transparent);
         color: var(--color-red);
+    }
+    &.orange {
+        background: color-mix(in srgb, var(--color-orange) 15%, transparent);
+        color: var(--color-orange);
     }
     &.yellow {
         background: color-mix(in srgb, var(--color-yellow) 15%, transparent);

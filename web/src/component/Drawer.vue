@@ -1,17 +1,17 @@
 <template>
     <div class="drawer" :class="{ active: modelValue }">
-        <div class="drawer-container">
-            <div class="drawer-header">
-                <span class="drawer-title">{{ title }}</span>
-                <button class="drawer-close-btn" :disabled="loading" @click="$emit('update:modelValue', false)">
+        <div class="container">
+            <div class="header">
+                <span class="title">{{ title }}</span>
+                <button class="close-btn" :disabled="loading" @click="$emit('update:modelValue', false)">
                     <i class="icon">close</i>
                 </button>
             </div>
             <div class="drawer-body">
                 <slot />
             </div>
-            <div class="drawer-footer" v-if="footer !== false">
-                <button class="drawer-save-btn" :disabled="loading" @click="done ? $emit('update:modelValue', false) : $emit('save')">
+            <div class="footer" v-if="footer !== false">
+                <button class="save-btn" :disabled="loading" @click="done ? $emit('update:modelValue', false) : $emit('save')">
                     {{ loading ? '处理中...' : done ? '完成' : (saveText || '保存') }}
                 </button>
             </div>
@@ -58,94 +58,93 @@ watch(() => props.loading, (val) => {
     overflow-y: auto;
     background-color: rgba(0, 0, 0, 0.5);
     transition: backdrop-filter 0.3s ease;
-}
 
-.drawer.active {
-    display: block;
-    backdrop-filter: blur(5px);
-}
+    &.active {
+        display: block;
+        backdrop-filter: blur(5px);
 
-.drawer.active .drawer-container {
-    opacity: 1;
-}
-
-.drawer-body {
-    padding: 0;
-    overflow: visible;
-}
-
-.drawer-container {
-    position: relative;
-    top: auto;
-    left: auto;
-    transform: none;
-    margin: 20px auto 40px;
-    width: min(800px, 90vw);
-    background-color: var(--color-bg-dark);
-    border-radius: 20px;
-    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.3);
-    color: var(--color-text);
-    font-size: var(--font-size);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-
-.drawer-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--color-bg);
-}
-
-.drawer-title {
-    font-size: var(--font-size-md);
-    font-weight: 600;
-    color: var(--color-text-light);
-}
-
-.drawer-close-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    color: var(--color-text-dark);
-    display: flex;
-    align-items: center;
-    transition: color 0.3s, background 0.3s;
-
-    &:hover {
-        background: var(--color-bg-light);
-        color: var(--color-text-light);
+        .container {
+            opacity: 1;
+        }
     }
 
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        pointer-events: none;
-    }
-}
-
-.drawer-footer {
-    display: flex;
-    justify-content: flex-end;
-    padding: 14px 20px;
-    border-top: 1px solid var(--color-bg);
-}
-
-.drawer-save-btn {
-    padding: 9px 20px;
-    border: none;
-    border-radius: 999px;
-    color: var(--color-text-light);
-
-    &:disabled {
+    .container {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        margin: 20px auto 40px;
+        width: min(800px, 90vw);
         background-color: var(--color-bg-dark);
-        border: 1px solid var(--color-bg-light);
-        cursor: not-allowed;
-        pointer-events: none;
+        border-radius: 20px;
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.3);
+        color: var(--color-text);
+        font-size: var(--font-size);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--color-bg);
+
+            .title {
+                font-size: var(--font-size-md);
+                font-weight: 600;
+                color: var(--color-text-light);
+            }
+
+            .close-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 4px;
+                border-radius: 4px;
+                color: var(--color-text-dark);
+                display: flex;
+                align-items: center;
+                transition: color 0.3s, background 0.3s;
+
+                &:hover {
+                    background: var(--color-bg-light);
+                    color: var(--color-text-light);
+                }
+
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                    pointer-events: none;
+                }
+            }
+        }
+
+        .drawer-body {
+            padding: 0;
+            overflow: visible;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: flex-end;
+            padding: 14px 20px;
+            border-top: 1px solid var(--color-bg);
+
+            .save-btn {
+                padding: 9px 20px;
+                border: none;
+                border-radius: 999px;
+                color: var(--color-text-light);
+
+                &:disabled {
+                    background-color: var(--color-bg-dark);
+                    border: 1px solid var(--color-bg-light);
+                    cursor: not-allowed;
+                    pointer-events: none;
+                }
+            }
+        }
     }
 }
 </style>

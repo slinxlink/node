@@ -26,9 +26,6 @@ func hysteria(password string, host string, inbound database.Inbound) string {
 	if inbound.ALPN != "" {
 		params.Set("alpn", inbound.ALPN)
 	}
-	if inbound.UTLS != "" {
-		params.Set("fp", inbound.UTLS)
-	}
 	if inbound.Insecure {
 		params.Set("insecure", "1")
 	}
@@ -58,9 +55,6 @@ func hysteriaClash(password string, host string, inbound database.Inbound) strin
 	if inbound.ALPN != "" {
 		fmt.Fprintf(&sb, "    alpn:\n      - %s\n", inbound.ALPN)
 	}
-	if inbound.UTLS != "" {
-		fmt.Fprintf(&sb, "    client-fingerprint: %s\n", inbound.UTLS)
-	}
 	if inbound.Insecure {
 		fmt.Fprintf(&sb, "    skip-cert-verify: true\n")
 	}
@@ -69,13 +63,13 @@ func hysteriaClash(password string, host string, inbound database.Inbound) strin
 }
 
 func hysteriaSurge(password string, host string, inbound database.Inbound) string {
-	if inbound.ObfsType != "" {
-		return ""
-	}
-
 	var sb strings.Builder
 
 	fmt.Fprintf(&sb, "%s = hysteria2, %s, %d, password=%s", inbound.Name, host, inbound.Port, password)
+
+	if inbound.ObfsType == "salamander" {
+		fmt.Fprintf(&sb, ", salamander-password=%s", inbound.ObfsPassword)
+	}
 
 	if inbound.ServerName != "" {
 		fmt.Fprintf(&sb, ", sni=%s", inbound.ServerName)
@@ -83,11 +77,6 @@ func hysteriaSurge(password string, host string, inbound database.Inbound) strin
 	if inbound.Insecure {
 		fmt.Fprintf(&sb, ", skip-cert-verify=true")
 	}
-	if inbound.UTLS != "" {
-		fmt.Fprintf(&sb, ", client-fingerprint=%s", inbound.UTLS)
-	}
-
-	fmt.Fprintf(&sb, ", download-bandwidth=0")
 
 	sb.WriteString("\n")
 	return sb.String()

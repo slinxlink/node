@@ -27,9 +27,9 @@ type releaseInfo struct {
 }
 
 func getRepo() string {
-	var cfg database.Config
-	database.DB.First(&cfg)
-	return cfg.Repo
+	var config database.Config
+	database.DB.First(&config)
+	return config.Repo
 }
 
 func apiURL() string {

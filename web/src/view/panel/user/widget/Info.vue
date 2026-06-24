@@ -47,27 +47,21 @@
 import FormRow from '@/component/ui/FormRow.vue'
 import Copy from '@/component/widget/Copy.vue'
 import Link from '@/component/widget/Link.vue'
-import { formatTime } from '@/util/format.ts'
+import { formatTime } from '@/util/format'
 import { getUri, getUrl, getJson } from '@/api/sub'
+import { protocol } from '@/util/tag'
 
 const props = defineProps<{
     user: any
     inbounds: any[]
 }>()
 
-const colorMap: Record<string, string> = {
-    vless: 'primary',
-    vmess: 'green',
-    hysteria: 'blue',
-    trojan: 'purple',
-}
-
 const inboundTags = computed(() => {
     try {
         const ids: number[] = JSON.parse(props.user.Inbounds || '[]')
         return ids.map(id => {
             const ib = props.inbounds.find(i => i.ID === id)
-            return ib ? { id, port: ib.Port, name: ib.Name, protocol: ib.Protocol, color: colorMap[ib.Protocol] ?? 'gray', inbound: ib } : null
+            return ib ? { id, port: ib.Port, name: ib.Name, protocol: ib.Protocol, color: protocol(ib.Protocol), inbound: ib } : null
         }).filter((ib): ib is { id: number, port: any, name: string, protocol: string, color: string, inbound: any } => ib !== null)
     } catch {
         return []

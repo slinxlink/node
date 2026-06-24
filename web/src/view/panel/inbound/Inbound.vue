@@ -16,7 +16,7 @@
                             <div class="tags">
                                 <span class="tag primary">{{ ib.Protocol }}</span>
                                 <span class="tag green">
-                                    {{ ib.Protocol === 'hysteria' ? 'UDP' : (ib.Transport === 'websocket' ? 'WS' : 'TCP') }}
+                                    {{ ib.Protocol === 'hysteria' || ib.Protocol === 'tuic' ? 'UDP' : (ib.Transport === 'websocket' ? 'WS' : 'TCP') }}
                                 </span>
                                 <span v-if="ib.TLSType !== 'none'" class="tag blue">{{ formatTLS(ib.TLSType) }}</span>
                             </div>
@@ -85,6 +85,12 @@ const baseInbound = () => ({
     ObfsPassword: '',
     ObfsMinPacketSize: 512,
     ObfsMaxPacketSize: 1200,
+    
+    TuicCongestionControl: 'bbr',
+    TuicAuthTimeout: 3,
+    TuicZeroRTT: false,
+    TuicHeartbeat: 10,
+    TuicUDPRelayMode: 'native',
 
     TLSType: 'none',
     ServerName: '',
@@ -113,27 +119,6 @@ const defaultInbound = ref<any>(baseInbound())
 
 onMounted(() => {
     load()
-    
-    Promise.all([
-        generatePort(),
-        generateRealityTarget(),
-        generateRealityKeyPair(),
-        generateShortIDs(),
-        getCert(),
-    ]).then(([portRes, targetRes, keyPairRes, shortIDsRes, certsRes]) => {
-        const firstCertID = certsRes.length > 0 ? certsRes[0].ID : 0
-        generatedDefaults.value = {
-            Port: portRes.port,
-            RealityServerName: targetRes.domain,
-            RealityServer: targetRes.domain,
-            RealityServerPort: 443,
-            RealityPrivateKey: keyPairRes.private_key,
-            RealityPublicKey: keyPairRes.public_key,
-            RealityShortIDs: shortIDsRes.short_ids,
-            Certs: [firstCertID],
-        }
-        defaultInbound.value = { ...baseInbound(), ...generatedDefaults.value }
-    })
 })
 
 // ── 工具函数 ───────────────────────────────────────────────
@@ -167,11 +152,29 @@ async function remove(id: number) {
 const drawerTitle = ref('添加入站')
 
 async function openCreate() {
-    const res = await generatePort()
-    generatedDefaults.value.Port = res.port
-    defaultInbound.value = { ...baseInbound(), ...generatedDefaults.value }
     drawerTitle.value = '添加入站'
+    defaultInbound.value = baseInbound()
     showDrawer.value = true
+
+    const [portRes, targetRes, keyPairRes, shortIDsRes, certsRes] = await Promise.all([
+        generatePort(),
+        generateRealityTarget(),
+        generateRealityKeyPair(),
+        generateShortIDs(),
+        getCert(),
+    ])
+    const firstCertID = certsRes.length > 0 ? certsRes[0].ID : 0
+    defaultInbound.value = {
+        ...defaultInbound.value,
+        Port: portRes.port,
+        RealityServerName: targetRes.domain,
+        RealityServer: targetRes.domain,
+        RealityServerPort: 443,
+        RealityPrivateKey: keyPairRes.private_key,
+        RealityPublicKey: keyPairRes.public_key,
+        RealityShortIDs: shortIDsRes.short_ids,
+        Certs: [firstCertID],
+    }
 }
 
 function openEdit(ib: any) {

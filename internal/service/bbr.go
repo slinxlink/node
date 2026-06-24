@@ -5,7 +5,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/slinxlink/node/internal/config"
 	"github.com/slinxlink/node/internal/database"
 )
 
@@ -54,6 +53,5 @@ func BBRApply(enable bool) bool {
 	}
 	actual := BBRStatus()
 	database.DB.Model(&database.Config{}).Where("id = 1").Update("bbr", actual)
-	config.Config.BBR = actual
 	return actual
 }

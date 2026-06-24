@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/slinxlink/node/internal/config"
 	"github.com/slinxlink/node/internal/database"
 	"github.com/slinxlink/node/internal/util"
 )
@@ -24,7 +23,10 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if req.Username != config.Config.Username || req.Password != config.Config.Password {
+	var config database.Config
+	database.DB.First(&config)
+
+	if req.Username != config.Username || req.Password != config.Password {
 		util.Warn("[auth] 登录失败，IP: %s", c.ClientIP())
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "账号或密码错误"})
 		return
@@ -33,7 +35,7 @@ func Login(c *gin.Context) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"exp": time.Now().Add(24 * time.Hour).Unix(),
 	})
-	tokenStr, err := token.SignedString([]byte(config.Config.SecretKey))
+	tokenStr, err := token.SignedString([]byte(config.SecretKey))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "生成Token失败"})
 		return
@@ -63,7 +65,10 @@ func ChangeCredentials(c *gin.Context) {
 	req.NewPassword = strings.TrimSpace(req.NewPassword)
 	req.NewUsername = strings.TrimSpace(req.NewUsername)
 
-	if req.OldPassword != config.Config.Password {
+	var config database.Config
+	database.DB.First(&config)
+
+	if req.OldPassword != config.Password {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "原密码错误"})
 		return
 	}
@@ -89,14 +94,12 @@ func ChangeCredentials(c *gin.Context) {
 	updates := map[string]any{}
 	if req.NewUsername != "" {
 		updates["username"] = req.NewUsername
-		config.Config.Username = req.NewUsername
 	}
 	if req.NewPassword != "" {
 		updates["password"] = req.NewPassword
-		config.Config.Password = req.NewPassword
 	}
 
-	database.DB.Model(&config.Config).Updates(updates)
+	database.DB.Model(&config).Updates(updates)
 	util.Info("[auth] 管理员凭据已更新")
 	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }

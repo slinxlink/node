@@ -109,9 +109,9 @@ func logWS(c *gin.Context, pathFn func() string, parseFn func(string) logLine) {
 
 func SlinxLog(c *gin.Context) {
 	logWS(c, func() string {
-		var cfg database.Config
-		database.DB.First(&cfg)
-		return cfg.LogPath
+		var config database.Config
+		database.DB.First(&config)
+		return config.LogPath
 	}, parseSlinxLog)
 }
 

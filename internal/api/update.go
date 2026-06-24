@@ -4,16 +4,16 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/slinxlink/node/internal/config"
+	"github.com/slinxlink/node/internal/app"
 	"github.com/slinxlink/node/internal/update"
 )
 
 func GetVersion(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"version": config.Version})
+	c.JSON(http.StatusOK, gin.H{"version": app.Version})
 }
 
 func CheckUpdate(c *gin.Context) {
-	result, err := update.Check(config.Version)
+	result, err := update.Check(app.Version)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -22,7 +22,7 @@ func CheckUpdate(c *gin.Context) {
 }
 
 func Update(c *gin.Context) {
-	if err := update.Update(config.Version); err != nil {
+	if err := update.Update(app.Version); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

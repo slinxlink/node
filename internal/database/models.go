@@ -100,7 +100,7 @@ type Inbound struct {
 	ID        uint `gorm:"primarykey"`
 	Enable    bool
 	Name      string // 备注名
-	Protocol  string // vless / vmess / hysteria
+	Protocol  string // vless / vmess / hysteria / trojan / tuic
 	Port      int    // 监听端口
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -125,6 +125,13 @@ type Inbound struct {
 	ObfsPassword      string // 混淆密码
 	ObfsMinPacketSize int    // 最小线上包大小，字节，仅 gecko，0 表示默认 512
 	ObfsMaxPacketSize int    // 最大线上包大小，字节，仅 gecko，0 表示默认 1200
+
+	// TUIC
+	TuicCongestionControl string // cubic / bbr / new_reno，默认 cubic
+	TuicAuthTimeout       int    // 认证超时，秒，默认 3
+	TuicZeroRTT           bool   // 零 RTT 握手
+	TuicHeartbeat         int    // 心跳间隔，秒，默认 10
+	TuicUDPRelayMode      string // native / quic，默认 native
 
 	// 通用 TLS
 	TLSType       string // none / TLS / Reality

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/slinxlink/node/internal/cli"
-	"github.com/slinxlink/node/internal/config"
 	"github.com/slinxlink/node/internal/core"
 	"github.com/slinxlink/node/internal/database"
 	"github.com/slinxlink/node/internal/job"
@@ -29,16 +28,11 @@ func Start() {
 	}
 
 	// ── 2. 读取配置 ──────────────────────────────────────────────────────────
-	var cfg database.Config
-	database.DB.First(&cfg)
-
-	if err := config.Load(); err != nil {
-		cli.Status("配置", "加载失败", false)
-		log.Fatal(err)
-	}
+	var config database.Config
+	database.DB.First(&config)
 
 	// ── 3. 初始化日志 ────────────────────────────────────────────────────────
-	util.InitLog(cfg.LogPath, cfg.LogLevel, cfg.LogEnable)
+	util.InitLog(config.LogPath, config.LogLevel, config.LogEnable)
 
 	// ── 4. 初始化核心 ────────────────────────────────────────────────────────
 	core.Default.Init()
@@ -66,7 +60,7 @@ func Start() {
 	}
 
 	// ── 8. 启动面板对接同步 ──────────────────────────────────────────────────
-	if cfg.BoardEnable {
+	if config.BoardEnable {
 		syncer.Start()
 	}
 
@@ -88,9 +82,6 @@ func Start() {
 			"ipv6": ipv6,
 			"bbr":  bbrStatus,
 		})
-		config.Config.IPv4 = ipv4
-		config.Config.IPv6 = ipv6
-		config.Config.BBR = bbrStatus
 		if isFirstRun {
 			printFirstRun(ipv4)
 		}
@@ -103,14 +94,17 @@ func Start() {
 }
 
 func printFirstRun(ipv4 string) {
+	var config database.Config
+	database.DB.First(&config)
+
 	host := ipv4
 	if host == "" {
 		host = "localhost"
 	}
-	addr := fmt.Sprintf("http://%s:%d%s", host, config.Config.Port, config.Config.Path)
+	addr := fmt.Sprintf("http://%s:%d%s", host, config.Port, config.Path)
 	cli.Info("登录信息",
 		[]string{"访问地址", addr},
-		[]string{"用户名", config.Config.Username},
-		[]string{"密码", config.Config.Password},
+		[]string{"用户名", config.Username},
+		[]string{"密码", config.Password},
 	)
 }

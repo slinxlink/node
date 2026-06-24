@@ -153,22 +153,22 @@ func showLoginInfo() string {
 		return "数据库读取失败"
 	}
 
-	var cfg database.Config
-	db.First(&cfg)
+	var config database.Config
+	db.First(&config)
 
 	var addr string
-	if cfg.Domain != "" {
-		addr = fmt.Sprintf("https://%s:%d%s", cfg.Domain, cfg.Port, cfg.Path)
-	} else if cfg.IPv4 != "" {
-		addr = fmt.Sprintf("http://%s:%d%s", cfg.IPv4, cfg.Port, cfg.Path)
+	if config.Domain != "" {
+		addr = fmt.Sprintf("https://%s:%d%s", config.Domain, config.Port, config.Path)
+	} else if config.IPv4 != "" {
+		addr = fmt.Sprintf("http://%s:%d%s", config.IPv4, config.Port, config.Path)
 	} else {
-		addr = fmt.Sprintf("http://localhost:%d%s", cfg.Port, cfg.Path)
+		addr = fmt.Sprintf("http://localhost:%d%s", config.Port, config.Path)
 	}
 
 	return renderInfo("登录信息",
 		[]string{"访问地址", addr},
-		[]string{"用户名", cfg.Username},
-		[]string{"密码", cfg.Password},
+		[]string{"用户名", config.Username},
+		[]string{"密码", config.Password},
 	)
 }
 
@@ -228,10 +228,10 @@ func firstRun() string {
 		return ""
 	}
 
-	var cfg database.Config
-	db.First(&cfg)
+	var config database.Config
+	db.First(&config)
 
-	if cfg.StartedAt.IsZero() || time.Since(cfg.StartedAt) > 10*time.Minute {
+	if config.StartedAt.IsZero() || time.Since(config.StartedAt) > 10*time.Minute {
 		return ""
 	}
 

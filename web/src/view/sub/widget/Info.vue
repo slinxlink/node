@@ -47,25 +47,19 @@
 import FormRow from '@/component/ui/FormRow.vue'
 import Copy from '@/component/widget/Copy.vue'
 import Link from '@/component/widget/Link.vue'
-import { formatTime } from '@/util/format.ts'
+import { formatTime } from '@/util/format'
+import { protocol } from '@/util/tag'
 
 const props = defineProps<{
     data: any
 }>()
-
-const colorMap: Record<string, string> = {
-    vless: 'primary',
-    vmess: 'green',
-    hysteria: 'blue',
-    trojan: 'purple',
-}
 
 const inboundTags = computed(() => {
     try {
         const ids: number[] = JSON.parse(props.data.user.Inbounds || '[]')
         return ids.map(id => {
             const ib = props.data.inbounds.find((i: any) => i.ID === id)
-            return ib ? { id, port: ib.Port, name: ib.Name, protocol: ib.Protocol, color: colorMap[ib.Protocol] ?? 'gray' } : null
+            return ib ? { id, port: ib.Port, name: ib.Name, protocol: ib.Protocol, color: protocol(ib.Protocol) } : null
         }).filter((ib): ib is { id: number, port: any, name: string, protocol: string, color: string } => ib !== null)
     } catch {
         return []
@@ -74,11 +68,11 @@ const inboundTags = computed(() => {
 
 const uris = computed(() => 
     (props.data.uris ?? []).map((uri: string, i: number) => {
-        const protocol = (uri.split('://')[0] ?? '').replace('2', '')
+        const proto = (uri.split('://')[0] ?? '').replace('2', '')
         const name = decodeURIComponent(uri.split('#')[1] ?? '')
         return {
-            label: protocol.toUpperCase(),
-            color: colorMap[protocol] ?? 'gray',
+            label: proto.toUpperCase(),
+            color: protocol(proto),
             name,
             value: uri,
             download: props.data.jsons?.[i],

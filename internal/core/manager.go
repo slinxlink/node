@@ -23,6 +23,7 @@ type Manager struct {
 	ConfigPath string
 	running    bool
 	mu         sync.Mutex
+	waitDone   chan struct{}
 }
 
 var Default = &Manager{
@@ -55,7 +56,6 @@ func (m *Manager) Start() error {
 	}
 
 	m.cmd = exec.Command(m.BinPath, "run", "-c", m.ConfigPath)
-
 	stderr, _ := m.cmd.StderrPipe()
 
 	if err := m.cmd.Start(); err != nil {
@@ -72,6 +72,7 @@ func (m *Manager) Start() error {
 		}
 	}()
 
+	m.waitDone = make(chan struct{})
 	m.running = true
 	util.Info("[core] 核心启动成功")
 	go m.watch()
@@ -80,19 +81,29 @@ func (m *Manager) Start() error {
 
 func (m *Manager) Stop() error {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 
-	if m.cmd != nil && m.running {
-		m.cmd.Process.Signal(syscall.SIGTERM)
-		time.Sleep(500 * time.Millisecond)
-		m.cmd.Process.Kill()
+	if m.cmd == nil || !m.running {
+		m.mu.Unlock()
+		return nil
 	}
 
-	// 兜底：杀掉所有 sing-box 进程
-	exec.Command("pkill", "-f", "sing-box").Run()
-
+	cmd := m.cmd
+	waitDone := m.waitDone
 	m.running = false
 	m.cmd = nil
+	m.mu.Unlock()
+
+	cmd.Process.Signal(syscall.SIGTERM)
+
+	select {
+	case <-waitDone:
+		// 优雅退出完成
+	case <-time.After(5 * time.Second):
+		cmd.Process.Kill()
+		<-waitDone
+	}
+
+	exec.Command("pkill", "-f", "sing-box").Run()
 	util.Info("[core] 核心已停止")
 	return nil
 }
@@ -128,7 +139,6 @@ func (m *Manager) Apply() error {
 	return nil
 }
 
-// Status 返回核心运行状态
 func (m *Manager) Status() string {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -138,7 +148,6 @@ func (m *Manager) Status() string {
 	return "stopped"
 }
 
-// Version 获取核心版本号
 func (m *Manager) Version() string {
 	out, err := exec.Command(m.BinPath, "version").Output()
 	if err != nil {
@@ -154,9 +163,12 @@ func (m *Manager) Version() string {
 	return "unknown"
 }
 
-// watch 监听进程退出，自动更新状态
 func (m *Manager) watch() {
-	m.cmd.Wait()
+	cmd := m.cmd
+	waitDone := m.waitDone
+	cmd.Wait()
+	close(waitDone)
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if !m.running {
@@ -172,7 +184,6 @@ func (m *Manager) Process() (map[string]any, error) {
 		return nil, fmt.Errorf("核心未运行")
 	}
 
-	// RAM from Clash API
 	resp, err := http.Get("http://127.0.0.1:9090/memory")
 	if err != nil {
 		return nil, err
@@ -194,7 +205,6 @@ func (m *Manager) Process() (map[string]any, error) {
 		util.Warn("[core] 读取内存数据失败: %v", scanner.Err())
 	}
 
-	// Threads from /proc
 	pid := m.cmd.Process.Pid
 
 	return map[string]any{

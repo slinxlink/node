@@ -4,7 +4,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/slinxlink/node/internal/config"
+	"github.com/slinxlink/node/internal/database"
 	"github.com/slinxlink/node/internal/sub/template"
 	"github.com/slinxlink/node/internal/util"
 )
@@ -22,7 +22,9 @@ func RulesetRefresh() {
 			next := time.Date(now.Year(), now.Month(), now.Day()+int(daysUntilMonday), 0, 0, 0, 0, now.Location())
 			time.Sleep(next.Sub(now))
 
-			if !config.Config.RulesetAutoUpdate {
+			var config database.Config
+			database.DB.First(&config)
+			if !config.RulesetAutoUpdate {
 				continue
 			}
 			RefreshRuleset()

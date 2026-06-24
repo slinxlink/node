@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/slinxlink/node/internal/config"
 	"github.com/slinxlink/node/internal/database"
 	tpl "github.com/slinxlink/node/internal/sub/template"
 	"github.com/slinxlink/node/internal/util"
@@ -121,20 +120,21 @@ func Info(token string) *Data {
 }
 
 func Url(token string) []string {
-	cfg := config.Config
+	var config database.Config
+	database.DB.First(&config)
 
-	host := cfg.Domain
+	host := config.Domain
 	if host == "" {
-		host = cfg.IPv4
+		host = config.IPv4
 	}
 
 	scheme := "http"
-	if cfg.Domain != "" {
+	if config.Domain != "" {
 		scheme = "https"
 	}
 
-	base := fmt.Sprintf("%s://%s:%d", scheme, host, cfg.SubPort)
-	sub := fmt.Sprintf("%s%s/%s", base, cfg.SubPath, token)
+	base := fmt.Sprintf("%s://%s:%d", scheme, host, config.SubPort)
+	sub := fmt.Sprintf("%s%s/%s", base, config.SubPath, token)
 
 	return []string{
 		sub,
@@ -174,6 +174,8 @@ func dispatch(user database.User, inbound database.Inbound, host string) string 
 		return hysteria(user.Password, host, inbound)
 	case "trojan":
 		return trojan(user.Password, host, inbound)
+	case "tuic":
+		return tuic(user.UUID, user.Password, host, inbound)
 	default:
 		return ""
 	}
@@ -189,6 +191,8 @@ func dispatchClash(user database.User, inbound database.Inbound, host string) st
 		return hysteriaClash(user.Password, host, inbound)
 	case "trojan":
 		return trojanClash(user.Password, host, inbound)
+	case "tuic":
+		return tuicClash(user.UUID, user.Password, host, inbound)
 	default:
 		return ""
 	}
@@ -202,6 +206,8 @@ func dispatchSurge(user database.User, inbound database.Inbound, host string) st
 		return hysteriaSurge(user.Password, host, inbound)
 	case "trojan":
 		return trojanSurge(user.Password, host, inbound)
+	case "tuic":
+		return tuicSurge(user.UUID, user.Password, host, inbound)
 	default:
 		return ""
 	}
@@ -217,6 +223,8 @@ func dispatchSingBox(user database.User, inbound database.Inbound, host string) 
 		return hysteriaSingBox(user.Password, host, inbound)
 	case "trojan":
 		return trojanSingBox(user.Password, host, inbound)
+	case "tuic":
+		return tuicSingBox(user.UUID, user.Password, host, inbound)
 	default:
 		return ""
 	}

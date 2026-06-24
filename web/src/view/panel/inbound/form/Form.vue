@@ -17,6 +17,7 @@
                     { label: 'VMess', value: 'vmess' },
                     { label: 'Hysteria', value: 'hysteria' },
                     { label: 'Trojan', value: 'trojan' },
+                    { label: 'TUIC', value: 'tuic' },
                 ]" />
             </div>
             <div class="form-row quarter">
@@ -133,6 +134,42 @@
                     </template>
                 </template>
             </template>
+
+            <!-- TUIC -->
+            <template v-if="form.Protocol === 'tuic'">
+                <div class="form-row quarter">
+                    <span class="form-label">版本</span>
+                    <Select :model-value="'5'" :options="[{ label: '5', value: '5' }]" disabled />
+                </div>
+                <div class="form-row half">
+                    <span class="form-label">拥塞控制</span>
+                    <Select v-model="form.TuicCongestionControl" :options="[
+                        { label: 'Cubic', value: 'cubic' },
+                        { label: 'BBR', value: 'bbr' },
+                        { label: 'New Reno', value: 'new_reno' },
+                    ]" />
+                </div>
+                <div class="form-row quarter">
+                    <span class="form-label">认证超时 (s)</span>
+                    <Input v-model="form.TuicAuthTimeout" type="number" :min="1" placeholder="3" />
+                </div>
+                <div class="form-row">
+                    <span class="form-label">零 RTT 握手</span>
+                    <Toggle v-model="form.TuicZeroRTT" />
+                </div>
+                <div class="form-row quarter">
+                    <span class="form-label">心跳间隔 (s)</span>
+                    <Input v-model="form.TuicHeartbeat" type="number" :min="1" placeholder="10" />
+                </div>
+                <div class="form-row half">
+                    <span class="form-label">UDP 转发</span>
+                    <Select v-model="form.TuicUDPRelayMode" :options="[
+                        { label: '自动', value: '' },
+                        { label: 'Native', value: 'native' },
+                        { label: 'QUIC', value: 'quic' },
+                    ]" />
+                </div>
+            </template>
         </Section>
 
         <!-- 安全 -->
@@ -146,7 +183,7 @@
                             { label: 'TLS', value: 'tls' },
                             { label: 'Reality', value: 'reality' },
                         ]"
-                        :disabled="form.Protocol === 'hysteria' || form.Protocol === 'trojan'"
+                        :disabled="form.Protocol === 'hysteria' || form.Protocol === 'trojan' || form.Protocol === 'tuic'"
                     />
             </div>
             <!-- tls 专用 -->
@@ -298,16 +335,16 @@ const tlsVersions = [
 ]
 
 const utlsOptions = [
-    { label: 'chrome', value: 'chrome' },
-    { label: 'firefox', value: 'firefox' },
-    { label: 'safari', value: 'safari' },
-    { label: 'ios', value: 'ios' },
-    { label: 'android', value: 'android' },
-    { label: 'edge', value: 'edge' },
+    { label: 'Chrome', value: 'chrome' },
+    { label: 'Firefox', value: 'firefox' },
+    { label: 'Safari', value: 'safari' },
+    { label: 'iOS', value: 'ios' },
+    { label: 'Android', value: 'android' },
+    { label: 'Edge', value: 'edge' },
     { label: '360', value: '360' },
-    { label: 'qq', value: 'qq' },
-    { label: 'random', value: 'random' },
-    { label: 'randomized', value: 'randomized' },
+    { label: 'QQ', value: 'qq' },
+    { label: 'Random', value: 'random' },
+    { label: 'Randomized', value: 'randomized' },
 ]
 
 const certOptions = ref<any[]>([])
@@ -319,9 +356,9 @@ onMounted(async () => {
 })
 
 watch(() => form.value.Protocol, (val) => {
-    if (val === 'hysteria' || val === 'trojan') {
+    if (val === 'hysteria' || val === 'trojan' || val === 'tuic') {
         form.value.TLSType = 'tls'
-        if (val === 'hysteria') {
+        if (val === 'hysteria' || val === 'tuic') {
             form.value.ALPN = ['h3']
         }
     }
