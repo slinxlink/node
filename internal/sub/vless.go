@@ -38,11 +38,14 @@ func vless(uuid string, host string, inbound database.Inbound) string {
 		if inbound.UTLS != "" {
 			params.Set("fp", inbound.UTLS)
 		}
+		if inbound.ALPN != "" {
+			params.Set("alpn", inbound.ALPN)
+		}
 		if inbound.Insecure {
 			params.Set("allowInsecure", "1")
 		}
-		if inbound.ALPN != "" {
-			params.Set("alpn", inbound.ALPN)
+		if inbound.ECHEnabled && inbound.ECHConfig != "" {
+			params.Set("ech", extractECHConfig(inbound.ECHConfig))
 		}
 	case "reality":
 		params.Set("security", "reality")
@@ -178,6 +181,12 @@ func vlessSingBox(uuid string, host string, inbound database.Inbound) string {
 		}
 		if inbound.TLSMaxVersion != "" {
 			tls["max_version"] = inbound.TLSMaxVersion
+		}
+		if inbound.ECHEnabled && inbound.ECHConfig != "" {
+			tls["ech"] = map[string]any{
+				"enabled": true,
+				"config":  strings.Split(inbound.ECHConfig, "\n"),
+			}
 		}
 		out["tls"] = tls
 	case "reality":

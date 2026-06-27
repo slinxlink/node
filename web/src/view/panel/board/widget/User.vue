@@ -8,8 +8,13 @@
                     <div class="top">
                         <span class="id">用户 <strong>#{{ u.UserID }}</strong></span>
                         <div class="status">
-                            <Status :status="u.AliveIP > 0 ? 'yes' : 'no'" :animated="u.AliveIP > 0" />
-                            <span v-if="u.AliveIP > 0" class="ip">{{ u.AliveIP }} IP</span>
+                            <Tip v-if="parseIPs(u.AliveIP).length > 0">
+                                <Status status="yes" :animated="true" />
+                                <template #content>
+                                    <div v-for="ip in parseIPs(u.AliveIP)" :key="ip">{{ ip }}</div>
+                                </template>
+                            </Tip>
+                            <Status v-else status="no" :animated="false" />
                         </div>
                     </div>
                     <div class="key">
@@ -37,6 +42,7 @@
 <script setup lang="ts">
 import Drawer from '@/component/Drawer.vue'
 import Status from '@/component/ui/Status.vue'
+import Tip from '@/component/ui/Tip.vue'
 import { getBoardUser } from '@/api/board'
 import { getInbounds } from '@/api/inbound'
 import { formatBytes } from '@/util/format'
@@ -56,6 +62,15 @@ const show = computed({
 const users = ref<any[]>([])
 const loading = ref(false)
 const protocol = ref('')
+
+function parseIPs(aliveIP: string): string[] {
+    try {
+        const arr = JSON.parse(aliveIP)
+        return Array.isArray(arr) ? arr : []
+    } catch {
+        return []
+    }
+}
 
 watch(() => props.modelValue, async (val) => {
     if (!val || !props.board) return
@@ -177,6 +192,4 @@ watch(() => props.modelValue, async (val) => {
         padding: 40px 0;
     }
 }
-
-
 </style>

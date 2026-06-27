@@ -92,6 +92,14 @@ const baseInbound = () => ({
     TuicHeartbeat: 10,
     TuicUDPRelayMode: 'native',
 
+    HopEnabled: false,
+    HopPort: '10000-11000',
+    HopInterval: '5-10',
+
+    AnyTLSIdleSessionCheckInterval: 30,
+    AnyTLSIdleSessionTimeout: 30,
+    AnyTLSMinIdleSession: 1,
+
     TLSType: 'none',
     ServerName: '',
     CipherSuites: '',
@@ -101,6 +109,9 @@ const baseInbound = () => ({
     UTLS: 'chrome',
     Insecure: false,
     Certs: [1],
+    ECHEnabled: false,
+    ECHKey: '',
+    ECHConfig: '',
 
     RealityServerName: '',
     RealityServer: '',

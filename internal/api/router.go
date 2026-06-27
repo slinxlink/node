@@ -131,6 +131,7 @@ func RegisterRoutes(r *gin.Engine) {
 		private.GET("/generate/uuid", GenerateUUID)
 		private.GET("/generate/password", GeneratePassword)
 		private.GET("/generate/wireguard-keypair", GenerateWireguardKeyPair)
+		private.GET("/generate/ech-keypair", GenerateECHKeyPair)
 
 		// 推送
 		private.GET("/task/:id", TaskLog)

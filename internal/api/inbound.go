@@ -10,6 +10,7 @@ import (
 	"github.com/slinxlink/node/internal/core"
 	"github.com/slinxlink/node/internal/database"
 	"github.com/slinxlink/node/internal/route"
+	"github.com/slinxlink/node/internal/service"
 	"github.com/slinxlink/node/internal/util"
 )
 
@@ -61,12 +62,29 @@ func SaveInbound(c *gin.Context) {
 		}
 	}
 
+	if ib.HopEnabled {
+		if msg := service.ValidateHopPort(ib.HopPort, ib.ID); msg != "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+			return
+		}
+		if msg := service.ValidateHopInterval(ib.HopInterval); msg != "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+			return
+		}
+	}
+
 	if ib.TLSType == "tls" {
 		var ids []int
 		json.Unmarshal([]byte(ib.Certs), &ids)
 		if len(ids) == 0 || ids[0] == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "请选择证书"})
 			return
+		}
+		if ib.ECHEnabled {
+			if ib.ECHKey == "" || ib.ECHConfig == "" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "开启 ECH 时，密钥和配置不能为空"})
+				return
+			}
 		}
 	}
 

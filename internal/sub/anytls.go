@@ -10,69 +10,44 @@ import (
 	"github.com/slinxlink/node/internal/database"
 )
 
-func trojan(password string, host string, inbound database.Inbound) string {
+func anytls(password string, host string, inbound database.Inbound) string {
 	port := strconv.Itoa(inbound.Port)
 	params := url.Values{}
 
-	switch inbound.Transport {
-	case "websocket":
-		params.Set("type", "ws")
-		if inbound.WsPath != "" {
-			params.Set("path", inbound.WsPath)
-		}
-		if inbound.WsHost != "" {
-			params.Set("host", inbound.WsHost)
-		}
-	default:
-		params.Set("type", "tcp")
-	}
-
-	params.Set("security", "tls")
 	if inbound.ServerName != "" {
 		params.Set("sni", inbound.ServerName)
-	}
-	if inbound.UTLS != "" {
-		params.Set("fp", inbound.UTLS)
 	}
 	if inbound.ALPN != "" {
 		params.Set("alpn", inbound.ALPN)
 	}
 	if inbound.Insecure {
-		params.Set("allowInsecure", "1")
+		params.Set("insecure", "1")
 	}
 	if inbound.ECHEnabled && inbound.ECHConfig != "" {
 		params.Set("ech", extractECHConfig(inbound.ECHConfig))
 	}
+	params.Set("keepalive", fmt.Sprintf("%d,%d,%d",
+		inbound.AnyTLSIdleSessionCheckInterval,
+		inbound.AnyTLSIdleSessionTimeout,
+		inbound.AnyTLSMinIdleSession,
+	))
 
 	name := url.PathEscape(inbound.Name)
-	return "trojan://" + password + "@" + host + ":" + port + "?" + params.Encode() + "#" + name
+	return "anytls://" + password + "@" + host + ":" + port + "?" + params.Encode() + "#" + name
 }
 
-func trojanClash(password string, host string, inbound database.Inbound) string {
+func anytlsClash(password string, host string, inbound database.Inbound) string {
 	var sb strings.Builder
 
 	fmt.Fprintf(&sb, "  - name: %s\n", inbound.Name)
-	fmt.Fprintf(&sb, "    type: trojan\n")
+	fmt.Fprintf(&sb, "    type: anytls\n")
 	fmt.Fprintf(&sb, "    server: %s\n", host)
 	fmt.Fprintf(&sb, "    port: %d\n", inbound.Port)
 	fmt.Fprintf(&sb, "    password: %s\n", password)
-
-	switch inbound.Transport {
-	case "websocket":
-		fmt.Fprintf(&sb, "    network: ws\n")
-		if inbound.WsPath != "" || inbound.WsHost != "" {
-			fmt.Fprintf(&sb, "    ws-opts:\n")
-			if inbound.WsPath != "" {
-				fmt.Fprintf(&sb, "      path: %s\n", inbound.WsPath)
-			}
-			if inbound.WsHost != "" {
-				fmt.Fprintf(&sb, "      headers:\n")
-				fmt.Fprintf(&sb, "        Host: %s\n", inbound.WsHost)
-			}
-		}
-	default:
-		fmt.Fprintf(&sb, "    network: tcp\n")
-	}
+	fmt.Fprintf(&sb, "    udp: true\n")
+	fmt.Fprintf(&sb, "    idle-session-check-interval: %d\n", inbound.AnyTLSIdleSessionCheckInterval)
+	fmt.Fprintf(&sb, "    idle-session-timeout: %d\n", inbound.AnyTLSIdleSessionTimeout)
+	fmt.Fprintf(&sb, "    min-idle-session: %d\n", inbound.AnyTLSMinIdleSession)
 
 	fmt.Fprintf(&sb, "    tls: true\n")
 	if inbound.ServerName != "" {
@@ -94,11 +69,10 @@ func trojanClash(password string, host string, inbound database.Inbound) string 
 	return sb.String()
 }
 
-func trojanSurge(password string, host string, inbound database.Inbound) string {
+func anytlsSurge(password string, host string, inbound database.Inbound) string {
 	var sb strings.Builder
 
-	fmt.Fprintf(&sb, "%s = trojan, %s, %d, password=%s", inbound.Name, host, inbound.Port, password)
-	fmt.Fprintf(&sb, ", tls=true")
+	fmt.Fprintf(&sb, "%s = anytls, %s, %d, password=%s", inbound.Name, host, inbound.Port, password)
 
 	if inbound.ServerName != "" {
 		fmt.Fprintf(&sb, ", sni=%s", inbound.ServerName)
@@ -110,40 +84,27 @@ func trojanSurge(password string, host string, inbound database.Inbound) string 
 		fmt.Fprintf(&sb, ", client-fingerprint=%s", inbound.UTLS)
 	}
 
-	switch inbound.Transport {
-	case "websocket":
-		fmt.Fprintf(&sb, ", ws=true")
-		if inbound.WsPath != "" {
-			fmt.Fprintf(&sb, ", ws-path=%s", inbound.WsPath)
-		}
-		if inbound.WsHost != "" {
-			fmt.Fprintf(&sb, ", ws-headers=Host:%s", inbound.WsHost)
-		}
-	}
-
 	sb.WriteString("\n")
 	return sb.String()
 }
 
-func trojanSingBox(password string, host string, inbound database.Inbound) string {
+func anytlsSingBox(password string, host string, inbound database.Inbound) string {
 	out := map[string]any{
-		"type":        "trojan",
+		"type":        "anytls",
 		"tag":         "proxy",
 		"server":      host,
 		"server_port": inbound.Port,
 		"password":    password,
-		"network":     "tcp",
 	}
 
-	if inbound.Transport == "websocket" {
-		t := map[string]any{"type": "ws"}
-		if inbound.WsPath != "" {
-			t["path"] = inbound.WsPath
-		}
-		if inbound.WsHost != "" {
-			t["headers"] = map[string]string{"Host": inbound.WsHost}
-		}
-		out["transport"] = t
+	if inbound.AnyTLSIdleSessionCheckInterval > 0 {
+		out["idle_session_check_interval"] = fmt.Sprintf("%ds", inbound.AnyTLSIdleSessionCheckInterval)
+	}
+	if inbound.AnyTLSIdleSessionTimeout > 0 {
+		out["idle_session_timeout"] = fmt.Sprintf("%ds", inbound.AnyTLSIdleSessionTimeout)
+	}
+	if inbound.AnyTLSMinIdleSession > 0 {
+		out["min_idle_session"] = inbound.AnyTLSMinIdleSession
 	}
 
 	tls := map[string]any{"enabled": true}

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var reservedPorts = map[int]bool{
+var ReservedPorts = map[int]bool{
 	21:   true, // FTP 文件传输
 	22:   true, // SSH 远程登录
 	23:   true, // Telnet 远程登录
@@ -28,7 +28,7 @@ var reservedPorts = map[int]bool{
 }
 
 func ValidatePort(port int, usedPorts []int) string {
-	if reservedPorts[port] {
+	if ReservedPorts[port] {
 		return "不能使用系统保留端口"
 	}
 	for _, p := range usedPorts {

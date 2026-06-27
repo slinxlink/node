@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/slinxlink/node/internal/database"
+	"github.com/slinxlink/node/internal/service"
 	"github.com/slinxlink/node/internal/util"
 )
 
@@ -75,6 +76,9 @@ func (m *Manager) Start() error {
 	m.waitDone = make(chan struct{})
 	m.running = true
 	util.Info("[core] 核心启动成功")
+	if err := service.EnableHop(); err != nil {
+		util.Warn("[core] 端口跳跃启动失败: %v", err)
+	}
 	go m.watch()
 	return nil
 }
@@ -104,6 +108,7 @@ func (m *Manager) Stop() error {
 	}
 
 	exec.Command("pkill", "-f", "sing-box").Run()
+	service.DisableHop()
 	util.Info("[core] 核心已停止")
 	return nil
 }

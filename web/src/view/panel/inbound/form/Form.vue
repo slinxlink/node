@@ -18,6 +18,7 @@
                     { label: 'Hysteria', value: 'hysteria' },
                     { label: 'Trojan', value: 'trojan' },
                     { label: 'TUIC', value: 'tuic' },
+                    { label: 'AnyTLS', value: 'anytls' },
                 ]" />
             </div>
             <div class="form-row quarter">
@@ -170,6 +171,38 @@
                     ]" />
                 </div>
             </template>
+
+            <template v-if="form.Protocol === 'hysteria' || form.Protocol === 'tuic'">
+                <div class="form-row">
+                    <span class="form-label">端口跳跃</span>
+                    <Toggle v-model="form.HopEnabled" />
+                </div>
+                <template v-if="form.HopEnabled">
+                    <div class="form-row half">
+                        <span class="form-label">端口范围</span>
+                        <Input v-model="form.HopPort" placeholder="10000-11000" />
+                    </div>
+                    <div class="form-row half">
+                        <span class="form-label">跳跃间隔 (s)</span>
+                        <Input v-model="form.HopInterval" placeholder="5-10" />
+                    </div>
+                </template>
+            </template>
+
+            <template v-if="form.Protocol === 'anytls'">
+                <div class="form-row quarter">
+                    <span class="form-label">检测间隔 (s)</span>
+                    <Input v-model="form.AnyTLSIdleSessionCheckInterval" type="number" :min="1" placeholder="30" />
+                </div>
+                <div class="form-row quarter">
+                    <span class="form-label">空闲超时 (s)</span>
+                    <Input v-model="form.AnyTLSIdleSessionTimeout" type="number" :min="1" placeholder="30" />
+                </div>
+                <div class="form-row quarter">
+                    <span class="form-label">最小空闲会话</span>
+                    <Input v-model="form.AnyTLSMinIdleSession" type="number" :min="1" placeholder="1" />
+                </div>
+            </template>
         </Section>
 
         <!-- 安全 -->
@@ -245,6 +278,24 @@
                     <span class="form-label">证书</span>
                     <Select :model-value="form.Certs[0]" @update:model-value="val => form.Certs[0] = val" :options="certOptions" placeholder="选择证书" />
                 </div>
+                <div class="form-row">
+                    <span class="form-label">ECH</span>
+                    <Toggle v-model="form.ECHEnabled" />
+                </div>
+                <template v-if="form.ECHEnabled">
+                    <div class="form-row">
+                        <span class="form-label">私钥</span>
+                        <Text v-model="form.ECHKey" readonly />
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">配置</span>
+                        <Text v-model="form.ECHConfig" readonly />
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label"></span>
+                        <button class="action-btn" @click="genECHKeyPair">生成ECH证书</button>
+                    </div>
+                </template>
             </template>
 
 
@@ -317,7 +368,7 @@ import Text from '@/component/ui/Text.vue'
 import RadioGroup from '@/component/ui/Radio.vue'
 import MultiSelect from '@/component/ui/MultiSelect.vue'
 import RefreshBtn from '@/component/ui/RefreshBtn.vue'
-import { generatePassword, generateRealityTarget, generateRealityKeyPair, generateShortIDs } from '@/api/generate'
+import { generatePassword, generateRealityTarget, generateRealityKeyPair, generateShortIDs, generateECHKeyPair } from '@/api/generate'
 import { getCert } from '@/api/cert'
 
 const form = defineModel<any>({ default: () => ({
@@ -356,7 +407,7 @@ onMounted(async () => {
 })
 
 watch(() => form.value.Protocol, (val) => {
-    if (val === 'hysteria' || val === 'trojan' || val === 'tuic') {
+    if (val === 'hysteria' || val === 'trojan' || val === 'tuic' || val === 'anytls') {
         form.value.TLSType = 'tls'
         if (val === 'hysteria' || val === 'tuic') {
             form.value.ALPN = ['h3']
@@ -392,6 +443,14 @@ async function genShortIDs() {
 async function genObfsPassword() {
     const res = await generatePassword()
     form.value.ObfsPassword = res.password
+}
+
+async function genECHKeyPair() {
+    const cert = certOptions.value.find((c: any) => c.value === form.value.Certs[0])
+    if (!cert) return
+    const res = await generateECHKeyPair(cert.label)
+    form.value.ECHKey = res.ech_key
+    form.value.ECHConfig = res.ech_config
 }
 </script>
 

@@ -41,7 +41,7 @@ func Sync(b database.Board) {
 			UserID:    u.ID,
 			UUID:      u.UUID,
 			Passwd:    u.Passwd,
-			AliveIP:   u.AliveIP,
+			AliveIP:   "[]",
 			UpdatedAt: time.Now(),
 		}
 		database.DB.Where(database.BoardUser{BoardID: b.ID, UserID: u.ID}).
@@ -147,6 +147,9 @@ func reportTraffic(b database.Board, traffic []core.UserTraffic) int {
 
 	var data []UserTraffic
 	for uid, t := range trafficMap {
+		if t.Upload == 0 && t.Download == 0 {
+			continue
+		}
 		data = append(data, UserTraffic{
 			UID:      uid,
 			Upload:   t.Upload,
@@ -173,25 +176,34 @@ func reportTraffic(b database.Board, traffic []core.UserTraffic) int {
 func reportAliveIP(b database.Board, users []core.OnlineUser) {
 	database.DB.Model(&database.BoardUser{}).
 		Where("board_id = ?", b.ID).
-		Update("alive_ip", 0)
+		Update("alive_ip", "[]")
 
-	var data []OnlineUser
+	userIPs := make(map[int][]string)
 	for _, u := range users {
 		var uid int
 		fmt.Sscanf(u.Name, "BoardUser_%d", &uid)
 		if uid > 0 {
-			data = append(data, OnlineUser{
-				UID: uid,
-				IP:  u.IP,
-			})
-			database.DB.Model(&database.BoardUser{}).
-				Where("board_id = ? AND user_id = ?", b.ID, uid).
-				Update("alive_ip", u.IP)
+			userIPs[uid] = append(userIPs[uid], u.IP)
 		}
 	}
 
-	if len(data) == 0 {
+	if len(userIPs) == 0 {
 		return
+	}
+
+	var data []OnlineUser
+	for uid, ips := range userIPs {
+		ipJSON, _ := json.Marshal(ips)
+		database.DB.Model(&database.BoardUser{}).
+			Where("board_id = ? AND user_id = ?", b.ID, uid).
+			Update("alive_ip", string(ipJSON))
+
+		for _, ip := range ips {
+			data = append(data, OnlineUser{
+				UID: uid,
+				IP:  ip,
+			})
+		}
 	}
 
 	url := fmt.Sprintf("%s/mod_mu/users/aliveip?node_id=%d&key=%s", b.Host, b.NodeID, b.Key)

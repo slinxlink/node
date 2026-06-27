@@ -19,6 +19,10 @@ func tuic(uuid string, password string, host string, inbound database.Inbound) s
 	if inbound.TuicUDPRelayMode != "" {
 		params.Set("udp_relay_mode", inbound.TuicUDPRelayMode)
 	}
+	if inbound.HopEnabled && inbound.HopPort != "" {
+		params.Set("mport", inbound.HopPort)
+	}
+
 	if inbound.ServerName != "" {
 		params.Set("sni", inbound.ServerName)
 	}
@@ -27,6 +31,9 @@ func tuic(uuid string, password string, host string, inbound database.Inbound) s
 	}
 	if inbound.Insecure {
 		params.Set("allow_insecure", "1")
+	}
+	if inbound.ECHEnabled && inbound.ECHConfig != "" {
+		params.Set("ech", extractECHConfig(inbound.ECHConfig))
 	}
 
 	name := url.PathEscape(inbound.Name)
@@ -53,6 +60,12 @@ func tuicClash(uuid string, password string, host string, inbound database.Inbou
 	if inbound.TuicUDPRelayMode != "" {
 		fmt.Fprintf(&sb, "    udp-relay-mode: %s\n", inbound.TuicUDPRelayMode)
 	}
+	if inbound.HopEnabled && inbound.HopPort != "" {
+		fmt.Fprintf(&sb, "    ports: %s\n", inbound.HopPort)
+		if inbound.HopInterval != "" {
+			fmt.Fprintf(&sb, "    hop-interval: %s\n", inbound.HopInterval)
+		}
+	}
 	if inbound.ServerName != "" {
 		fmt.Fprintf(&sb, "    sni: %s\n", inbound.ServerName)
 	}
@@ -70,6 +83,12 @@ func tuicSurge(uuid string, password string, host string, inbound database.Inbou
 	var sb strings.Builder
 
 	fmt.Fprintf(&sb, "%s = tuic-v5, %s, %d, uuid=%s, password=%s", inbound.Name, host, inbound.Port, uuid, password)
+	if inbound.HopEnabled && inbound.HopPort != "" {
+		fmt.Fprintf(&sb, ", port-hopping=%s", inbound.HopPort)
+		if inbound.HopInterval != "" {
+			fmt.Fprintf(&sb, ", port-hopping-interval=%s", inbound.HopInterval)
+		}
+	}
 
 	if inbound.ServerName != "" {
 		fmt.Fprintf(&sb, ", sni=%s", inbound.ServerName)
@@ -125,6 +144,12 @@ func tuicSingBox(uuid string, password string, host string, inbound database.Inb
 	}
 	if inbound.TLSMaxVersion != "" {
 		tls["max_version"] = inbound.TLSMaxVersion
+	}
+	if inbound.ECHEnabled && inbound.ECHConfig != "" {
+		tls["ech"] = map[string]any{
+			"enabled": true,
+			"config":  strings.Split(inbound.ECHConfig, "\n"),
+		}
 	}
 	out["tls"] = tls
 

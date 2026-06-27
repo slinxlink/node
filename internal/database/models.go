@@ -133,6 +133,16 @@ type Inbound struct {
 	TuicHeartbeat         int    // 心跳间隔，秒，默认 10
 	TuicUDPRelayMode      string // native / quic，默认 native
 
+	// 端口跳跃（UDP 协议专用）
+	HopEnabled  bool   // 是否开启端口跳跃
+	HopPort     string // 跳跃端口范围，如 1000-2000
+	HopInterval string // 跳跃间隔，如 5-10，单位秒
+
+	// AnyTLS
+	AnyTLSIdleSessionCheckInterval int // 空闲会话检测间隔，秒，0 表示默认 30
+	AnyTLSIdleSessionTimeout       int // 空闲会话超时，秒，0 表示默认 30
+	AnyTLSMinIdleSession           int // 最小空闲会话数，0 表示默认 1
+
 	// 通用 TLS
 	TLSType       string // none / TLS / Reality
 	ServerName    string // 域名
@@ -143,6 +153,9 @@ type Inbound struct {
 	Insecure      bool   // 跳过 TLS 验证，下发给客户端订阅使用
 	ALPN          string // ALPN，逗号分隔，h3, h2, http/1.1
 	Certs         string // JSON 数组，如 [1, 2, 3]，关联 Cert 表 ID
+	ECHEnabled    bool   // 是否开启 ECH
+	ECHKey        string `gorm:"type:text"` // ECH 私钥，PEM 格式，服务端用
+	ECHConfig     string `gorm:"type:text"` // ECH 公钥配置，PEM 格式，下发给客户端
 
 	// Reality（VLESS 专用）
 	RealityServerName  string // SNI，如 www.amd.com
@@ -197,7 +210,7 @@ type BoardUser struct {
 	Passwd    string
 	Upload    int64
 	Download  int64
-	AliveIP   int // 当前在线 IP 数
+	AliveIP   string // 存 JSON 数组字符串，如 ["1.1.1.1","2.2.2.2"]
 	UpdatedAt time.Time
 }
 

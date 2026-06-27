@@ -176,6 +176,8 @@ func dispatch(user database.User, inbound database.Inbound, host string) string 
 		return trojan(user.Password, host, inbound)
 	case "tuic":
 		return tuic(user.UUID, user.Password, host, inbound)
+	case "anytls":
+		return anytls(user.Password, host, inbound)
 	default:
 		return ""
 	}
@@ -193,6 +195,8 @@ func dispatchClash(user database.User, inbound database.Inbound, host string) st
 		return trojanClash(user.Password, host, inbound)
 	case "tuic":
 		return tuicClash(user.UUID, user.Password, host, inbound)
+	case "anytls":
+		return anytlsClash(user.Password, host, inbound)
 	default:
 		return ""
 	}
@@ -208,6 +212,8 @@ func dispatchSurge(user database.User, inbound database.Inbound, host string) st
 		return trojanSurge(user.Password, host, inbound)
 	case "tuic":
 		return tuicSurge(user.UUID, user.Password, host, inbound)
+	case "anytls":
+		return anytlsSurge(user.Password, host, inbound)
 	default:
 		return ""
 	}
@@ -225,6 +231,8 @@ func dispatchSingBox(user database.User, inbound database.Inbound, host string) 
 		return trojanSingBox(user.Password, host, inbound)
 	case "tuic":
 		return tuicSingBox(user.UUID, user.Password, host, inbound)
+	case "anytls":
+		return anytlsSingBox(user.Password, host, inbound)
 	default:
 		return ""
 	}
@@ -253,4 +261,17 @@ func getUser(token string) (*database.User, []database.Inbound) {
 	var inbounds []database.Inbound
 	database.DB.Where("id IN ? AND enable = ?", ids, true).Find(&inbounds)
 	return &user, inbounds
+}
+
+func extractECHConfig(pem string) string {
+	lines := strings.Split(pem, "\n")
+	var content []string
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "-----") {
+			continue
+		}
+		content = append(content, line)
+	}
+	return strings.Join(content, "")
 }

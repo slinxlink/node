@@ -68,3 +68,17 @@ func GenerateWireguardKeyPair(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"private_key": priv, "public_key": pub})
 }
+
+func GenerateECHKeyPair(c *gin.Context) {
+	domain := c.Query("domain")
+	if domain == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "请填写域名"})
+		return
+	}
+	key, config, err := util.GenerateECHKeyPair(domain)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ech_key": key, "ech_config": config})
+}

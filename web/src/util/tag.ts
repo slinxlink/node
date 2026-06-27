@@ -4,6 +4,7 @@ export const protocolMap: Record<string, string> = {
     hysteria: 'blue',
     trojan: 'purple',
     tuic: 'orange',
+    anytls: 'yellow',
 }
 
 export function protocol(value: string): string {

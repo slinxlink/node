@@ -19,6 +19,9 @@ func hysteria(password string, host string, inbound database.Inbound) string {
 		params.Set("obfs", inbound.ObfsType)
 		params.Set("obfs-password", inbound.ObfsPassword)
 	}
+	if inbound.HopEnabled && inbound.HopPort != "" {
+		params.Set("mport", inbound.HopPort)
+	}
 
 	if inbound.ServerName != "" {
 		params.Set("sni", inbound.ServerName)
@@ -28,6 +31,9 @@ func hysteria(password string, host string, inbound database.Inbound) string {
 	}
 	if inbound.Insecure {
 		params.Set("insecure", "1")
+	}
+	if inbound.ECHEnabled && inbound.ECHConfig != "" {
+		params.Set("ech", extractECHConfig(inbound.ECHConfig))
 	}
 
 	name := url.PathEscape(inbound.Name)
@@ -42,6 +48,12 @@ func hysteriaClash(password string, host string, inbound database.Inbound) strin
 	fmt.Fprintf(&sb, "    type: hysteria2\n")
 	fmt.Fprintf(&sb, "    server: %s\n", host)
 	fmt.Fprintf(&sb, "    port: %d\n", inbound.Port)
+	if inbound.HopEnabled && inbound.HopPort != "" {
+		fmt.Fprintf(&sb, "    ports: %s\n", inbound.HopPort)
+		if inbound.HopInterval != "" {
+			fmt.Fprintf(&sb, "    hop-interval: %s\n", inbound.HopInterval)
+		}
+	}
 	fmt.Fprintf(&sb, "    password: %s\n", password)
 
 	if inbound.ObfsType != "" {
@@ -71,6 +83,13 @@ func hysteriaSurge(password string, host string, inbound database.Inbound) strin
 		fmt.Fprintf(&sb, ", salamander-password=%s", inbound.ObfsPassword)
 	}
 
+	if inbound.HopEnabled && inbound.HopPort != "" {
+		fmt.Fprintf(&sb, ", port-hopping=%s", inbound.HopPort)
+		if inbound.HopInterval != "" {
+			fmt.Fprintf(&sb, ", port-hopping-interval=%s", inbound.HopInterval)
+		}
+	}
+
 	if inbound.ServerName != "" {
 		fmt.Fprintf(&sb, ", sni=%s", inbound.ServerName)
 	}
@@ -97,6 +116,14 @@ func hysteriaSingBox(password string, host string, inbound database.Inbound) str
 			"password": inbound.ObfsPassword,
 		}
 	}
+	if inbound.HopEnabled && inbound.HopPort != "" {
+		out["server_ports"] = []string{inbound.HopPort}
+		parts := strings.SplitN(inbound.HopInterval, "-", 2)
+		if len(parts) == 2 {
+			out["hop_interval"] = strings.TrimSpace(parts[0]) + "s"
+			out["hop_interval_max"] = strings.TrimSpace(parts[1]) + "s"
+		}
+	}
 
 	tls := map[string]any{"enabled": true}
 	if inbound.ServerName != "" {
@@ -119,6 +146,12 @@ func hysteriaSingBox(password string, host string, inbound database.Inbound) str
 	}
 	if inbound.TLSMaxVersion != "" {
 		tls["max_version"] = inbound.TLSMaxVersion
+	}
+	if inbound.ECHEnabled && inbound.ECHConfig != "" {
+		tls["ech"] = map[string]any{
+			"enabled": true,
+			"config":  strings.Split(inbound.ECHConfig, "\n"),
+		}
 	}
 	out["tls"] = tls
 

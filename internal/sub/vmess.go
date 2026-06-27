@@ -26,6 +26,7 @@ type vmessLink struct {
 	SNI  string `json:"sni"`
 	ALPN string `json:"alpn"`
 	FP   string `json:"fp"`
+	ECH  string `json:"ech,omitempty"`
 }
 
 func vmess(uuid string, host string, inbound database.Inbound) string {
@@ -56,6 +57,9 @@ func vmess(uuid string, host string, inbound database.Inbound) string {
 		link.SNI = inbound.ServerName
 		link.ALPN = inbound.ALPN
 		link.FP = inbound.UTLS
+		if inbound.ECHEnabled && inbound.ECHConfig != "" {
+			link.ECH = extractECHConfig(inbound.ECHConfig)
+		}
 	default:
 		link.TLS = "none"
 	}
@@ -188,6 +192,12 @@ func vmessSingBox(uuid string, host string, inbound database.Inbound) string {
 		}
 		if inbound.TLSMaxVersion != "" {
 			tls["max_version"] = inbound.TLSMaxVersion
+		}
+		if inbound.ECHEnabled && inbound.ECHConfig != "" {
+			tls["ech"] = map[string]any{
+				"enabled": true,
+				"config":  strings.Split(inbound.ECHConfig, "\n"),
+			}
 		}
 		out["tls"] = tls
 	}

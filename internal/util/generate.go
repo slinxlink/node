@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"math/rand"
 	"os/exec"
 	"strconv"
@@ -108,5 +109,21 @@ func GenerateWireguardKeyPair() (privateKey, publicKey string, err error) {
 			publicKey = strings.TrimSpace(strings.TrimPrefix(line, "PublicKey:"))
 		}
 	}
+	return
+}
+
+func GenerateECHKeyPair(domain string) (echKey, echConfig string, err error) {
+	out, err := exec.Command("bin/sing-box", "generate", "ech-keypair", domain).Output()
+	if err != nil {
+		return "", "", err
+	}
+	output := strings.TrimSpace(string(out))
+	sep := "-----END ECH CONFIGS-----"
+	idx := strings.Index(output, sep)
+	if idx == -1 {
+		return "", "", fmt.Errorf("解析 ECH 密钥对失败")
+	}
+	echConfig = strings.TrimSpace(output[:idx+len(sep)])
+	echKey = strings.TrimSpace(output[idx+len(sep):])
 	return
 }

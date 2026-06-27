@@ -88,7 +88,13 @@ type tls struct {
 	CipherSuites    []string `json:"cipher_suites,omitempty"`
 	CertificatePath string   `json:"certificate_path,omitempty"`
 	KeyPath         string   `json:"key_path,omitempty"`
+	ECH             *ech     `json:"ech,omitempty"`
 	Reality         *reality `json:"reality,omitempty"`
+}
+
+type ech struct {
+	Enabled bool     `json:"enabled"`
+	Key     []string `json:"key,omitempty"`
 }
 
 type reality struct {
@@ -300,6 +306,8 @@ func buildInbound(ib database.Inbound, users []user) (inbounds, error) {
 		return buildTrojan(ib, users)
 	case "tuic":
 		return buildTuic(ib, users)
+	case "anytls":
+		return buildAnytls(ib, users)
 	}
 	return inbounds{}, fmt.Errorf("unsupported protocol: %s", ib.Protocol)
 }
@@ -350,6 +358,13 @@ func buildTuic(ib database.Inbound, users []user) (inbounds, error) {
 	if ib.TuicHeartbeat > 0 {
 		ic.Heartbeat = fmt.Sprintf("%ds", ib.TuicHeartbeat)
 	}
+	return ic, nil
+}
+
+func buildAnytls(ib database.Inbound, users []user) (inbounds, error) {
+	ic := buildBase(ib)
+	ic.TLS = buildTLS(ib)
+	ic.Users = users
 	return ic, nil
 }
 
@@ -456,6 +471,12 @@ func buildTLS(ib database.Inbound) *tls {
 		if ib.CipherSuites != "" {
 			t.CipherSuites = strings.Split(ib.CipherSuites, ",")
 		}
+		if ib.ECHEnabled && ib.ECHKey != "" {
+			t.ECH = &ech{
+				Enabled: true,
+				Key:     strings.Split(ib.ECHKey, "\n"),
+			}
+		}
 		return t
 	case "reality":
 		var shortIDs []string
@@ -507,7 +528,7 @@ func buildUser(protocol, name, uuid, password, flow string) user {
 	case "vless":
 		u.UUID = uuid
 		u.Flow = flow
-	case "hysteria", "trojan":
+	case "hysteria", "trojan", "anytls":
 		u.Password = password
 	case "tuic":
 		u.UUID = uuid
