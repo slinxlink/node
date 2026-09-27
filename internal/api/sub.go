@@ -13,31 +13,34 @@ import (
 	"github.com/slinxlink/node/internal/sub"
 )
 
-func GetSubscriptionPage(c *gin.Context, webFS embed.FS) {
-	token := c.Param("token")
-	data, err := webFS.ReadFile("web/dist/sub.html")
-	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-	info := sub.Info(token)
-	pageJSON, _ := json.Marshal(info)
-	html := strings.Replace(
-		string(data),
-		"</head>",
-		fmt.Sprintf(`<script>window.__SUB_DATA__=%s</script></head>`, pageJSON),
-		1,
-	)
-	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
-}
-
-func GetSubscription(c *gin.Context) {
+func GetSubscription(c *gin.Context, fs embed.FS) {
 	token := c.Param("token")
 	result := sub.Sub(token)
 	if result == "" {
 		c.JSON(http.StatusNotFound, gin.H{"error": "无效的订阅链接"})
 		return
 	}
+
+	accept := c.GetHeader("Accept")
+	if strings.Contains(strings.ToLower(accept), "text/html") {
+		data, err := fs.ReadFile("web/dist/sub.html")
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		info := sub.Info(token)
+		pageJSON, _ := json.Marshal(info)
+		html := strings.Replace(
+			string(data),
+			"</head>",
+			fmt.Sprintf(`<script>window.__SUB_DATA__=%s</script></head>`, pageJSON),
+			1,
+		)
+		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
+		return
+	}
+
 	c.Header("Profile-Update-Interval", "24")
 	c.Data(http.StatusOK, "text/plain; charset=utf-8", []byte(result))
 }
@@ -46,7 +49,7 @@ func GetClashSubscription(c *gin.Context) {
 	token := c.Param("token")
 	result, name := sub.Clash(token)
 	if result == "" {
-		c.Status(http.StatusNotFound)
+		c.JSON(http.StatusNotFound, gin.H{"error": "无效的订阅链接"})
 		return
 	}
 	c.Header("Content-Disposition",
@@ -58,7 +61,7 @@ func GetSurgeSubscription(c *gin.Context) {
 	token := c.Param("token")
 	result, name := sub.Surge(token)
 	if result == "" {
-		c.Status(http.StatusNotFound)
+		c.JSON(http.StatusNotFound, gin.H{"error": "无效的订阅链接"})
 		return
 	}
 	c.Header("Content-Disposition",

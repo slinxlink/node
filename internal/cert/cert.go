@@ -18,6 +18,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/alidns"
 	"github.com/go-acme/lego/v4/providers/dns/cloudflare"
 	"github.com/slinxlink/node/internal/database"
+	"github.com/slinxlink/node/internal/server"
 	"github.com/slinxlink/node/internal/task"
 	"github.com/slinxlink/node/internal/util"
 )
@@ -214,6 +215,8 @@ func saveCertFiles(cert *database.Cert, res *certificate.Resource, t *task.Task)
 	}
 	util.Info("[cert] 证书申请成功: %s", cert.Domain)
 	t.Log("INFO", "证书申请成功，过期时间: "+cert.ExpireAt.Format("2006-01-02"))
+
+	server.UpdateCert(cert.Domain)
 }
 
 func writeCertFiles(cert *database.Cert, certPEM, keyPEM []byte) error {

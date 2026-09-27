@@ -55,7 +55,10 @@ watch(() => props.prefix, async () => {
         prefixWidth.value = `${prefixRef.value.offsetWidth + 14}px`
     }
 })
+
 function onKeydown(e: KeyboardEvent) {
+    if (e.metaKey || e.ctrlKey) return
+
     const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab']
     if (allowed.includes(e.key)) return
     if (!/^[0-9]$/.test(e.key)) e.preventDefault()

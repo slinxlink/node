@@ -1,10 +1,12 @@
 package bootstrap
 
 import (
+	"embed"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/slinxlink/node/internal/api"
 	"github.com/slinxlink/node/internal/cli"
 	"github.com/slinxlink/node/internal/core"
 	"github.com/slinxlink/node/internal/database"
@@ -15,8 +17,8 @@ import (
 	"github.com/slinxlink/node/internal/util"
 )
 
-func Start() {
-	// ── 1. 数据库 ────────────────────────────────────────────────────────────
+func Boot(fs embed.FS) {
+	// ── 0. 数据库 ────────────────────────────────────────────────────────────
 	isFirstRun, err := database.Init()
 	if err != nil {
 		cli.Status("数据库", "初始化失败", false)
@@ -27,25 +29,28 @@ func Start() {
 		service.BBREnable()
 	}
 
-	// ── 2. 读取配置 ──────────────────────────────────────────────────────────
+	// ── 1. 读取配置 ──────────────────────────────────────────────────────────
 	var config database.Config
 	database.DB.First(&config)
 
-	// ── 3. 初始化日志 ────────────────────────────────────────────────────────
+	// ── 2. 初始化日志 ────────────────────────────────────────────────────────
 	util.InitLog(config.LogPath, config.LogLevel, config.LogEnable)
 
-	// ── 4. 初始化核心 ────────────────────────────────────────────────────────
+	// ── 3. 初始化核心 ────────────────────────────────────────────────────────
 	core.Default.Init()
 
-	// ── 5. 启动Web服务 ─────────────────────────────────────────────────────
-	if err := server.StartWeb(); err != nil {
-		util.Error("[server] Web服务启动失败: %v", err)
-	}
+	// ── 4. 初始化服务 ────────────────────────────────────────────────────────
+	server.Init(fs)
 
-	// ── 6 启动订阅服务 ─────────────────────────────────────────────────────
-	if err := server.StartSub(); err != nil {
-		util.Error("[server] 订阅服务启动失败: %v", err)
-	}
+	// ── 5. 启动Web服务 ─────────────────────────────────────────────────────
+	engine := server.BuildEngine("web")
+	api.RegisterRoute(engine)
+	server.Web.Start(engine, config)
+
+	// ── 6. 启动订阅服务 ─────────────────────────────────────────────────────
+	engine = server.BuildEngine("sub")
+	api.RegisterSubscriptionRoute(engine, config.SubPath, fs)
+	server.Sub.Start(engine, config)
 
 	// ── 7. 启动 sing-box 核心 ────────────────────────────────────────────────
 	if err := core.Default.Start(); err != nil {

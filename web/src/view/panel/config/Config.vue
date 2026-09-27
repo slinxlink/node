@@ -221,6 +221,7 @@ async function reset() {
 async function submitCredentials() {
     try {
         await changeCredentials(credentials.value)
+        Config.value = await getConfig()
         await loadConfig()
         credentials.value = { old_password: '', new_username: '', new_password: '' }
         modal.value?.show('success', '修改成功')

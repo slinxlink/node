@@ -78,13 +78,13 @@ import { formatTime } from '@/util/format'
 
 const allData = ref<any[]>([])
 const ipData = ref<any>(null)
-const source = ref('ipapi.is')
+const source = ref('ip-api.com')
 const loading = ref(false)
 
 const sourceOptions = [
-    { label: 'ipapi.is',   value: 'ipapi.is'   },
-    { label: 'ip-api.com', value: 'ip-api.com' },
-    { label: 'ippure.com', value: 'ippure.com' },
+    { label: 'ip-api.com',     value: 'ip-api.com'     },
+    { label: 'ippure.com',     value: 'ippure.com'     },
+    { label: 'ip2location.io', value: 'ip2location.io' },
 ]
 
 function countryFlag(code?: string) {

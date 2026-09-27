@@ -59,8 +59,21 @@ func UpdateConfig(c *gin.Context) {
 		return
 	}
 
-	req.ID = prev.ID
-	database.DB.Save(&req)
+	updates := map[string]any{
+		"domain":              req.Domain,
+		"port":                req.Port,
+		"path":                req.Path,
+		"sub_enable":          req.SubEnable,
+		"sub_port":            req.SubPort,
+		"sub_path":            req.SubPath,
+		"ruleset_auto_update": req.RulesetAutoUpdate,
+		"log_enable":          req.LogEnable,
+		"log_path":            req.LogPath,
+		"log_level":           req.LogLevel,
+		"bbr":                 req.BBR,
+		"board_enable":        req.BoardEnable,
+	}
+	database.DB.Model(&prev).Updates(updates)
 
 	util.InitLog(req.LogPath, req.LogLevel, req.LogEnable)
 

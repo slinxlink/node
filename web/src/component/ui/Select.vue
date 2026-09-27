@@ -1,18 +1,21 @@
 <template>
     <div class="select" :class="{ disabled: props.disabled, small: props.small }" ref="wrapRef">
-        <button class="btn" @click="toggle" :disabled="props.disabled">
+        <button ref="triggerRef" class="btn" @click="toggle" :disabled="props.disabled">
             <span>{{ options.find(o => o.value === modelValue)?.label ?? placeholder }}</span>
             <i class="icon">expand_more</i>
         </button>
+
         <Teleport to="body">
-            <div class="dropdown" :class="{ active: open, small: props.small }" :style="dropdownStyle">
-                <div
-                    v-for="option in options"
-                    :key="option.value"
-                    class="item"
-                    :class="{ active: option.value === modelValue }"
-                    @click="select(option.value)">
-                    {{ option.label }}
+            <div v-if="open" ref="dropdownRef" class="dropdown" :class="{ small: props.small }" :style="dropdownStyle">
+                <div class="scroll">
+                    <div
+                        v-for="option in options"
+                        :key="option.value"
+                        class="item"
+                        :class="{ active: option.value === modelValue }"
+                        @click="select(option.value)">
+                        {{ option.label }}
+                    </div>
                 </div>
             </div>
         </Teleport>
@@ -31,43 +34,81 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['update:modelValue'])
+
 const open = ref(false)
 const wrapRef = ref<HTMLElement>()
-const dropdownStyle = ref<any>({})
+const triggerRef = ref<HTMLElement>()
+const dropdownRef = ref<HTMLElement>()
+const dropdownStyle = ref<Record<string, string>>({})
 
-function updatePosition() {
-    if (!wrapRef.value) return
-    const rect = wrapRef.value.getBoundingClientRect()
-    dropdownStyle.value = {
-        top: rect.bottom + 6 + 'px',
-        left: rect.left + 'px',
-        width: props.small ? 'auto' : rect.width + 'px',
-        minWidth: rect.width + 'px',
-    }
-}
+const DROPDOWN_HEIGHT = 200
+const GAP = 6
 
 function toggle() {
-    if (!open.value) updatePosition()
-    open.value = !open.value
+    if (props.disabled) return
+    open.value ? close() : show()
+}
+
+function show() {
+    if (!triggerRef.value) return
+
+    const rect = triggerRef.value.getBoundingClientRect()
+    const below = window.innerHeight - rect.bottom - GAP
+    const above = rect.top - GAP
+    const flip = below < DROPDOWN_HEIGHT + GAP && above > below
+
+    dropdownStyle.value = {
+        left: `${rect.left}px`,
+        width: props.small ? 'auto' : `${rect.width}px`,
+        minWidth: `${rect.width}px`,
+        ...(flip
+            ? { bottom: `${window.innerHeight - rect.top + GAP}px` }
+            : { top: `${rect.bottom + GAP}px` }),
+    }
+
+    open.value = true
+
+    nextTick(() => {
+        window.addEventListener('mousedown', onClickOutside, true)
+        window.addEventListener('resize', close)
+        window.addEventListener('scroll', onScroll, true)
+    })
+}
+
+function close() {
+    if (!open.value) return
+
+    open.value = false
+    window.removeEventListener('mousedown', onClickOutside, true)
+    window.removeEventListener('resize', close)
+    window.removeEventListener('scroll', onScroll, true)
 }
 
 function select(value: string | number) {
     emit('update:modelValue', value)
-    open.value = false
+    close()
 }
 
 function onClickOutside(e: MouseEvent) {
-    if (wrapRef.value && !wrapRef.value.contains(e.target as Node)) {
-        open.value = false
+    const target = e.target as Node
+
+    if (triggerRef.value?.contains(target) || dropdownRef.value?.contains(target)) {
+        return
     }
+
+    close()
+}
+
+function onScroll(e: Event) {
+    if (dropdownRef.value?.contains(e.target as Node)) return
+    close()
 }
 
 keyStack(() => open.value, (e) => {
-    if (e.key === 'Escape') open.value = false
+    if (e.key === 'Escape') close()
 })
 
-onMounted(() => document.addEventListener('click', onClickOutside))
-onUnmounted(() => document.removeEventListener('click', onClickOutside))
+onBeforeUnmount(close)
 </script>
 
 <style scoped>
@@ -128,11 +169,10 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
     background-color: var(--color-bg-light);
     border-radius: 10px;
     overflow: hidden;
-    max-height: 0;
+    max-height: 200px;
+    padding: 0;
     transition: max-height 0.25s ease;
     z-index: 9999;
-
-
 
     &.small {
         .item {
@@ -141,9 +181,11 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
         }
     }
 
-    &.active {
+    .scroll {
         max-height: 200px;
         overflow-y: auto;
+        display: flex;
+        flex-direction: column;
     }
 
     .item {

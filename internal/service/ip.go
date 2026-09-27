@@ -16,75 +16,15 @@ var httpClient = &http.Client{
 
 func FetchIPInfo(source string) (*database.IP, error) {
 	switch source {
-	case "ipapi.is":
-		return fetchFromIpapiIs()
 	case "ip-api.com":
 		return fetchFromIpApiCom()
 	case "ippure.com":
 		return fetchFromIppure()
+	case "ip2location.io":
+		return fetchFromIp2Location()
 	default:
 		return nil, fmt.Errorf("不支持的数据源: %s", source)
 	}
-}
-
-// ────────────────────────────────────────────────
-// ipapi.is
-// ────────────────────────────────────────────────
-
-type ipapiIsResponse struct {
-	IP  string `json:"ip"`
-	ASN struct {
-		ASN     int    `json:"asn"`
-		Descr   string `json:"descr"`
-		Org     string `json:"org"`
-		Type    string `json:"type"`
-		Country string `json:"country"`
-	} `json:"asn"`
-	Company struct {
-		Name string `json:"name"`
-		Type string `json:"type"`
-	} `json:"company"`
-	Location struct {
-		CountryCode string `json:"country_code"`
-		City        string `json:"city"`
-	} `json:"location"`
-	IsMobile bool `json:"is_mobile"`
-}
-
-func fetchFromIpapiIs() (*database.IP, error) {
-	resp, err := httpClient.Get("https://api.ipapi.is")
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var result ipapiIsResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, err
-	}
-
-	ipType := result.Company.Type
-	if result.IsMobile {
-		ipType = "mobile"
-	} else if ipType == "" {
-		ipType = result.ASN.Type
-	}
-
-	record := &database.IP{
-		Source:          "ipapi.is",
-		IPVersion:       "v4",
-		IP:              result.IP,
-		ASN:             result.ASN.Descr,
-		ASNOrg:          result.ASN.Org,
-		RegisterCountry: strings.ToUpper(result.ASN.Country),
-		Country:         strings.ToUpper(result.Location.CountryCode),
-		City:            result.Location.City,
-		OrgType:         result.Company.Type,
-		IPType:          ipType,
-		UpdatedAt:       time.Now(),
-	}
-
-	return upsertIP(record)
 }
 
 // ────────────────────────────────────────────────
@@ -189,6 +129,53 @@ func fetchFromIppure() (*database.IP, error) {
 		Country:         strings.ToUpper(result.CountryCode),
 		City:            result.City,
 		OrgType:         ipType,
+		IPType:          ipType,
+		UpdatedAt:       time.Now(),
+	}
+
+	return upsertIP(record)
+}
+
+// ────────────────────────────────────────────────
+// ip2location.io
+// ────────────────────────────────────────────────
+
+type ip2LocationResponse struct {
+	IP          string `json:"ip"`
+	CountryCode string `json:"country_code"`
+	CityName    string `json:"city_name"`
+	ASN         string `json:"asn"`
+	As          string `json:"as"`
+	IsProxy     bool   `json:"is_proxy"`
+}
+
+func fetchFromIp2Location() (*database.IP, error) {
+	resp, err := httpClient.Get("https://api.ip2location.io/")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var result ip2LocationResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+
+	ipType := ""
+	if result.IsProxy {
+		ipType = "proxy"
+	}
+
+	record := &database.IP{
+		Source:          "ip2location.io",
+		IPVersion:       "v4",
+		IP:              result.IP,
+		ASN:             fmt.Sprintf("AS%s", result.ASN),
+		ASNOrg:          result.As,
+		RegisterCountry: "",
+		Country:         strings.ToUpper(result.CountryCode),
+		City:            result.CityName,
+		OrgType:         "",
 		IPType:          ipType,
 		UpdatedAt:       time.Now(),
 	}

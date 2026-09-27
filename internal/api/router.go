@@ -1,18 +1,20 @@
 package api
 
 import (
+	"embed"
+
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(r *gin.Engine) {
+func RegisterRoute(engine *gin.Engine) {
 	// 公开
-	public := r.Group("/api")
+	public := engine.Group("/api")
 	{
 		public.POST("/auth/login", Login)
 	}
 
 	// 内部
-	private := r.Group("/api")
+	private := engine.Group("/api")
 	private.Use(AuthMiddleware())
 	{
 		// 流程
@@ -138,5 +140,16 @@ func RegisterRoutes(r *gin.Engine) {
 
 		// 快速
 		private.POST("/quick", Quick)
+	}
+}
+
+func RegisterSubscriptionRoute(engine *gin.Engine, path string, fs embed.FS) {
+	subscription := engine.Group(path)
+	{
+		subscription.GET("/:token", func(c *gin.Context) {
+			GetSubscription(c, fs)
+		})
+		subscription.GET("/:token/clash", GetClashSubscription)
+		subscription.GET("/:token/surge", GetSurgeSubscription)
 	}
 }
