@@ -3,14 +3,15 @@
     <div class="chart-wrap">
         <div class="chart-header">
             <span class="chart-title">系统日志</span>
-            <Select v-model="hours" :options="hourOptions" small/>
+            <Select v-model="hours" :options="hourOptions" small />
         </div>
         <div class="chart-tabs">
-            <button 
-                v-for="tab in tabs" 
+            <button
+                v-for="tab in tabs"
                 :key="tab.key"
                 :class="{ active: activeTab === tab.key }"
-                @click="activeTab = tab.key">
+                @click="activeTab = tab.key"
+            >
                 {{ tab.label }}
             </button>
         </div>
@@ -19,11 +20,28 @@
 </template>
 
 <script setup lang="ts">
-import { Chart, LineController, LineElement, PointElement, LinearScale, Filler, CategoryScale, Tooltip } from 'chart.js'
+import {
+    Chart,
+    LineController,
+    LineElement,
+    PointElement,
+    LinearScale,
+    Filler,
+    CategoryScale,
+    Tooltip,
+} from 'chart.js'
 import Select from '@/component/ui/Select.vue'
 import { formatBytes } from '@/util/format'
 
-Chart.register(LineController, LineElement, PointElement, LinearScale, Filler, CategoryScale, Tooltip)
+Chart.register(
+    LineController,
+    LineElement,
+    PointElement,
+    LinearScale,
+    Filler,
+    CategoryScale,
+    Tooltip,
+)
 
 const props = defineProps<{
     logs: Array<{
@@ -37,16 +55,16 @@ const props = defineProps<{
 }>()
 
 const tabs = [
-    { key: 'CPU',      label: 'CPU',  color: '#378ADD' },
-    { key: 'RAM',      label: '内存',  color: '#1D9E75' },
-    { key: 'Load',     label: '负载', color: '#888780' },
-    { key: 'Upload',   label: '上传', color: '#D85A30' },
+    { key: 'CPU', label: 'CPU', color: '#378ADD' },
+    { key: 'RAM', label: '内存', color: '#1D9E75' },
+    { key: 'Load', label: '负载', color: '#888780' },
+    { key: 'Upload', label: '上传', color: '#D85A30' },
     { key: 'Download', label: '下载', color: '#9B59B6' },
 ]
 
 const hourOptions = [
-    { label: '3小时',  value: 3  },
-    { label: '6小时',  value: 6  },
+    { label: '3小时', value: 3 },
+    { label: '6小时', value: 6 },
     { label: '12小时', value: 12 },
     { label: '24小时', value: 24 },
 ]
@@ -67,7 +85,7 @@ const crosshairPlugin = {
         ctx.strokeStyle = 'rgba(255,255,255,0.2)'
         ctx.stroke()
         ctx.restore()
-    }
+    },
 }
 
 const activeTab = ref('CPU')
@@ -75,19 +93,23 @@ const hours = ref(3)
 const canvas = ref<HTMLCanvasElement>()
 let chart: Chart
 
-const currentTab = computed(() => tabs.find(t => t.key === activeTab.value)!)
+const currentTab = computed(() => tabs.find((t) => t.key === activeTab.value)!)
 
 const filteredLogs = computed(() => {
     const cutoff = new Date(Date.now() - hours.value * 60 * 60 * 1000)
-    return props.logs.filter(l => new Date(l.CreatedAt) >= cutoff)
+    return props.logs.filter((l) => new Date(l.CreatedAt) >= cutoff)
 })
 
-const labels = computed(() => filteredLogs.value.map(l => {
-    const d = new Date(l.CreatedAt)
-    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
-}))
+const labels = computed(() =>
+    filteredLogs.value.map((l) => {
+        const d = new Date(l.CreatedAt)
+        return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
+    }),
+)
 
-const data = computed(() => filteredLogs.value.map(l => l[activeTab.value as keyof typeof l] as number))
+const data = computed(() =>
+    filteredLogs.value.map((l) => l[activeTab.value as keyof typeof l] as number),
+)
 
 function formatValue(value: number) {
     if (activeTab.value === 'CPU' || activeTab.value === 'RAM') {
@@ -105,15 +127,17 @@ onMounted(() => {
         plugins: [crosshairPlugin],
         data: {
             labels: labels.value,
-            datasets: [{
-                data: data.value,
-                borderColor: currentTab.value.color,
-                borderWidth: 2,
-                fill: true,
-                backgroundColor: currentTab.value.color + '20',
-                pointRadius: 0,
-                tension: 0.4,
-            }]
+            datasets: [
+                {
+                    data: data.value,
+                    borderColor: currentTab.value.color,
+                    borderWidth: 2,
+                    fill: true,
+                    backgroundColor: currentTab.value.color + '20',
+                    pointRadius: 0,
+                    tension: 0.4,
+                },
+            ],
         },
         options: {
             responsive: true,
@@ -131,9 +155,9 @@ onMounted(() => {
                     borderColor: 'rgba(255,255,255,0.1)',
                     borderWidth: 1,
                     callbacks: {
-                        label: (ctx) => formatValue((ctx.parsed.y ?? 0) as number)
-                    }
-                }
+                        label: (ctx) => formatValue((ctx.parsed.y ?? 0) as number),
+                    },
+                },
             },
             scales: {
                 x: {
@@ -159,8 +183,8 @@ onMounted(() => {
                     },
                     border: { display: false },
                 },
-            }
-        }
+            },
+        },
     })
 })
 
@@ -205,7 +229,7 @@ watch([activeTab, hours, () => props.logs], () => {
     font-size: 12px;
     background-color: transparent;
     color: var(--color-text-dark);
-    
+
     &.active {
         background-color: var(--color-bg-light);
         color: var(--color-text-light);

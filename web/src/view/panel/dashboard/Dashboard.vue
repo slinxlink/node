@@ -4,15 +4,35 @@
             <div class="body">
                 <div class="card fluid">
                     <div class="gauge-card">
-                        <Gauge name="CPU" :pct="system.cpu?.percent ?? 0" color="#378ADD" :detail="`${system.cpu?.cores ?? 0} Core`">
+                        <Gauge
+                            name="CPU"
+                            :pct="system.cpu?.percent ?? 0"
+                            color="#378ADD"
+                            :detail="`${system.cpu?.cores ?? 0} Core`"
+                        >
                             <template #tip>
                                 <div>逻辑处理器: {{ system.cpu?.cores ?? 0 }}</div>
                                 <div>频率: {{ system.cpu?.mhz ?? 0 }} MHz</div>
                             </template>
                         </Gauge>
-                        <Gauge name="RAM"  :pct="system.ram?.percent ?? 0"  color="#1D9E75" :detail="`${formatBytes(system.ram?.used)} / ${formatBytes(system.ram?.total)}`" />
-                        <Gauge name="Swap" :pct="system.swap?.percent ?? 0" color="#888780" :detail="`${formatBytes(system.swap?.used)} / ${formatBytes(system.swap?.total)}`" />
-                        <Gauge name="存储"  :pct="system.disk?.percent ?? 0" color="#D85A30" :detail="`${formatBytes(system.disk?.used)} / ${formatBytes(system.disk?.total)}`" />
+                        <Gauge
+                            name="RAM"
+                            :pct="system.ram?.percent ?? 0"
+                            color="#1D9E75"
+                            :detail="`${formatBytes(system.ram?.used)} / ${formatBytes(system.ram?.total)}`"
+                        />
+                        <Gauge
+                            name="Swap"
+                            :pct="system.swap?.percent ?? 0"
+                            color="#888780"
+                            :detail="`${formatBytes(system.swap?.used)} / ${formatBytes(system.swap?.total)}`"
+                        />
+                        <Gauge
+                            name="存储"
+                            :pct="system.disk?.percent ?? 0"
+                            color="#D85A30"
+                            :detail="`${formatBytes(system.disk?.used)} / ${formatBytes(system.disk?.total)}`"
+                        />
                     </div>
                 </div>
                 <CoreCard />
@@ -153,7 +173,8 @@
     </main>
 </template>
 
-<script setup lang="ts">PanelCard
+<script setup lang="ts">
+PanelCard
 import Gauge from '@/component/widget/Gauge.vue'
 import CoreCard from '@/component/widget/CoreCard.vue'
 import PanelCard from '@/component/widget/PanelCard.vue'
@@ -172,11 +193,21 @@ const system = ref<any>({})
 const stats = ref<any>({})
 const logs = ref<any[]>([])
 
-async function fetchSystem() { system.value = await getSystem() }
-async function fetchCore() { core.value = await getCore() }
-async function fetchProcess() { process.value = await getCoreProcess() }
-async function fetchStats() { stats.value = await getStats() }
-async function fetchLog() { logs.value = await getSystemLog() }
+async function fetchSystem() {
+    system.value = await getSystem()
+}
+async function fetchCore() {
+    core.value = await getCore()
+}
+async function fetchProcess() {
+    process.value = await getCoreProcess()
+}
+async function fetchStats() {
+    stats.value = await getStats()
+}
+async function fetchLog() {
+    logs.value = await getSystemLog()
+}
 
 const timers: ReturnType<typeof setInterval>[] = []
 
@@ -196,7 +227,9 @@ onMounted(async () => {
         setInterval(fetchProcess, 5000),
         setInterval(fetchStats, 15 * 60 * 1000),
         setInterval(fetchLog, 15 * 60 * 1000),
-        setInterval(async () => { Config.value = await getConfig() }, 60 * 1000),
+        setInterval(async () => {
+            Config.value = await getConfig()
+        }, 60 * 1000),
     )
 })
 

@@ -4,15 +4,30 @@
             <div class="title">SLINX node</div>
         </div>
         <div class="actions">
-            <a class="action-btn" href="https://github.com/slinxlink/node" target="_blank" rel="noopener noreferrer">
+            <a
+                class="action-btn"
+                href="https://github.com/slinxlink/node"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
                 <img class="svg" src="@/asset/image/social/github.svg" alt="GitHub" />
                 GitHub 仓库
             </a>
-            <a class="action-btn" href="https://t.me/slinxlink" target="_blank" rel="noopener noreferrer">
+            <a
+                class="action-btn"
+                href="https://t.me/slinxlink"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
                 <img class="svg" src="@/asset/image/social/telegram.svg" alt="Telegram" />
                 加入频道
             </a>
-            <button class="action-btn version" :disabled="!hasUpdate" :class="{ 'has-update': hasUpdate }" @click="openUpdate">
+            <button
+                class="action-btn version"
+                :disabled="!hasUpdate"
+                :class="{ 'has-update': hasUpdate }"
+                @click="openUpdate"
+            >
                 <i class="icon">new_releases</i>
                 {{ hasUpdate ? '有新版本' : version }}
             </button>
@@ -36,10 +51,7 @@ const changelog = ref('')
 const showUpdate = ref(false)
 
 onMounted(async () => {
-    const [versionRes, updateRes] = await Promise.all([
-        getVersion(),
-        checkUpdate(),
-    ])
+    const [versionRes, updateRes] = await Promise.all([getVersion(), checkUpdate()])
     version.value = versionRes.version
     hasUpdate.value = updateRes.has_update
     latestVersion.value = updateRes.latest_version
@@ -103,10 +115,14 @@ async function handleUpdate() {
             width: 15px;
         }
 
-        &:first-child { border-radius: 0 0 0 20px; }
-        &:nth-child(2) { border-radius: 0; }
-        &:last-child { 
-            border-right: none; 
+        &:first-child {
+            border-radius: 0 0 0 20px;
+        }
+        &:nth-child(2) {
+            border-radius: 0;
+        }
+        &:last-child {
+            border-right: none;
             border-radius: 0 0 20px 0;
         }
 

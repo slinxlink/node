@@ -8,9 +8,7 @@
             <p>无需证书，开箱即用</p>
         </div>
         <div class="actions">
-            <button class="action-btn" @click="handleQuick">
-                立即生成
-            </button>
+            <button class="action-btn" @click="handleQuick">立即生成</button>
         </div>
     </div>
 </template>
@@ -21,15 +19,19 @@ import { quick } from '@/api/quick'
 const modal = inject<any>('modal')
 
 async function handleQuick() {
-    modal.value?.show('confirm', '将自动生成 VLESS + Reality + XTLS 入站及用户\n确认继续？', async () => {
-        modal.value?.update('warn', '生成中...')
-        try {
-            await quick()
-            modal.value?.update('success', '生成成功！')
-        } catch (err: any) {
-            modal.value?.update('error', err?.error ?? '生成失败')
-        }
-    })
+    modal.value?.show(
+        'confirm',
+        '将自动生成 VLESS + Reality + XTLS 入站及用户\n确认继续？',
+        async () => {
+            modal.value?.update('warn', '生成中...')
+            try {
+                await quick()
+                modal.value?.update('success', '生成成功！')
+            } catch (err: any) {
+                modal.value?.update('error', err?.error ?? '生成失败')
+            }
+        },
+    )
 }
 </script>
 

@@ -41,9 +41,12 @@ async function handleRestart() {
     await props.onRestart()
 }
 
-watch(() => props.dirty, (val) => {
-    if (val) saved.value = false
-})
+watch(
+    () => props.dirty,
+    (val) => {
+        if (val) saved.value = false
+    },
+)
 </script>
 
 <style scoped>
@@ -89,8 +92,6 @@ watch(() => props.dirty, (val) => {
         font-size: var(--font-size-sm);
     }
 }
-
-
 
 @media (max-width: 768px) {
     .save-bar {

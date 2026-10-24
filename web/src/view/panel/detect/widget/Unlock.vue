@@ -1,6 +1,6 @@
 <!-- components/UnlockDetect.vue -->
 <template>
-<div class="detect">
+    <div class="detect">
         <div class="header">
             <div class="title-wrap">
                 <div class="title">解锁检测</div>
@@ -21,7 +21,11 @@
             <div class="unlock-grid">
                 <div v-for="platform in group.platforms" :key="platform" class="unlock-card">
                     <div class="unlock-card-header">
-                        <img :src="getPlatformImage(platform)" :alt="platform" class="unlock-logo" />
+                        <img
+                            :src="getPlatformImage(platform)"
+                            :alt="platform"
+                            class="unlock-logo"
+                        />
                         <span class="unlock-name">{{ nameMap[platform] }}</span>
                         <Tip v-if="noteMap[platform]">
                             <i class="icon note-icon">help</i>
@@ -29,7 +33,11 @@
                         </Tip>
                     </div>
                     <div class="unlock-status">
-                        <i v-if="getStatus(platform)" class="icon" :class="statusClass(getStatus(platform))">
+                        <i
+                            v-if="getStatus(platform)"
+                            class="icon"
+                            :class="statusClass(getStatus(platform))"
+                        >
                             {{ statusIcon(getStatus(platform)) }}
                         </i>
                         <span :class="statusClass(getStatus(platform))">
@@ -52,7 +60,10 @@ import { formatTime } from '@/util/format'
 
 const loading = ref(false)
 const data = ref<any[]>([])
-const platformImages = import.meta.glob('@/asset/image/platform/*.webp', { eager: true, import: 'default' })
+const platformImages = import.meta.glob('@/asset/image/platform/*.webp', {
+    eager: true,
+    import: 'default',
+})
 
 function getPlatformImage(platform: string): string {
     return (platformImages[`/src/asset/image/platform/${platform}.webp`] as string) ?? ''
@@ -61,42 +72,50 @@ function getPlatformImage(platform: string): string {
 const groups = [
     {
         label: '流媒体',
-        platforms: ['netflix', 'disney', 'prime_video', 'youtube_premium', 'dazn', 'tvbanywhere', 'iqiyi']
+        platforms: [
+            'netflix',
+            'disney',
+            'prime_video',
+            'youtube_premium',
+            'dazn',
+            'tvbanywhere',
+            'iqiyi',
+        ],
     },
     {
         label: 'AI 工具',
-        platforms: ['claude', 'chatgpt', 'gemini']
+        platforms: ['claude', 'chatgpt', 'gemini'],
     },
     {
         label: '其他',
-        platforms: ['apple', 'bing', 'google_play', 'steam', 'reddit', 'wikipedia']
-    }
+        platforms: ['apple', 'bing', 'google_play', 'steam', 'reddit', 'wikipedia'],
+    },
 ]
 
 const nameMap: Record<string, string> = {
-    'apple':           'Apple',
-    'bing':            'Bing',
-    'google_play':     'Google Play Store',
-    'steam':           'Steam',
-    'reddit':          'Reddit',
-    'wikipedia':       'Wikipedia Editability',
-    'netflix':         'Netflix',
-    'disney':          'Disney+',
-    'prime_video':     'Prime Video',
-    'youtube_premium': 'YouTube Premium',
-    'dazn':            'DAZN',
-    'tvbanywhere':     'TVBAnywhere+',
-    'iqiyi':           'iQiyi Oversea',
-    'claude':          'Claude',
-    'chatgpt':         'ChatGPT',
-    'gemini':          'Gemini',
+    apple: 'Apple',
+    bing: 'Bing',
+    google_play: 'Google Play Store',
+    steam: 'Steam',
+    reddit: 'Reddit',
+    wikipedia: 'Wikipedia Editability',
+    netflix: 'Netflix',
+    disney: 'Disney+',
+    prime_video: 'Prime Video',
+    youtube_premium: 'YouTube Premium',
+    dazn: 'DAZN',
+    tvbanywhere: 'TVBAnywhere+',
+    iqiyi: 'iQiyi Oversea',
+    claude: 'Claude',
+    chatgpt: 'ChatGPT',
+    gemini: 'Gemini',
 }
 
 const noteMap: Record<string, string> = {
-    'bing':    '受限表示该 IP 被 Bing 标记为风险 IP',
-    'netflix': '受限表示仅可观看 Netflix 自制内容',
-    'iqiyi':   '受限表示仅海外通用线路，无本地化内容',
-    'chatgpt': '受限表示仅 Web 或仅 Mobile App 可用',
+    bing: '受限表示该 IP 被 Bing 标记为风险 IP',
+    netflix: '受限表示仅可观看 Netflix 自制内容',
+    iqiyi: '受限表示仅海外通用线路，无本地化内容',
+    chatgpt: '受限表示仅 Web 或仅 Mobile App 可用',
 }
 
 function getStatus(platform: string): string {
@@ -132,9 +151,7 @@ function statusClass(status: string): string {
 
 function countryFlag(code?: string) {
     if (!code) return ''
-    return code.toUpperCase().replace(/./g, c =>
-        String.fromCodePoint(c.charCodeAt(0) + 127397)
-    )
+    return code.toUpperCase().replace(/./g, (c) => String.fromCodePoint(c.charCodeAt(0) + 127397))
 }
 
 async function handleFetch() {
@@ -151,7 +168,6 @@ onMounted(async () => {
     const res = await getUnlock()
     data.value = res.data ?? []
 })
-
 
 watch(loading, (val) => {
     document.body.style.cursor = val ? 'wait' : ''

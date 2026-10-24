@@ -8,14 +8,19 @@ DOCKER = docker run --rm \
 	-v $(shell pwd):/app \
 	-v $(HOME)/go/pkg/mod:/root/go/pkg/mod \
 	-v $(HOME)/.cache/go-build:/root/.cache/go-build \
-	-v $(HOME)/go/src/sing-box:/sing-box \
+	-v $(HOME)/Repo/sing-box:/sing-box \
 	slinx-builder sh -c
 
-build: slinx core
+build: web slinx core
 
-slinx: slinx-amd64 slinx-arm64
+slinx: web slinx-amd64 slinx-arm64
 
 core: core-amd64 core-arm64
+
+web:
+	@echo "\$$(date '+%H:%M:%S') >>> 构建前端..."
+	@cd web && npm run build
+	@echo "\$$(date '+%H:%M:%S') >>> 完成前端构建"
 
 slinx-amd64:
 	@$(DOCKER) "mkdir -p /app/dist && \

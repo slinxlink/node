@@ -7,15 +7,16 @@
                     <i class="icon">add</i>
                     添加端点
                 </button>
-                <button class="add-btn" @click="showWarp = true">
-                    WARP
-                </button>
+                <button class="add-btn" @click="showWarp = true">WARP</button>
 
                 <List :headers="['标签', '协议', '地址', '启用', '操作']">
                     <tr v-for="ep in endpoints" :key="ep.ID">
                         <td>{{ ep.Tag }}</td>
                         <td>
-                            <span class="tag" :class="ep.Type === 'wireguard' ? 'primary' : 'green'">
+                            <span
+                                class="tag"
+                                :class="ep.Type === 'wireguard' ? 'primary' : 'green'"
+                            >
                                 {{ ep.Type }}
                             </span>
                         </td>
@@ -48,8 +49,6 @@
     <Drawer v-model="showDrawer" :title="drawerTitle" @save="save">
         <Form v-model="defaultEndpoint" />
     </Drawer>
-
-
 
     <Drawer v-model="showRoute" title="路由设置" @save="routeRef?.save()">
         <Route v-if="showRoute" ref="routeRef" :endpoint="routeEndpoint" />
@@ -129,18 +128,29 @@ async function create() {
     showDrawer.value = true
 
     const res = await generateWireguardKeyPair()
-    defaultEndpoint.value = { ...defaultEndpoint.value, PrivateKey: res.private_key, PublicKey: res.public_key }
+    defaultEndpoint.value = {
+        ...defaultEndpoint.value,
+        PrivateKey: res.private_key,
+        PublicKey: res.public_key,
+    }
 }
 
 function edit(ep: any) {
-    defaultEndpoint.value = { ...defaultEndpoint.value, ...ep, Address: JSON.parse(ep.Address || '[]') }
+    defaultEndpoint.value = {
+        ...defaultEndpoint.value,
+        ...ep,
+        Address: JSON.parse(ep.Address || '[]'),
+    }
     drawerTitle.value = '编辑端点'
     showDrawer.value = true
 }
 
 async function save() {
     try {
-        const payload = { ...defaultEndpoint.value, Address: JSON.stringify(defaultEndpoint.value.Address) }
+        const payload = {
+            ...defaultEndpoint.value,
+            Address: JSON.stringify(defaultEndpoint.value.Address),
+        }
         await saveEndpoint(payload)
         await load()
         showDrawer.value = false
@@ -148,11 +158,6 @@ async function save() {
         modal.value?.show('error', err?.error)
     }
 }
-
-
-
-
-
 
 import Route from '@/view/panel/endpoint/widget/Route.vue'
 

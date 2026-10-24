@@ -19,9 +19,7 @@
     </a>
 </template>
 
-<script setup lang="ts">
-
-</script>
+<script setup lang="ts"></script>
 
 <style scoped>
 .ad {
@@ -55,7 +53,7 @@
         justify-content: space-between;
         align-items: center;
         padding-bottom: 5px;
-        
+
         .title {
             display: flex;
             flex-direction: column;

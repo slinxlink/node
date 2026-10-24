@@ -3,7 +3,11 @@
         <div class="container">
             <div class="header">
                 <span class="title">{{ title }}</span>
-                <button class="close-btn" :disabled="loading" @click="$emit('update:modelValue', false)">
+                <button
+                    class="close-btn"
+                    :disabled="loading"
+                    @click="$emit('update:modelValue', false)"
+                >
                     <i class="icon">close</i>
                 </button>
             </div>
@@ -11,8 +15,12 @@
                 <slot />
             </div>
             <div class="footer" v-if="footer !== false">
-                <button class="save-btn" :disabled="loading" @click="done ? $emit('update:modelValue', false) : $emit('save')">
-                    {{ loading ? '处理中...' : done ? '完成' : (saveText || '保存') }}
+                <button
+                    class="save-btn"
+                    :disabled="loading"
+                    @click="done ? $emit('update:modelValue', false) : $emit('save')"
+                >
+                    {{ loading ? '处理中...' : done ? '完成' : saveText || '保存' }}
                 </button>
             </div>
         </div>
@@ -22,27 +30,37 @@
 <script setup lang="ts">
 import { keyStack } from '@/composable/keyStack'
 
-const props = withDefaults(defineProps<{
-    modelValue: boolean
-    title: string
-    saveText?: string
-    loading?: boolean
-    done?: boolean
-    footer?: boolean
-}>(), {
-    footer: true
-})
+const props = withDefaults(
+    defineProps<{
+        modelValue: boolean
+        title: string
+        saveText?: string
+        loading?: boolean
+        done?: boolean
+        footer?: boolean
+    }>(),
+    {
+        footer: true,
+    },
+)
 
 const emit = defineEmits(['update:modelValue', 'save'])
 
-keyStack(() => props.modelValue, (e) => {
-    if (e.key === 'Escape' && !props.loading) emit('update:modelValue', false)
-    if (e.key === 'Enter' && !props.loading) props.done ? emit('update:modelValue', false) : emit('save')
-})
+keyStack(
+    () => props.modelValue,
+    (e) => {
+        if (e.key === 'Escape' && !props.loading) emit('update:modelValue', false)
+        if (e.key === 'Enter' && !props.loading)
+            props.done ? emit('update:modelValue', false) : emit('save')
+    },
+)
 
-watch(() => props.loading, (val) => {
-    document.body.style.cursor = val ? 'wait' : ''
-})
+watch(
+    () => props.loading,
+    (val) => {
+        document.body.style.cursor = val ? 'wait' : ''
+    },
+)
 </script>
 
 <style scoped>
@@ -105,7 +123,9 @@ watch(() => props.loading, (val) => {
                 color: var(--color-text-dark);
                 display: flex;
                 align-items: center;
-                transition: color 0.3s, background 0.3s;
+                transition:
+                    color 0.3s,
+                    background 0.3s;
 
                 &:hover {
                     background: var(--color-bg-light);

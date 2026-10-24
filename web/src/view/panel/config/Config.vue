@@ -3,16 +3,31 @@
         <div class="page">
             <Tab v-model="activeTab" :tabs="tabs">
                 <div v-if="activeTab === 'settings'" class="body">
-                    <RestartBar :dirty="dirty" :on-save="save" :on-restart="restart" @update:dirty="dirty = $event" />
+                    <RestartBar
+                        :dirty="dirty"
+                        :on-save="save"
+                        :on-restart="restart"
+                        @update:dirty="dirty = $event"
+                    />
                     <Section title="常规">
                         <Row title="当前面板地址" subtitle="备注">
                             <label>{{ panelUrl }}</label>
                         </Row>
                         <Row title="域名" subtitle="选择证书域名，设置后自动启用HTTPS">
-                            <Select v-model="Config.Domain" :options="domainOptions" placeholder="选择域名" />
+                            <Select
+                                v-model="Config.Domain"
+                                :options="domainOptions"
+                                placeholder="选择域名"
+                            />
                         </Row>
                         <Row title="端口" subtitle="范围1024 ~ 65535">
-                            <Input v-model="Config.Port" type="number" :min="1" :max="65535" placeholder="端口" />
+                            <Input
+                                v-model="Config.Port"
+                                type="number"
+                                :min="1"
+                                :max="65535"
+                                placeholder="端口"
+                            />
                         </Row>
                         <Row title="路径" subtitle="必须以 '/' 开头">
                             <Input v-model="Config.Path" placeholder="路径" />
@@ -23,7 +38,13 @@
                             <Toggle v-model="Config.SubEnable" />
                         </Row>
                         <Row title="端口" subtitle="范围1024 ~ 65535">
-                            <Input v-model="Config.SubPort" type="number" :min="1" :max="65535" placeholder="2096" />
+                            <Input
+                                v-model="Config.SubPort"
+                                type="number"
+                                :min="1"
+                                :max="65535"
+                                placeholder="2096"
+                            />
                         </Row>
                         <Row title="路径" subtitle="必须以 '/' 开头">
                             <Input v-model="Config.SubPath" placeholder="/link" />
@@ -42,27 +63,54 @@
                             <Toggle v-model="Config.LogEnable" />
                         </Row>
                         <Row title="路径" subtitle="日志文件仅支持保存在面板根目录下">
-                            <Input v-model="Config.LogPath" :prefix="Config.Dir + '/'" placeholder="日志路径" />
+                            <Input
+                                v-model="Config.LogPath"
+                                :prefix="Config.Dir + '/'"
+                                placeholder="日志路径"
+                            />
                         </Row>
                         <Row title="等级" subtitle="等级越高，记录的日志越少">
-                            <Select v-model="Config.LogLevel" :options="logLevelOptions" placeholder="日志等级" />
+                            <Select
+                                v-model="Config.LogLevel"
+                                :options="logLevelOptions"
+                                placeholder="日志等级"
+                            />
                         </Row>
                     </Section>
                     <Section title="管理员凭据">
                         <form @submit.prevent>
                             <Row title="用户名" subtitle="&nbsp;">
-                                <Input :modelValue="Config.Username" placeholder="用户名" autocomplete="username" disabled />
+                                <Input
+                                    :modelValue="Config.Username"
+                                    placeholder="用户名"
+                                    autocomplete="username"
+                                    disabled
+                                />
                             </Row>
                             <Row title="原密码" subtitle="&nbsp;">
-                                <Input v-model="credentials.old_password" autocomplete="current-password" placeholder="原密码" type="password" />
+                                <Input
+                                    v-model="credentials.old_password"
+                                    autocomplete="current-password"
+                                    placeholder="原密码"
+                                    type="password"
+                                />
                             </Row>
                         </form>
                         <form @submit.prevent>
                             <Row title="新用户名" subtitle="留空则不修改">
-                                <Input v-model="credentials.new_username" placeholder="新用户名" autocomplete="username" />
+                                <Input
+                                    v-model="credentials.new_username"
+                                    placeholder="新用户名"
+                                    autocomplete="username"
+                                />
                             </Row>
                             <Row title="新密码" subtitle="留空则不修改">
-                                <Input v-model="credentials.new_password" autocomplete="new-password" placeholder="新密码" type="password" />
+                                <Input
+                                    v-model="credentials.new_password"
+                                    autocomplete="new-password"
+                                    placeholder="新密码"
+                                    type="password"
+                                />
                             </Row>
                             <Row title="">
                                 <button @click="submitCredentials">提交修改</button>
@@ -125,8 +173,8 @@ const modal = inject<any>('modal')
 const activeTab = ref('settings')
 const tabs = [
     { key: 'settings', label: '设置' },
-    { key: 'certs',    label: '证书' },
-    { key: 'log',      label: '日志' },
+    { key: 'certs', label: '证书' },
+    { key: 'log', label: '日志' },
 ]
 
 const Config = ref<any>({ LogEnable: false, BoardEnable: false })
@@ -139,7 +187,7 @@ const loaded = ref(false)
 
 const domainOptions = computed(() => [
     { label: '无', value: '' },
-    ...certs.value.map(c => ({ label: c.Domain, value: c.Domain }))
+    ...certs.value.map((c) => ({ label: c.Domain, value: c.Domain })),
 ])
 
 const panelUrl = computed(() => {
@@ -164,9 +212,13 @@ onMounted(async () => {
     loaded.value = true
 })
 
-watch(Config, () => {
-    if (loaded.value) dirty.value = true
-}, { deep: true })
+watch(
+    Config,
+    () => {
+        if (loaded.value) dirty.value = true
+    },
+    { deep: true },
+)
 
 // ── 操作 ──────────────────────────────────────────────────
 
@@ -211,11 +263,15 @@ async function restart() {
 }
 
 async function reset() {
-    modal.value?.show('confirm', '确认重置所有面板配置为默认值？\n\n此操作将重置面板端口、路径、用户名及密码为随机值\n重置后将无法通过当前地址访问面板\n请前往服务器终端命令获取新的登录信息', async () => {
-        await resetConfig()
-        Config.value = await getConfig()
-        modal.value?.show('success', '已重置')
-    })
+    modal.value?.show(
+        'confirm',
+        '确认重置所有面板配置为默认值？\n\n此操作将重置面板端口、路径、用户名及密码为随机值\n重置后将无法通过当前地址访问面板\n请前往服务器终端命令获取新的登录信息',
+        async () => {
+            await resetConfig()
+            Config.value = await getConfig()
+            modal.value?.show('success', '已重置')
+        },
+    )
 }
 
 async function submitCredentials() {

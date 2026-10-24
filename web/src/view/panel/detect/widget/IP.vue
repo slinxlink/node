@@ -39,7 +39,10 @@
             <div class="ip-detect-item">
                 <div class="ip-detect-label">注册地</div>
                 <div class="ip-detect-value">
-                    <span>{{ countryFlag(ipData?.RegisterCountry) }} {{ ipData?.RegisterCountry || '-' }}</span>
+                    <span
+                        >{{ countryFlag(ipData?.RegisterCountry) }}
+                        {{ ipData?.RegisterCountry || '-' }}</span
+                    >
                 </div>
             </div>
             <div class="ip-detect-item">
@@ -57,13 +60,17 @@
             <div class="ip-detect-item">
                 <div class="ip-detect-label">IP 类型</div>
                 <div class="ip-detect-value">
-                    <span :class="typeClass(ipData?.IPType)">{{ translateType(ipData?.IPType) }}</span>
+                    <span :class="typeClass(ipData?.IPType)">{{
+                        translateType(ipData?.IPType)
+                    }}</span>
                 </div>
             </div>
             <div class="ip-detect-item">
                 <div class="ip-detect-label">运营商类型</div>
                 <div class="ip-detect-value">
-                    <span :class="typeClass(ipData?.OrgType)">{{ translateType(ipData?.OrgType) }}</span>
+                    <span :class="typeClass(ipData?.OrgType)">{{
+                        translateType(ipData?.OrgType)
+                    }}</span>
                 </div>
             </div>
         </div>
@@ -82,16 +89,14 @@ const source = ref('ip-api.com')
 const loading = ref(false)
 
 const sourceOptions = [
-    { label: 'ip-api.com',     value: 'ip-api.com'     },
-    { label: 'ippure.com',     value: 'ippure.com'     },
+    { label: 'ip-api.com', value: 'ip-api.com' },
+    { label: 'ippure.com', value: 'ippure.com' },
     { label: 'ip2location.io', value: 'ip2location.io' },
 ]
 
 function countryFlag(code?: string) {
     if (!code) return ''
-    return code.toUpperCase().replace(/./g, c =>
-        String.fromCodePoint(c.charCodeAt(0) + 127397)
-    )
+    return code.toUpperCase().replace(/./g, (c) => String.fromCodePoint(c.charCodeAt(0) + 127397))
 }
 
 async function handleFetch() {
@@ -99,7 +104,9 @@ async function handleFetch() {
     try {
         const res = await fetchIP(source.value)
         ipData.value = res.data
-        const idx = allData.value.findIndex((r: any) => r.Source === source.value && r.IPVersion === 'v4')
+        const idx = allData.value.findIndex(
+            (r: any) => r.Source === source.value && r.IPVersion === 'v4',
+        )
         if (idx >= 0) {
             allData.value[idx] = res.data
         } else {
@@ -114,7 +121,8 @@ onMounted(async () => {
     const res = await getIP()
     if (res.data?.length) {
         allData.value = res.data
-        ipData.value = res.data.find((r: any) => r.Source === source.value && r.IPVersion === 'v4') ?? null
+        ipData.value =
+            res.data.find((r: any) => r.Source === source.value && r.IPVersion === 'v4') ?? null
     }
 })
 

@@ -6,7 +6,9 @@
             <div v-else class="grid">
                 <div class="card" v-for="u in users" :key="u.ID">
                     <div class="top">
-                        <span class="id">用户 <strong>#{{ u.UserID }}</strong></span>
+                        <span class="id"
+                            >用户 <strong>#{{ u.UserID }}</strong></span
+                        >
                         <div class="status">
                             <Tip v-if="parseIPs(u.AliveIP).length > 0">
                                 <Status status="yes" :animated="true" />
@@ -72,17 +74,17 @@ function parseIPs(aliveIP: string): string[] {
     }
 }
 
-watch(() => props.modelValue, async (val) => {
-    if (!val || !props.board) return
-    loading.value = true
-    const [us, inbounds] = await Promise.all([
-        getBoardUser(props.board.ID),
-        getInbounds(),
-    ])
-    users.value = us
-    protocol.value = inbounds.find((i: any) => i.ID === props.board.Inbound)?.Protocol ?? ''
-    loading.value = false
-})
+watch(
+    () => props.modelValue,
+    async (val) => {
+        if (!val || !props.board) return
+        loading.value = true
+        const [us, inbounds] = await Promise.all([getBoardUser(props.board.ID), getInbounds()])
+        users.value = us
+        protocol.value = inbounds.find((i: any) => i.ID === props.board.Inbound)?.Protocol ?? ''
+        loading.value = false
+    },
+)
 </script>
 
 <style scoped>

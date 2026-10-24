@@ -3,10 +3,12 @@
         <div class="multiselect-input" @click="!disabled && toggle()">
             <div class="multiselect-tags">
                 <span class="multiselect-tag" v-for="val in modelValue" :key="val">
-                    {{ options.find(o => o.value === val)?.label }}
+                    {{ options.find((o) => o.value === val)?.label }}
                     <i class="icon" v-if="!disabled" @click.stop="remove(val)">close</i>
                 </span>
-                <span class="multiselect-placeholder" v-if="!modelValue?.length">{{ placeholder }}</span>
+                <span class="multiselect-placeholder" v-if="!modelValue?.length">{{
+                    placeholder
+                }}</span>
             </div>
         </div>
         <Teleport to="body">
@@ -16,7 +18,8 @@
                     :key="option.value"
                     class="multiselect-item"
                     :class="{ active: modelValue?.includes(option.value) }"
-                    @click="select(option.value)">
+                    @click="select(option.value)"
+                >
                     {{ option.label }}
                     <i class="icon" v-if="modelValue?.includes(option.value)">check</i>
                 </div>
@@ -28,7 +31,7 @@
 <script setup lang="ts">
 const props = defineProps<{
     modelValue?: string[]
-    options: Array<{ label: string, value: string }>
+    options: Array<{ label: string; value: string }>
     placeholder?: string
     disabled?: boolean
 }>()
@@ -56,14 +59,20 @@ function toggle() {
 function select(value: string) {
     const current = props.modelValue ?? []
     if (current.includes(value)) {
-        emit('update:modelValue', current.filter(v => v !== value))
+        emit(
+            'update:modelValue',
+            current.filter((v) => v !== value),
+        )
     } else {
         emit('update:modelValue', [...current, value])
     }
 }
 
 function remove(value: string) {
-    emit('update:modelValue', (props.modelValue ?? []).filter(v => v !== value))
+    emit(
+        'update:modelValue',
+        (props.modelValue ?? []).filter((v) => v !== value),
+    )
 }
 
 function onClickOutside(e: MouseEvent) {

@@ -10,15 +10,36 @@
                 <td>{{ cert.Domain }}</td>
                 <td>{{ formatMode(cert.Mode) }}</td>
                 <td>
-                    <span class="tag" :class="certStatus(cert).cls">{{ certStatus(cert).label }}</span>
+                    <span class="tag" :class="certStatus(cert).cls">{{
+                        certStatus(cert).label
+                    }}</span>
                 </td>
                 <td class="muted">{{ formatTime(cert.ExpireAt) }}</td>
-                <td><Toggle :model-value="cert.AutoRenew" :disabled="cert.Mode === 'manual'" @update:model-value="toggleRenew(cert)" /></td>
+                <td>
+                    <Toggle
+                        :model-value="cert.AutoRenew"
+                        :disabled="cert.Mode === 'manual'"
+                        @update:model-value="toggleRenew(cert)"
+                    />
+                </td>
                 <td class="actions">
-                    <button class="icon-btn" @click="openCertDetail(cert)" title="详情"><i class="icon">info</i></button>
-                    <button v-if="cert.Mode !== 'manual'" class="icon-btn" @click="openCertDrawer('reapply', cert)" title="重新申请"><i class="icon">refresh</i></button>
-                    <button class="icon-btn" @click="openCertDrawer('edit', cert)" title="编辑"><i class="icon">edit</i></button>
-                    <button class="icon-btn danger" @click="removeCert(cert.ID)" title="删除"><i class="icon">delete</i></button>
+                    <button class="icon-btn" @click="openCertDetail(cert)" title="详情">
+                        <i class="icon">info</i>
+                    </button>
+                    <button
+                        v-if="cert.Mode !== 'manual'"
+                        class="icon-btn"
+                        @click="openCertDrawer('reapply', cert)"
+                        title="重新申请"
+                    >
+                        <i class="icon">refresh</i>
+                    </button>
+                    <button class="icon-btn" @click="openCertDrawer('edit', cert)" title="编辑">
+                        <i class="icon">edit</i>
+                    </button>
+                    <button class="icon-btn danger" @click="removeCert(cert.ID)" title="删除">
+                        <i class="icon">delete</i>
+                    </button>
                 </td>
             </tr>
             <tr v-if="certs.length === 0">
@@ -37,8 +58,12 @@
                 <td>{{ formatAcmeProvider(acme.Provider) }}</td>
                 <td class="muted">{{ acme.PrivateKey ? '已配置' : '未注册' }}</td>
                 <td class="actions">
-                    <button class="icon-btn" @click="openAcmeDrawer(acme)" title="编辑"><i class="icon">edit</i></button>
-                    <button class="icon-btn danger" @click="removeAcme(acme.ID)" title="删除"><i class="icon">delete</i></button>
+                    <button class="icon-btn" @click="openAcmeDrawer(acme)" title="编辑">
+                        <i class="icon">edit</i>
+                    </button>
+                    <button class="icon-btn danger" @click="removeAcme(acme.ID)" title="删除">
+                        <i class="icon">delete</i>
+                    </button>
                 </td>
             </tr>
             <tr v-if="acmes.length === 0">
@@ -59,10 +84,16 @@
                 <td class="muted">{{ showSecret[dns.ID] ? dns.Secret : '••••••••' }}</td>
                 <td class="actions">
                     <button class="icon-btn" @click="toggleSecret(dns.ID)">
-                        <i class="icon">{{ showSecret[dns.ID] ? 'visibility_off' : 'visibility' }}</i>
+                        <i class="icon">{{
+                            showSecret[dns.ID] ? 'visibility_off' : 'visibility'
+                        }}</i>
                     </button>
-                    <button class="icon-btn" @click="openDnsDrawer(dns)" title="编辑"><i class="icon">edit</i></button>
-                    <button class="icon-btn danger" @click="removeDns(dns.ID)" title="删除"><i class="icon">delete</i></button>
+                    <button class="icon-btn" @click="openDnsDrawer(dns)" title="编辑">
+                        <i class="icon">edit</i>
+                    </button>
+                    <button class="icon-btn danger" @click="removeDns(dns.ID)" title="删除">
+                        <i class="icon">delete</i>
+                    </button>
                 </td>
             </tr>
             <tr v-if="dnsList.length === 0">
@@ -73,26 +104,39 @@
 
     <Drawer
         v-model="showCertDrawer"
-        :title="certFormMode === 'add' ? '申请证书' : certFormMode === 'edit' ? '编辑证书' : '重新申请'"
+        :title="
+            certFormMode === 'add' ? '申请证书' : certFormMode === 'edit' ? '编辑证书' : '重新申请'
+        "
         :saveText="certFormMode === 'edit' ? '保存' : '申请'"
         :loading="certTask.loading"
         :done="certTask.done"
         @save="certFormMode === 'edit' ? updateCert() : addCert()"
     >
-        <CertForm
-            v-model="certForm"
-            :acmes="acmes"
-            :dns-list="dnsList"
-            :form-mode="certFormMode"
+        <CertForm v-model="certForm" :acmes="acmes" :dns-list="dnsList" :form-mode="certFormMode" />
+        <Task
+            v-if="certTask.id"
+            :task-id="certTask.id"
+            @done="onCertTaskDone"
+            @error="onCertTaskError"
         />
-        <Task v-if="certTask.id" :task-id="certTask.id" @done="onCertTaskDone" @error="onCertTaskError" />
     </Drawer>
     <Drawer v-model="showCertDetailDrawer" title="证书详情" :footer="false">
         <CertDetail :cert="selectedCert" />
     </Drawer>
-    <Drawer v-model="showAcmeDrawer" title="ACME 账号" :loading="acmeTask.loading" :done="acmeTask.done" @save="saveAcmeForm">
+    <Drawer
+        v-model="showAcmeDrawer"
+        title="ACME 账号"
+        :loading="acmeTask.loading"
+        :done="acmeTask.done"
+        @save="saveAcmeForm"
+    >
         <AcmeForm v-model="acmeForm" />
-        <Task v-if="acmeTask.id" :task-id="acmeTask.id" @done="onAcmeTaskDone" @error="onAcmeTaskError" />
+        <Task
+            v-if="acmeTask.id"
+            :task-id="acmeTask.id"
+            @done="onAcmeTaskDone"
+            @error="onAcmeTaskError"
+        />
     </Drawer>
     <Drawer v-model="showDnsDrawer" title="DNS 账号" @save="saveDnsForm">
         <DnsForm v-model="dnsForm" />
@@ -109,7 +153,19 @@ import AcmeForm from '@/view/panel/config/cert/form/Acme.vue'
 import DnsForm from '@/view/panel/config/cert/form/Dns.vue'
 import Task from '@/component/widget/Task.vue'
 import { formatTime } from '@/util/format'
-import { getCert, saveCert, deleteCert, applyCert, getCertContent, getAcme, saveAcme, deleteAcme, getDns, saveDns, deleteDns } from '@/api/cert'
+import {
+    getCert,
+    saveCert,
+    deleteCert,
+    applyCert,
+    getCertContent,
+    getAcme,
+    saveAcme,
+    deleteAcme,
+    getDns,
+    saveDns,
+    deleteDns,
+} from '@/api/cert'
 
 const modal = inject<any>('modal')
 const emit = defineEmits<{ changed: [] }>()
@@ -171,9 +227,15 @@ onMounted(async () => {
     await Promise.all([loadCert(), loadAcme(), loadDns()])
 })
 
-async function loadCert() { certs.value = await getCert() }
-async function loadAcme() { acmes.value = await getAcme() }
-async function loadDns() { dnsList.value = await getDns() }
+async function loadCert() {
+    certs.value = await getCert()
+}
+async function loadAcme() {
+    acmes.value = await getAcme()
+}
+async function loadDns() {
+    dnsList.value = await getDns()
+}
 
 // ── 工具函数 ───────────────────────────────────────────────
 
@@ -212,7 +274,9 @@ const certForm = ref<any>({ Domain: '', Mode: 'dns', Acme: 0, Dns: 0, AutoRenew:
 
 async function openCertDrawer(mode: 'add' | 'edit' | 'reapply', cert?: any) {
     certFormMode.value = mode
-    certForm.value = cert ? { ...cert } : { Domain: '', Mode: 'dns', Acme: 0, Dns: 0, AutoRenew: true }
+    certForm.value = cert
+        ? { ...cert }
+        : { Domain: '', Mode: 'dns', Acme: 0, Dns: 0, AutoRenew: true }
     certTask.value.loading = mode === 'reapply'
     certTask.value.done = false
     certTask.value.id = ''
@@ -300,7 +364,9 @@ function openCertDetail(cert: any) {
 // ── ACME 操作 ──────────────────────────────────────────────
 
 function openAcmeDrawer(acme?: any) {
-    acmeForm.value = acme ? { ...acme } : { Provider: 'letsencrypt', Email: '', EabKid: '', EabHmac: '' }
+    acmeForm.value = acme
+        ? { ...acme }
+        : { Provider: 'letsencrypt', Email: '', EabKid: '', EabHmac: '' }
     acmeTask.value.loading = false
     acmeTask.value.done = false
     acmeTask.value.id = ''
@@ -368,19 +434,22 @@ async function removeDns(id: number) {
 }
 
 :deep(table) {
-    td:nth-child(1), th:nth-child(1) {
+    td:nth-child(1),
+    th:nth-child(1) {
         width: 200px;
         max-width: 200px;
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    td:nth-child(2), th:nth-child(2) {
+    td:nth-child(2),
+    th:nth-child(2) {
         width: 110px;
         max-width: 110px;
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    td:nth-child(3), th:nth-child(3) {
+    td:nth-child(3),
+    th:nth-child(3) {
         width: 200px;
         max-width: 250px;
         overflow: hidden;
@@ -389,14 +458,16 @@ async function removeDns(id: number) {
 }
 
 :deep(.acme-list table) {
-    td:nth-last-child(2), th:nth-last-child(2) {
+    td:nth-last-child(2),
+    th:nth-last-child(2) {
         width: auto;
         max-width: auto;
     }
 }
 
 :deep(.dns-list table) {
-    td:nth-last-child(2), th:nth-last-child(2) {
+    td:nth-last-child(2),
+    th:nth-last-child(2) {
         width: auto;
         max-width: auto;
     }

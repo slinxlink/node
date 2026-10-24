@@ -9,8 +9,18 @@
                 <div class="body">
                     <span>嗨，你好</span>
                     <form @submit.prevent="handleLogin">
-                        <input v-model="form.username" type="text" placeholder="用户名" autocomplete="username" />
-                        <input v-model="form.password" type="password" placeholder="密码" autocomplete="current-password" />
+                        <input
+                            v-model="form.username"
+                            type="text"
+                            placeholder="用户名"
+                            autocomplete="username"
+                        />
+                        <input
+                            v-model="form.password"
+                            type="password"
+                            placeholder="密码"
+                            autocomplete="current-password"
+                        />
                     </form>
                     <button type="submit" :disabled="loading" @click="handleLogin">
                         {{ loading ? '登录中...' : '登录' }}
@@ -54,7 +64,10 @@ const handleLogin = async () => {
     }
 }
 
-keyStack(() => true, (e) => {
-    if (e.key === 'Enter') handleLogin()
-})
+keyStack(
+    () => true,
+    (e) => {
+        if (e.key === 'Enter') handleLogin()
+    },
+)
 </script>

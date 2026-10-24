@@ -10,7 +10,7 @@
                 <i class="icon" :class="{ active: Menu }">{{ Menu ? 'close' : 'menu' }}</i>
             </button>
         </div>
-        <ul class="link" :class="{ visible: Menu}">
+        <ul class="link" :class="{ visible: Menu }">
             <li>
                 <button class="shrink-btn circle" @click="Shrink = !Shrink">
                     <i class="icon">chevron_right</i>
@@ -28,7 +28,7 @@
                 </li>
             </template>
         </ul>
-        <div class="footer" :class="{ visible: Menu}">
+        <div class="footer" :class="{ visible: Menu }">
             <button @click="navFooter = !navFooter">
                 <span class="circle lg">{{ configStore.Username.charAt(0) }}</span>
                 <span class="shrink">{{ configStore.Username }}</span>
@@ -55,16 +55,16 @@ const navFooter = ref(false)
 const route = useRoute()
 
 const links = computed(() => [
-    { to: '/dashboard', icon: 'dashboard',      label: '仪表盘' },
+    { to: '/dashboard', icon: 'dashboard', label: '仪表盘' },
     { divider: true },
-    { to: '/inbound',   icon: 'add_link',       label: '入站' },
-    { to: '/user',      icon: 'rss_feed',       label: '用户' },
-    { to: '/endpoint',  icon: 'cloud_sync',     label: '端点' },
+    { to: '/inbound', icon: 'add_link', label: '入站' },
+    { to: '/user', icon: 'rss_feed', label: '用户' },
+    { to: '/endpoint', icon: 'cloud_sync', label: '端点' },
     ...(configStore.BoardEnable ? [{ to: '/board', icon: 'flight', label: '面板对接' }] : []),
     { divider: true },
-    { to: '/detect',    icon: 'travel_explore', label: 'IP检测' },
-    { to: '/core',      icon: 'handyman',       label: '核心配置' },
-    { to: '/config',    icon: 'settings',       label: '面板设置' },
+    { to: '/detect', icon: 'travel_explore', label: 'IP检测' },
+    { to: '/core', icon: 'handyman', label: '核心配置' },
+    { to: '/config', icon: 'settings', label: '面板设置' },
 ])
 
 onMounted(() => loadConfig())
@@ -75,9 +75,12 @@ async function logout() {
     router.push('/login')
 }
 
-watch(() => route.path, () => {
-    Menu.value = false
-})
+watch(
+    () => route.path,
+    () => {
+        Menu.value = false
+    },
+)
 </script>
 
 <style scoped>
@@ -213,7 +216,9 @@ nav {
             padding: 10px;
             border-radius: 10px;
             background-color: var(--color-bg-dark);
-            transition: gap 0.3s ease, background-color 0.3s ease;
+            transition:
+                gap 0.3s ease,
+                background-color 0.3s ease;
             gap: 10px;
 
             .icon {
@@ -255,7 +260,9 @@ nav {
         color: var(--color-text);
         gap: 10px;
         border-radius: 10px;
-        transition: gap 0.3s ease, background-color 0.3s ease;
+        transition:
+            gap 0.3s ease,
+            background-color 0.3s ease;
 
         &:hover {
             background-color: var(--color-bg-light);
@@ -301,20 +308,25 @@ nav {
             display: none;
         }
 
-        ul, .footer {
+        ul,
+        .footer {
             position: fixed;
             left: 0;
             right: 0;
             background-color: var(--color-bg-dark);
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0s 0.3s;
+            transition:
+                opacity 0.3s ease,
+                visibility 0s 0.3s;
             pointer-events: none;
 
             &.visible {
                 opacity: 1;
                 visibility: visible;
-                transition: opacity 0.3s ease, visibility 0s;
+                transition:
+                    opacity 0.3s ease,
+                    visibility 0s;
                 pointer-events: auto;
             }
         }

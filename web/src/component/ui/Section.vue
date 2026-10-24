@@ -13,12 +13,15 @@
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(defineProps<{ 
-    title: string
-    defaultOpen?: boolean
-}>(), {
-    defaultOpen: true
-})
+const props = withDefaults(
+    defineProps<{
+        title: string
+        defaultOpen?: boolean
+    }>(),
+    {
+        defaultOpen: true,
+    },
+)
 
 const open = ref(props.defaultOpen)
 const bodyRef = ref<HTMLElement>()
@@ -33,9 +36,13 @@ function toggle() {
         })
     } else {
         el.style.height = el.scrollHeight + 'px'
-        el.addEventListener('transitionend', () => {
-            el.style.height = 'auto'
-        }, { once: true })
+        el.addEventListener(
+            'transitionend',
+            () => {
+                el.style.height = 'auto'
+            },
+            { once: true },
+        )
     }
     open.value = !open.value
 }
@@ -75,7 +82,9 @@ onMounted(() => {
 
         &:hover {
             background-color: var(--color-primary);
-            .icon { color: var(--color-text-light); }
+            .icon {
+                color: var(--color-text-light);
+            }
         }
         &:active {
             background-color: var(--color-primary-dark);
@@ -96,7 +105,7 @@ onMounted(() => {
         }
     }
 
-    &:has([style*="height: 0"]) .icon {
+    &:has([style*='height: 0']) .icon {
         transform: rotate(180deg);
     }
 }

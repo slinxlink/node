@@ -3,7 +3,10 @@
         <div class="header">
             <div class="title">{{ core.Name }}</div>
             <div class="status">
-                <Status :status="status === 'running' ? 'yes' : 'no'" :animated="status === 'running'" />
+                <Status
+                    :status="status === 'running' ? 'yes' : 'no'"
+                    :animated="status === 'running'"
+                />
                 <span>{{ status === 'running' ? '运行中' : '未启动' }}</span>
             </div>
         </div>
@@ -94,10 +97,14 @@ onMounted(() => {
         color: var(--color-text);
         font-size: var(--font-size-sm);
 
-        &:first-child { border-radius: 0 0 0 20px; }
-        &:nth-child(2) { border-radius: 0; }
-        &:last-child { 
-            border-right: none; 
+        &:first-child {
+            border-radius: 0 0 0 20px;
+        }
+        &:nth-child(2) {
+            border-radius: 0;
+        }
+        &:last-child {
+            border-right: none;
             border-radius: 0 0 20px 0;
         }
 

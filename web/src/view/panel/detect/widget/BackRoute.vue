@@ -50,8 +50,8 @@ const loading = ref(false)
 const data = ref<any[]>([])
 
 const cities = [
-    { key: 'shanghai',  label: '上海' },
-    { key: 'beijing',   label: '北京' },
+    { key: 'shanghai', label: '上海' },
+    { key: 'beijing', label: '北京' },
     { key: 'guangzhou', label: '广州' },
 ]
 
@@ -59,8 +59,8 @@ function getLine(city: string, isp: string): string {
     const record = data.value.find((r: any) => r.City === city)
     if (!record) return ''
     if (isp === 'telecom') return record.Telecom ?? ''
-    if (isp === 'unicom')  return record.Unicom ?? ''
-    if (isp === 'mobile')  return record.Mobile ?? ''
+    if (isp === 'unicom') return record.Unicom ?? ''
+    if (isp === 'mobile') return record.Mobile ?? ''
     return ''
 }
 
@@ -69,16 +69,16 @@ function lineClass(isp: string, line: string): string {
 
     const green: Record<string, string[]> = {
         telecom: ['CN2 GIA'],
-        unicom:  ['9929'],
-        mobile:  ['CMIN2'],
+        unicom: ['9929'],
+        mobile: ['CMIN2'],
     }
     const yellow: Record<string, string[]> = {
         telecom: ['CN2 GT'],
-        unicom:  ['4837'],
-        mobile:  ['CMI'],
+        unicom: ['4837'],
+        mobile: ['CMI'],
     }
 
-    if (green[isp]?.includes(line))  return 'c-yes'
+    if (green[isp]?.includes(line)) return 'c-yes'
     if (yellow[isp]?.includes(line)) return 'c-reject'
     return 'c-no'
 }

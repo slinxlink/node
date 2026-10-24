@@ -20,9 +20,7 @@
                 </div>
                 <div class="form-row quarter">
                     <span class="form-label">面板类型</span>
-                    <Select v-model="form.Type" :options="[
-                        { label: 'SLINX', value: 'SLINX' },
-                    ]" />
+                    <Select v-model="form.Type" :options="[{ label: 'SLINX', value: 'SLINX' }]" />
                 </div>
                 <div class="form-row quarter">
                     <span class="form-label">同步间隔(s)</span>
@@ -50,22 +48,24 @@ const props = defineProps<{
     inbounds: any[]
 }>()
 
-const form = defineModel<any>({ default: () => ({
-    Enable: true,
-    Name: '',
-    Host: '',
-    NodeID: 0,
-    Key: '',
-    Inbound: 0,
-    Type: 'SLINX',
-    SyncInterval: 60,
-}) })
+const form = defineModel<any>({
+    default: () => ({
+        Enable: true,
+        Name: '',
+        Host: '',
+        NodeID: 0,
+        Key: '',
+        Inbound: 0,
+        Type: 'SLINX',
+        SyncInterval: 60,
+    }),
+})
 
 const inboundOptions = computed(() =>
-    props.inbounds.map(ib => ({
+    props.inbounds.map((ib) => ({
         label: String(ib.Port),
         value: ib.ID,
-    }))
+    })),
 )
 </script>
 

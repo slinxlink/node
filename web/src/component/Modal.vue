@@ -10,7 +10,9 @@
             </div>
             <div class="actions" :class="{ split: mode === 'confirm' }">
                 <button v-if="mode === 'confirm'" class="cancel-btn" @click="close">取消</button>
-                <button class="confirm-btn" :disabled="mode === 'warn'" @click="confirm">确认</button>
+                <button class="confirm-btn" :disabled="mode === 'warn'" @click="confirm">
+                    确认
+                </button>
             </div>
         </div>
     </dialog>
@@ -42,11 +44,14 @@ const iconName = computed(() => {
 
 // ── 键盘快捷键 ─────────────────────────────────────────────
 
-keyStack(() => visible.value, (e) => {
-    if (mode.value === 'warn') return
-    if (e.key === 'Escape') close()
-    if (e.key === 'Enter') confirm()
-})
+keyStack(
+    () => visible.value,
+    (e) => {
+        if (mode.value === 'warn') return
+        if (e.key === 'Escape') close()
+        if (e.key === 'Enter') confirm()
+    },
+)
 
 // ── 方法 ──────────────────────────────────────────────────
 

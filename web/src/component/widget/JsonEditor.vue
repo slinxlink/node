@@ -51,14 +51,14 @@ const displayContent = computed(() => {
 watch(displayContent, (val) => {
     if (view) {
         view.dispatch({
-            changes: { from: 0, to: view.state.doc.length, insert: val }
+            changes: { from: 0, to: view.state.doc.length, insert: val },
         })
     }
 })
 
 watch(isDark, (dark) => {
     view?.dispatch({
-        effects: themeCompartment.reconfigure(dark ? oneDark : [])
+        effects: themeCompartment.reconfigure(dark ? oneDark : []),
     })
 })
 

@@ -23,12 +23,14 @@
 import Input from '@/component/ui/Input.vue'
 import Select from '@/component/ui/Select.vue'
 
-const form = defineModel<any>({ default: () => ({
-    Provider: 'aliyun',
-    Name: '',
-    Key: '',
-    Secret: '',
-}) })
+const form = defineModel<any>({
+    default: () => ({
+        Provider: 'aliyun',
+        Name: '',
+        Key: '',
+        Secret: '',
+    }),
+})
 
 const providerOptions = [
     { label: '阿里云', value: 'aliyun' },

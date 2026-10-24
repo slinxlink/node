@@ -16,12 +16,12 @@
     --color-bg: rgb(30, 30, 30);
     --color-bg-dark: rgb(23, 23, 23);
 
-    --color-red: #D63939;
-    --color-orange: #FF6600;
-    --color-green: #2FB344;
+    --color-red: #d63939;
+    --color-orange: #ff6600;
+    --color-green: #2fb344;
     --color-blue: #2196f3;
-    --color-yellow: #E0A030; 
-    --color-purple: #9C27B0;
+    --color-yellow: #e0a030;
+    --color-purple: #9c27b0;
 
     /* 字体 */
     --font-size-sm: 12px;
@@ -34,7 +34,7 @@
     --gap-size-quarter: calc(var(--gap-size) / 4); /* 四分之一间隙 */
     --gap-size-third: calc(var(--gap-size) / 3); /* 三分之一间隙 */
     --gap-size-half: 10px; /* 单个间隙 */
-    --gap-size: 20px;      /* 标准间隙 */
+    --gap-size: 20px; /* 标准间隙 */
 
     --box-shadow: none;
 
@@ -47,9 +47,9 @@
     --color-text-light: rgb(30, 30, 30);
     --color-text: rgb(50, 50, 50);
     --color-text-dark: rgb(80, 80, 80);
-    
+
     --color-bg-light: rgb(214, 214, 214);
-    --color-bg: rgb(228, 228 ,228);
+    --color-bg: rgb(228, 228, 228);
     --color-bg-dark: rgb(241, 241, 241);
 
     --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -59,10 +59,18 @@
     }
 }
 
-.c-yes    { color: #2FB344; }
-.c-no     { color: #D63939; }
-.c-reject { color: #E0A030; }
-.c-empty { color: var(--color-text-dark); }
+.c-yes {
+    color: #2fb344;
+}
+.c-no {
+    color: #d63939;
+}
+.c-reject {
+    color: #e0a030;
+}
+.c-empty {
+    color: var(--color-text-dark);
+}
 
 @font-face {
     font-family: 'Material Icons';
@@ -103,11 +111,14 @@ button {
     color: var(--color-text-light);
     border: none;
     cursor: pointer;
-    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-    -webkit-user-select: none;  /* Safari */
-    -moz-user-select: none;     /* Firefox */
-    -ms-user-select: none;      /* Internet Explorer/Edge */
-    user-select: none;          /* Standard */
+    transition:
+        background-color 0.3s,
+        color 0.3s,
+        border-color 0.3s;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Standard */
 
     background-color: var(--color-primary-light);
     border-radius: 999px;
@@ -115,7 +126,7 @@ button {
     &:hover {
         background-color: var(--color-primary);
     }
-    
+
     &:active {
         background-color: var(--color-primary-dark);
     }
@@ -131,11 +142,14 @@ a {
     cursor: pointer;
     text-decoration: none;
     text-align: center;
-    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-    -webkit-user-select: none;  /* Safari */
-    -moz-user-select: none;     /* Firefox */
-    -ms-user-select: none;      /* Internet Explorer/Edge */
-    user-select: none;          /* Standard */
+    transition:
+        background-color 0.3s,
+        color 0.3s,
+        border-color 0.3s;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Standard */
 
     color: var(--color-secondary-light);
 
@@ -157,11 +171,11 @@ a {
             background-color: var(--color-primary-dark);
         }
     }
-    
+
     &.link {
         color: var(--color-text);
         background-color: transparent;
-        
+
         &:hover {
             color: var(--color-primary);
         }
@@ -194,10 +208,6 @@ form {
     flex-direction: column;
     gap: 20px;
 }
-
-
-
-
 
 * {
     box-sizing: border-box;
@@ -253,8 +263,6 @@ body,
     }
 }
 
-
-
 .rotate {
     transition: 0.3s ease;
     background-color: var(--color-bg-dark);
@@ -294,7 +302,6 @@ body,
     &.md {
         width: calc(50% - var(--gap-size-half));
     }
-
 
     .header {
         display: flex;
@@ -371,8 +378,6 @@ body,
     }
 }
 
-
-
 .auth .card {
     max-width: 400px;
     margin: 48px auto 0 auto;
@@ -444,7 +449,7 @@ body,
         margin: 0 -20px;
     }
     &:before {
-        margin-right: 10px;  /* 两端线条与文字之间的距离 */
+        margin-right: 10px; /* 两端线条与文字之间的距离 */
     }
     &:after {
         margin-left: 10px; /* 两端线条与文字之间的距离 */
@@ -452,7 +457,7 @@ body,
 }
 
 .divider-notext {
-    height: 1px; 
+    height: 1px;
     background-color: var(--color-bg);
     padding: 0 10px;
     width: 100%;
@@ -471,7 +476,7 @@ body,
         color: var(--color-text);
     }
 
-    input[type="checkbox"] {
+    input[type='checkbox'] {
         appearance: none; /* 对一些现代浏览器有效 */
         -webkit-appearance: none; /* 对WebKit浏览器有效 */
         -moz-appearance: none; /* 对Mozilla浏览器有效 */
@@ -484,24 +489,24 @@ body,
         outline: none;
         background-color: var(--color-bg);
         transition: background-color 0.3s;
-    
+
         &:hover {
             background-color: var(--color-bg-dark);
         }
-    
+
         &::before {
             content: '';
             width: 100%;
             height: 100%;
             display: block;
         }
-    
+
         &:checked::before {
             background-color: var(--color-primary);
             transition: all 0.3s;
             border-radius: 5px;
         }
-    
+
         &:checked::after {
             content: '';
             position: absolute;
@@ -541,7 +546,11 @@ body,
     &.lg {
         width: 40px;
         height: 40px;
-        background: linear-gradient(to bottom right, var(--color-primary-light), var(--color-primary));
+        background: linear-gradient(
+            to bottom right,
+            var(--color-primary-light),
+            var(--color-primary)
+        );
         font-size: 20px;
     }
 }

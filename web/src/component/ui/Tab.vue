@@ -5,7 +5,8 @@
                 v-for="tab in tabs"
                 :key="tab.key"
                 :class="{ active: modelValue === tab.key }"
-                @click="$emit('update:modelValue', tab.key)">
+                @click="$emit('update:modelValue', tab.key)"
+            >
                 {{ tab.label }}
             </button>
         </div>

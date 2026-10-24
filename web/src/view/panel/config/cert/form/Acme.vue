@@ -25,16 +25,18 @@
 import Input from '@/component/ui/Input.vue'
 import Select from '@/component/ui/Select.vue'
 
-const form = defineModel<any>({ default: () => ({
-    Provider: 'letsencrypt',
-    Email: '',
-    EabKid: '',
-    EabHmac: '',
-}) })
+const form = defineModel<any>({
+    default: () => ({
+        Provider: 'letsencrypt',
+        Email: '',
+        EabKid: '',
+        EabHmac: '',
+    }),
+})
 
 const providerOptions = [
     { label: "Let's Encrypt", value: 'letsencrypt' },
-    { label: 'ZeroSSL',       value: 'zerossl' },
+    { label: 'ZeroSSL', value: 'zerossl' },
 ]
 </script>
 

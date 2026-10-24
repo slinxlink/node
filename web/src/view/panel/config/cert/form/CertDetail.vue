@@ -51,8 +51,8 @@ const content = ref({ cert: '', key: '' })
 const acmes = ref<any[]>([])
 const dnsList = ref<any[]>([])
 
-const acme = computed(() => acmes.value.find(a => a.ID === props.cert?.Acme))
-const dns = computed(() => dnsList.value.find(d => d.ID === props.cert?.Dns))
+const acme = computed(() => acmes.value.find((a) => a.ID === props.cert?.Acme))
+const dns = computed(() => dnsList.value.find((d) => d.ID === props.cert?.Dns))
 
 function formatMode(mode: string) {
     const map: Record<string, string> = { dns: 'DNS验证', http: 'HTTP验证', manual: '手动上传' }
@@ -83,11 +83,15 @@ onMounted(async () => {
     dnsList.value = d
 })
 
-watch(() => props.cert, async (val) => {
-    if (val?.ID) {
-        content.value = await getCertContent(val.ID)
-    }
-}, { immediate: true })
+watch(
+    () => props.cert,
+    async (val) => {
+        if (val?.ID) {
+            content.value = await getCertContent(val.ID)
+        }
+    },
+    { immediate: true },
+)
 </script>
 
 <style scoped>

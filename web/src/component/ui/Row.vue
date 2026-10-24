@@ -21,15 +21,22 @@ defineProps<{ title: string; subtitle?: string }>()
     align-items: center;
     padding: 5px 0;
 
-    &:last-child { border-bottom: none; }
+    &:last-child {
+        border-bottom: none;
+    }
 
     .left {
         flex: 1;
         display: flex;
         flex-direction: column;
 
-        .title { color: var(--color-text-light); }
-        .subtitle { font-size: var(--font-size-sm); color: var(--color-text-dark); }
+        .title {
+            color: var(--color-text-light);
+        }
+        .subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-dark);
+        }
     }
 
     .right {

@@ -1,10 +1,11 @@
 import { request } from '@/util/request'
 
 export const getCore = () => request('/api/core')
-export const updateCore = (data: any) => request('/api/core', {
-    method: 'PUT',
-    body: JSON.stringify(data)
-})
+export const updateCore = (data: any) =>
+    request('/api/core', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    })
 export const resetCore = () => request('/api/core/reset', { method: 'POST' })
 
 export const getCoreStatus = () => request('/api/core/status')
@@ -21,8 +22,8 @@ export const Log = () => {
 export const getCoreConfig = () => {
     const token = localStorage.getItem('token')
     return fetch('/api/core/config', {
-        headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.text())
+        headers: { Authorization: `Bearer ${token}` },
+    }).then((r) => r.text())
 }
 
 export const getCoreProcess = () => request('/api/core/process')

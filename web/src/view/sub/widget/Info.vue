@@ -1,7 +1,9 @@
 <template>
     <div class="info">
         <FormRow title="启用">
-            <span class="tag" :class="props.data.user.Enable ? 'green' : 'red'">{{ props.data.user.Enable ? '开启' : '关闭' }}</span>
+            <span class="tag" :class="props.data.user.Enable ? 'green' : 'red'">{{
+                props.data.user.Enable ? '开启' : '关闭'
+            }}</span>
         </FormRow>
         <FormRow title="名称">
             <span>{{ props.data.user.Name || '-' }}</span>
@@ -26,20 +28,30 @@
         </FormRow>
         <FormRow title="关联入站">
             <div class="tags">
-                <span
-                    v-for="ib in inboundTags"
-                    :key="ib.id"
-                    class="tag"
-                    :class="ib.color"
-                >
+                <span v-for="ib in inboundTags" :key="ib.id" class="tag" :class="ib.color">
                     {{ ib.port }}
                 </span>
             </div>
         </FormRow>
         <div class="divider">复制链接</div>
-        <Link v-for="uri in uris" :key="uri.value" :label="uri.label" :color="uri.color" :name="uri.name" :value="uri.value" :download="uri.download" />
+        <Link
+            v-for="uri in uris"
+            :key="uri.value"
+            :label="uri.label"
+            :color="uri.color"
+            :name="uri.name"
+            :value="uri.value"
+            :download="uri.download"
+        />
         <div class="divider">订阅信息</div>
-        <Link v-for="url in urls" :key="url.value" :label="url.label" :color="url.color" :name="url.name" :value="url.value" />
+        <Link
+            v-for="url in urls"
+            :key="url.value"
+            :label="url.label"
+            :color="url.color"
+            :name="url.name"
+            :value="url.value"
+        />
     </div>
 </template>
 
@@ -57,16 +69,31 @@ const props = defineProps<{
 const inboundTags = computed(() => {
     try {
         const ids: number[] = JSON.parse(props.data.user.Inbounds || '[]')
-        return ids.map(id => {
-            const ib = props.data.inbounds.find((i: any) => i.ID === id)
-            return ib ? { id, port: ib.Port, name: ib.Name, protocol: ib.Protocol, color: protocol(ib.Protocol) } : null
-        }).filter((ib): ib is { id: number, port: any, name: string, protocol: string, color: string } => ib !== null)
+        return ids
+            .map((id) => {
+                const ib = props.data.inbounds.find((i: any) => i.ID === id)
+                return ib
+                    ? {
+                          id,
+                          port: ib.Port,
+                          name: ib.Name,
+                          protocol: ib.Protocol,
+                          color: protocol(ib.Protocol),
+                      }
+                    : null
+            })
+            .filter(
+                (
+                    ib,
+                ): ib is { id: number; port: any; name: string; protocol: string; color: string } =>
+                    ib !== null,
+            )
     } catch {
         return []
     }
 })
 
-const uris = computed(() => 
+const uris = computed(() =>
     (props.data.uris ?? []).map((uri: string, i: number) => {
         const proto = (uri.split('://')[0] ?? '').replace('2', '')
         const name = decodeURIComponent(uri.split('#')[1] ?? '')
@@ -77,7 +104,7 @@ const uris = computed(() =>
             value: uri,
             download: props.data.jsons?.[i],
         }
-    })
+    }),
 )
 
 const urls = computed(() =>
@@ -90,7 +117,7 @@ const urls = computed(() =>
             name: props.data.user.Name || props.data.user.Token,
             value: url,
         }
-    })
+    }),
 )
 </script>
 

@@ -9,7 +9,7 @@ export const request = async (url: string, options: RequestInit = {}) => {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...options.headers,
-        }
+        },
     })
 
     if (res.status === 401) {

@@ -85,8 +85,10 @@ onMounted(() => load())
 // ── 工具函数 ───────────────────────────────────────────────
 
 function getInboundTags(inboundID: number) {
-    const ib = inbounds.value.find(i => i.ID === inboundID)
-    return ib ? [{ id: ib.ID, port: ib.Port, protocol: ib.Protocol, color: protocol(ib.Protocol) }] : []
+    const ib = inbounds.value.find((i) => i.ID === inboundID)
+    return ib
+        ? [{ id: ib.ID, port: ib.Port, protocol: ib.Protocol, color: protocol(ib.Protocol) }]
+        : []
 }
 
 // ── 列表操作 ───────────────────────────────────────────────

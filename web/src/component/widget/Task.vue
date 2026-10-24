@@ -16,35 +16,43 @@
 import { task } from '@/api/task'
 
 const props = defineProps<{ taskId: string }>()
-const emit = defineEmits<{ done: [], error: [] }>()
+const emit = defineEmits<{ done: []; error: [] }>()
 
-interface LogLine { time: string; level: string; message: string }
+interface LogLine {
+    time: string
+    level: string
+    message: string
+}
 
 const lines = ref<LogLine[]>([])
 const outputRef = ref<HTMLElement>()
 
-watch(() => props.taskId, (id) => {
-    if (!id) return
-    lines.value = []
-    const ws = task(id)
-    ws.onmessage = (e) => {
-        const line = JSON.parse(e.data) as LogLine
-        if (line.level === 'DONE') {
-            emit('done')
-            ws.close()
-            return
+watch(
+    () => props.taskId,
+    (id) => {
+        if (!id) return
+        lines.value = []
+        const ws = task(id)
+        ws.onmessage = (e) => {
+            const line = JSON.parse(e.data) as LogLine
+            if (line.level === 'DONE') {
+                emit('done')
+                ws.close()
+                return
+            }
+            lines.value.push(line)
+            if (line.level === 'ERROR') {
+                emit('error')
+                ws.close()
+                return
+            }
+            nextTick(() => {
+                outputRef.value?.scrollTo(0, outputRef.value.scrollHeight)
+            })
         }
-        lines.value.push(line)
-        if (line.level === 'ERROR') {
-            emit('error')
-            ws.close()
-            return
-        }
-        nextTick(() => {
-            outputRef.value?.scrollTo(0, outputRef.value.scrollHeight)
-        })
-    }
-}, { immediate: true })
+    },
+    { immediate: true },
+)
 </script>
 
 <style scoped>
@@ -84,11 +92,16 @@ watch(() => props.taskId, (id) => {
                     flex-shrink: 0;
                     font-weight: bold;
 
-                    &.info  { color: var(--color-green); }
-                    &.warn  { color: var(--color-yellow); }
-                    &.error { color: var(--color-red); }
+                    &.info {
+                        color: var(--color-green);
+                    }
+                    &.warn {
+                        color: var(--color-yellow);
+                    }
+                    &.error {
+                        color: var(--color-red);
+                    }
                 }
-
             }
 
             .message {
@@ -98,7 +111,6 @@ watch(() => props.taskId, (id) => {
         }
     }
 }
-
 
 @media (max-width: 768px) {
     .task {

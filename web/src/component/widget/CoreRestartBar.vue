@@ -43,9 +43,12 @@ async function handleRestart() {
     }
 }
 
-watch(() => props.dirty, (val) => {
-    if (val) saved.value = false
-})
+watch(
+    () => props.dirty,
+    (val) => {
+        if (val) saved.value = false
+    },
+)
 </script>
 
 <style scoped>

@@ -43,7 +43,9 @@ function handleClick() {
     color: var(--color-text-dark);
     display: flex;
     align-items: center;
-    transition: color 0.2s, background 0.2s;
+    transition:
+        color 0.2s,
+        background 0.2s;
 
     &:hover {
         background: var(--color-bg-light);

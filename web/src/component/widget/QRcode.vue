@@ -30,9 +30,12 @@ const props = defineProps<{
 const show = ref(false)
 const canvas = ref<HTMLCanvasElement>()
 
-keyStack(() => show.value, (e) => {
-    if (e.key === 'Escape') show.value = false
-})
+keyStack(
+    () => show.value,
+    (e) => {
+        if (e.key === 'Escape') show.value = false
+    },
+)
 
 watch(show, (val) => {
     if (val) {
@@ -40,7 +43,7 @@ watch(show, (val) => {
             QRCodeLib.toCanvas(canvas.value, props.value, {
                 width: 300,
                 margin: 2,
-                color: { dark: '#000000', light: '#ffffff' }
+                color: { dark: '#000000', light: '#ffffff' },
             })
         })
     }
@@ -56,7 +59,9 @@ watch(show, (val) => {
     border-radius: 5px;
     background: none;
     color: var(--color-text-dark);
-    transition: color 0.3s, background-color 0.3s;
+    transition:
+        color 0.3s,
+        background-color 0.3s;
 
     &:hover {
         background-color: var(--color-bg-light);

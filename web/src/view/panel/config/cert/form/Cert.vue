@@ -2,19 +2,37 @@
     <div class="form">
         <div class="form-row">
             <span class="form-label">申请方式</span>
-            <Select v-model="form.Mode" :options="modeOptions" :disabled="props.formMode === 'reapply'" />
+            <Select
+                v-model="form.Mode"
+                :options="modeOptions"
+                :disabled="props.formMode === 'reapply'"
+            />
         </div>
         <div class="form-row" v-if="form.Mode !== 'manual'">
             <span class="form-label">域名</span>
-            <Input v-model="form.Domain" placeholder="example.com" :disabled="props.formMode !== 'add'" />
+            <Input
+                v-model="form.Domain"
+                placeholder="example.com"
+                :disabled="props.formMode !== 'add'"
+            />
         </div>
         <div class="form-row" v-if="form.Mode !== 'manual'">
             <span class="form-label">ACME 账号</span>
-            <Select v-model="form.Acme" :options="acmeOptions" placeholder="选择 ACME 账号" :disabled="props.formMode === 'reapply'" />
+            <Select
+                v-model="form.Acme"
+                :options="acmeOptions"
+                placeholder="选择 ACME 账号"
+                :disabled="props.formMode === 'reapply'"
+            />
         </div>
         <div class="form-row" v-if="form.Mode === 'dns'">
             <span class="form-label">DNS 账号</span>
-            <Select v-model="form.Dns" :options="dnsOptions" placeholder="选择 DNS 账号" :disabled="props.formMode === 'reapply'" />
+            <Select
+                v-model="form.Dns"
+                :options="dnsOptions"
+                placeholder="选择 DNS 账号"
+                :disabled="props.formMode === 'reapply'"
+            />
         </div>
         <div class="form-row" v-if="form.Mode !== 'manual'">
             <span class="form-label">自动续签</span>
@@ -23,11 +41,21 @@
         <template v-if="form.Mode === 'manual'">
             <div class="form-row">
                 <span class="form-label">公钥</span>
-                <Text v-model="form.CertContent" placeholder="-----BEGIN CERTIFICATE-----" :rows="6" :disabled="props.formMode === 'reapply'" />
+                <Text
+                    v-model="form.CertContent"
+                    placeholder="-----BEGIN CERTIFICATE-----"
+                    :rows="6"
+                    :disabled="props.formMode === 'reapply'"
+                />
             </div>
             <div class="form-row">
                 <span class="form-label">私钥</span>
-                <Text v-model="form.KeyContent" placeholder="-----BEGIN PRIVATE KEY-----" :rows="6" :disabled="props.formMode === 'reapply'" />
+                <Text
+                    v-model="form.KeyContent"
+                    placeholder="-----BEGIN PRIVATE KEY-----"
+                    :rows="6"
+                    :disabled="props.formMode === 'reapply'"
+                />
             </div>
         </template>
     </div>
@@ -54,17 +82,17 @@ const modeOptions = [
 ]
 
 const acmeOptions = computed(() =>
-    props.acmes.map(a => ({
+    props.acmes.map((a) => ({
         label: `${a.Email} [${formatAcmeProvider(a.Provider)}]`,
-        value: a.ID
-    }))
+        value: a.ID,
+    })),
 )
 
 const dnsOptions = computed(() =>
-    props.dnsList.map(d => ({
+    props.dnsList.map((d) => ({
         label: `${d.Name} [${formatDnsProvider(d.Provider)}]`,
-        value: d.ID
-    }))
+        value: d.ID,
+    })),
 )
 
 function formatAcmeProvider(provider: string) {
@@ -77,11 +105,14 @@ function formatDnsProvider(provider: string) {
     return map[provider] ?? provider
 }
 
-watch(() => form.value.Mode, (val) => {
-    if (val === 'manual') {
-        form.value.AutoRenew = false
-    }
-})
+watch(
+    () => form.value.Mode,
+    (val) => {
+        if (val === 'manual') {
+            form.value.AutoRenew = false
+        }
+    },
+)
 </script>
 
 <style scoped>

@@ -4,7 +4,7 @@
         <button
             v-for="(option, index) in options"
             :key="option.value"
-            :ref="el => btnRefs[index] = el as HTMLElement"
+            :ref="(el) => (btnRefs[index] = el as HTMLElement)"
             :class="{ active: modelValue === option.value }"
             @click="!disabled && $emit('update:modelValue', option.value)"
         >
@@ -16,7 +16,7 @@
 <script setup lang="ts">
 const props = defineProps<{
     modelValue?: string
-    options: Array<{ label: string, value: string }>
+    options: Array<{ label: string; value: string }>
     disabled?: boolean
 }>()
 defineEmits(['update:modelValue'])
@@ -26,16 +26,20 @@ const btnWidths = ref<number[]>([])
 
 onMounted(() => {
     const observer = new ResizeObserver(() => {
-        btnWidths.value = btnRefs.value.map(el => el?.offsetWidth ?? 0)
+        btnWidths.value = btnRefs.value.map((el) => el?.offsetWidth ?? 0)
     })
-    watch(btnRefs, (els) => {
-        els.forEach(el => el && observer.observe(el))
-    }, { immediate: true })
+    watch(
+        btnRefs,
+        (els) => {
+            els.forEach((el) => el && observer.observe(el))
+        },
+        { immediate: true },
+    )
     onUnmounted(() => observer.disconnect())
 })
 
 const sliderStyle = computed(() => {
-    const index = props.options.findIndex(o => o.value === props.modelValue)
+    const index = props.options.findIndex((o) => o.value === props.modelValue)
     if (index === -1 || !btnRefs.value[index] || !btnWidths.value[index]) return { opacity: 0 }
     const btn = btnRefs.value[index]
     const padding = 5
@@ -72,7 +76,9 @@ const sliderStyle = computed(() => {
         height: calc(100% - 10px);
         background-color: var(--color-primary-light);
         border-radius: 999px;
-        transition: transform 0.3s ease, width 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            width 0.3s ease;
         pointer-events: none;
     }
 

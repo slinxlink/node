@@ -14,17 +14,23 @@ export function keyStack(isOpen: () => boolean, handler: (e: KeyboardEvent) => v
         }
     }
 
-    watch(isOpen, (val) => {
-        if (val) {
-            stack.push(id)
-            active = false
-            requestAnimationFrame(() => { active = true })
-        } else {
-            active = false
-            const index = stack.indexOf(id)
-            if (index !== -1) stack.splice(index, 1)
-        }
-    }, { immediate: true })
+    watch(
+        isOpen,
+        (val) => {
+            if (val) {
+                stack.push(id)
+                active = false
+                requestAnimationFrame(() => {
+                    active = true
+                })
+            } else {
+                active = false
+                const index = stack.indexOf(id)
+                if (index !== -1) stack.splice(index, 1)
+            }
+        },
+        { immediate: true },
+    )
 
     onMounted(() => window.addEventListener('keyup', onKeydown))
     onUnmounted(() => {

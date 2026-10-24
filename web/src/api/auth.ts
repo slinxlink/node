@@ -3,7 +3,7 @@ import { request } from '@/util/request'
 export const login = (username: string, password: string) =>
     request('/api/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
     })
 
 export const changeCredentials = (data: {

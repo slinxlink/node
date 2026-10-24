@@ -3,13 +3,13 @@
         <div class="page">
             <Tab v-model="activeTab" :tabs="tabs">
                 <div v-if="activeTab === 'settings'" class="body">
-                    <RestartBar 
-                        :dirty="dirty" 
-                        :on-save="save" 
-                        :on-restart="restart" 
+                    <RestartBar
+                        :dirty="dirty"
+                        :on-save="save"
+                        :on-restart="restart"
                         tip="此处的所有更改保存后将自动重启核心生效"
                         restart-text="重启核心"
-                        @update:dirty="dirty = $event" 
+                        @update:dirty="dirty = $event"
                     />
                     <CoreCard />
                     <Section title="日志">
@@ -17,10 +17,18 @@
                             <Toggle v-model="Core.LogEnable" />
                         </Row>
                         <Row title="路径" subtitle="日志文件仅支持保存在面板根目录下">
-                            <Input v-model="Core.LogPath" :prefix="dir + '/'" placeholder="日志路径" />
+                            <Input
+                                v-model="Core.LogPath"
+                                :prefix="dir + '/'"
+                                placeholder="日志路径"
+                            />
                         </Row>
                         <Row title="等级" subtitle="等级越高，记录的日志越少">
-                            <Select v-model="Core.LogLevel" :options="logLevelOptions" placeholder="日志等级" />
+                            <Select
+                                v-model="Core.LogLevel"
+                                :options="logLevelOptions"
+                                placeholder="日志等级"
+                            />
                         </Row>
                     </Section>
                     <Section title="重置" :default-open="false">
@@ -63,8 +71,8 @@ const loaded = ref(false)
 const activeTab = ref('settings')
 const tabs = [
     { key: 'settings', label: '设置' },
-    { key: 'config',   label: '高级配置' },
-    { key: 'log',      label: '日志' },
+    { key: 'config', label: '高级配置' },
+    { key: 'log', label: '日志' },
 ]
 
 const coreConfig = ref<string>('')
@@ -72,8 +80,8 @@ const coreConfig = ref<string>('')
 const logLevelOptions = [
     { label: 'TRACE', value: 'trace' },
     { label: 'DEBUG', value: 'debug' },
-    { label: 'INFO',  value: 'info' },
-    { label: 'WARN',  value: 'warn' },
+    { label: 'INFO', value: 'info' },
+    { label: 'WARN', value: 'warn' },
     { label: 'ERROR', value: 'error' },
     { label: 'FATAL', value: 'fatal' },
     { label: 'PANIC', value: 'panic' },
@@ -81,9 +89,13 @@ const logLevelOptions = [
 
 const dir = ref('')
 
-watch(Core, () => {
-    if (loaded.value) dirty.value = true
-}, { deep: true })
+watch(
+    Core,
+    () => {
+        if (loaded.value) dirty.value = true
+    },
+    { deep: true },
+)
 
 watch(activeTab, async (val) => {
     if (val === 'config') {
@@ -92,10 +104,10 @@ watch(activeTab, async (val) => {
 })
 
 onMounted(() => {
-    getConfig().then(cfg => dir.value = cfg.Dir)
-    getCore().then(core => {
+    getConfig().then((cfg) => (dir.value = cfg.Dir))
+    getCore().then((core) => {
         Core.value = core
-        nextTick(() => loaded.value = true)
+        nextTick(() => (loaded.value = true))
     })
 })
 

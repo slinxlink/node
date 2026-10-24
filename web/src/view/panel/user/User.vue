@@ -107,10 +107,12 @@ function getSubUrl(u: any) {
 function getInboundTags(inboundsJSON: string) {
     try {
         const ids: number[] = JSON.parse(inboundsJSON || '[]')
-        return ids.map(id => {
-            const ib = inbounds.value.find(i => i.ID === id)
-            return ib ? { id, port: ib.Port, color: protocol(ib.Protocol) } : null
-        }).filter((ib): ib is { id: number, port: number, color: string } => ib !== null)
+        return ids
+            .map((id) => {
+                const ib = inbounds.value.find((i) => i.ID === id)
+                return ib ? { id, port: ib.Port, color: protocol(ib.Protocol) } : null
+            })
+            .filter((ib): ib is { id: number; port: number; color: string } => ib !== null)
     } catch {
         return []
     }
@@ -119,10 +121,7 @@ function getInboundTags(inboundsJSON: string) {
 // ── 生命周期 ───────────────────────────────────────────────
 
 onMounted(async () => {
-    const [, cfg] = await Promise.all([
-        load(),
-        getConfig(),
-    ])
+    const [, cfg] = await Promise.all([load(), getConfig()])
     config.value = cfg
 })
 
@@ -158,7 +157,12 @@ async function openCreate() {
         generateUUID(),
         generatePassword(),
     ])
-    defaultUser.value = { ...defaultUser.value, Token: tokenRes.token, UUID: uuidRes.uuid, Password: passwordRes.password }
+    defaultUser.value = {
+        ...defaultUser.value,
+        Token: tokenRes.token,
+        UUID: uuidRes.uuid,
+        Password: passwordRes.password,
+    }
 }
 
 function openEdit(u: any) {

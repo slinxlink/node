@@ -49,12 +49,15 @@ onMounted(async () => {
     }
 })
 
-watch(() => props.prefix, async () => {
-    await nextTick()
-    if (prefixRef.value) {
-        prefixWidth.value = `${prefixRef.value.offsetWidth + 14}px`
-    }
-})
+watch(
+    () => props.prefix,
+    async () => {
+        await nextTick()
+        if (prefixRef.value) {
+            prefixWidth.value = `${prefixRef.value.offsetWidth + 14}px`
+        }
+    },
+)
 
 function onKeydown(e: KeyboardEvent) {
     if (e.metaKey || e.ctrlKey) return

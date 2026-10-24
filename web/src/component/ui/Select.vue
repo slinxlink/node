@@ -1,19 +1,26 @@
 <template>
     <div class="select" :class="{ disabled: props.disabled, small: props.small }" ref="wrapRef">
         <button ref="triggerRef" class="btn" @click="toggle" :disabled="props.disabled">
-            <span>{{ options.find(o => o.value === modelValue)?.label ?? placeholder }}</span>
+            <span>{{ options.find((o) => o.value === modelValue)?.label ?? placeholder }}</span>
             <i class="icon">expand_more</i>
         </button>
 
         <Teleport to="body">
-            <div v-if="open" ref="dropdownRef" class="dropdown" :class="{ small: props.small }" :style="dropdownStyle">
+            <div
+                v-if="open"
+                ref="dropdownRef"
+                class="dropdown"
+                :class="{ small: props.small }"
+                :style="dropdownStyle"
+            >
                 <div class="scroll">
                     <div
                         v-for="option in options"
                         :key="option.value"
                         class="item"
                         :class="{ active: option.value === modelValue }"
-                        @click="select(option.value)">
+                        @click="select(option.value)"
+                    >
                         {{ option.label }}
                     </div>
                 </div>
@@ -27,7 +34,7 @@ import { keyStack } from '@/composable/keyStack'
 
 const props = defineProps<{
     modelValue?: string | number
-    options: Array<{ label: string, value: string | number }>
+    options: Array<{ label: string; value: string | number }>
     placeholder?: string
     disabled?: boolean
     small?: boolean
@@ -104,9 +111,12 @@ function onScroll(e: Event) {
     close()
 }
 
-keyStack(() => open.value, (e) => {
-    if (e.key === 'Escape') close()
-})
+keyStack(
+    () => open.value,
+    (e) => {
+        if (e.key === 'Escape') close()
+    },
+)
 
 onBeforeUnmount(close)
 </script>

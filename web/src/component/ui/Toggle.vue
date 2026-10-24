@@ -1,11 +1,15 @@
 <template>
-    <div class="toggle" :class="{ active: modelValue, disabled: disabled }" @click="$emit('update:modelValue', !modelValue)">
+    <div
+        class="toggle"
+        :class="{ active: modelValue, disabled: disabled }"
+        @click="$emit('update:modelValue', !modelValue)"
+    >
         <div class="thumb" />
     </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{ modelValue: boolean, disabled?: boolean }>()
+defineProps<{ modelValue: boolean; disabled?: boolean }>()
 defineEmits(['update:modelValue'])
 </script>
 
@@ -39,7 +43,7 @@ defineEmits(['update:modelValue'])
         border-radius: 50%;
         background: #fff;
         transition: left 0.25s ease;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
 
     &.active .thumb {

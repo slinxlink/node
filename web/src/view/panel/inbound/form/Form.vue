@@ -12,31 +12,49 @@
             </div>
             <div class="form-row">
                 <span class="form-label">协议</span>
-                <Select v-model="form.Protocol" :options="[
-                    { label: 'VLESS', value: 'vless' },
-                    { label: 'VMess', value: 'vmess' },
-                    { label: 'Hysteria', value: 'hysteria' },
-                    { label: 'Trojan', value: 'trojan' },
-                    { label: 'TUIC', value: 'tuic' },
-                    { label: 'AnyTLS', value: 'anytls' },
-                ]" />
+                <Select
+                    v-model="form.Protocol"
+                    :options="[
+                        { label: 'VLESS', value: 'vless' },
+                        { label: 'VMess', value: 'vmess' },
+                        { label: 'Hysteria', value: 'hysteria' },
+                        { label: 'Trojan', value: 'trojan' },
+                        { label: 'TUIC', value: 'tuic' },
+                        { label: 'AnyTLS', value: 'anytls' },
+                    ]"
+                />
             </div>
             <div class="form-row quarter">
                 <span class="form-label">端口</span>
-                <Input v-model="form.Port" type="number" :min="1" :max="65535" placeholder="1 - 65535" />
+                <Input
+                    v-model="form.Port"
+                    type="number"
+                    :min="1"
+                    :max="65535"
+                    placeholder="1 - 65535"
+                />
             </div>
         </Section>
 
         <!-- 传输 -->
         <Section title="传输">
             <!-- VLESS / VMess / Trojan-->
-            <template v-if="form.Protocol === 'vless' || form.Protocol === 'vmess' || form.Protocol === 'trojan'">
+            <template
+                v-if="
+                    form.Protocol === 'vless' ||
+                    form.Protocol === 'vmess' ||
+                    form.Protocol === 'trojan'
+                "
+            >
                 <div class="form-row half">
                     <span class="form-label">传输</span>
-                    <Select v-model="form.Transport" :options="[
-                        { label: 'RAW', value: 'raw' },
-                        { label: 'WebSocket', value: 'websocket' },
-                    ]" />
+                    <Select
+                        v-model="form.Transport"
+                        :options="[
+                            { label: 'RAW', value: 'raw' },
+                            { label: 'WebSocket', value: 'websocket' },
+                        ]"
+                    />
                 </div>
                 <template v-if="form.Transport === 'websocket'">
                     <div class="form-row">
@@ -49,7 +67,12 @@
                     </div>
                     <div class="form-row quarter">
                         <span class="form-label">心跳周期</span>
-                        <Input v-model="form.WsPingInterval" type="number" :min="0" placeholder="秒，0 表示禁用" />
+                        <Input
+                            v-model="form.WsPingInterval"
+                            type="number"
+                            :min="0"
+                            placeholder="秒，0 表示禁用"
+                        />
                     </div>
                 </template>
             </template>
@@ -62,7 +85,12 @@
                 </div>
                 <div class="form-row quarter">
                     <span class="form-label">UDP 超时 (s)</span>
-                    <Input v-model="form.UDPTimeout" type="number" :min="0" placeholder="秒，0 表示默认" />
+                    <Input
+                        v-model="form.UDPTimeout"
+                        type="number"
+                        :min="0"
+                        placeholder="秒，0 表示默认"
+                    />
                 </div>
                 <div class="form-row">
                     <span class="form-label">伪装</span>
@@ -71,17 +99,23 @@
                 <template v-if="form.MasqueradeEnabled">
                     <div class="form-row half">
                         <span class="form-label">类型</span>
-                        <Select v-model="form.MasqueradeType" :options="[
-                            { label: '默认 (404)', value: 'default' },
-                            { label: '反向代理', value: 'proxy' },
-                            { label: '静态文件', value: 'file' },
-                            { label: '自定义内容', value: 'string' },
-                        ]" />
+                        <Select
+                            v-model="form.MasqueradeType"
+                            :options="[
+                                { label: '默认 (404)', value: 'default' },
+                                { label: '反向代理', value: 'proxy' },
+                                { label: '静态文件', value: 'file' },
+                                { label: '自定义内容', value: 'string' },
+                            ]"
+                        />
                     </div>
                     <template v-if="form.MasqueradeType === 'proxy'">
                         <div class="form-row">
                             <span class="form-label">Upstream URL</span>
-                            <Input v-model="form.MasqueradeURL" placeholder="https://www.example.com" />
+                            <Input
+                                v-model="form.MasqueradeURL"
+                                placeholder="https://www.example.com"
+                            />
                         </div>
                         <div class="form-row">
                             <span class="form-label">重写 Host</span>
@@ -101,7 +135,13 @@
                     <template v-if="form.MasqueradeType === 'string'">
                         <div class="form-row quarter">
                             <span class="form-label">状态码</span>
-                            <Input v-model="form.MasqueradeCode" type="number" :min="100" :max="599" placeholder="200" />
+                            <Input
+                                v-model="form.MasqueradeCode"
+                                type="number"
+                                :min="100"
+                                :max="599"
+                                placeholder="200"
+                            />
                         </div>
                         <div class="form-row">
                             <span class="form-label">内容</span>
@@ -111,11 +151,14 @@
                 </template>
                 <div class="form-row half">
                     <span class="form-label">混淆</span>
-                    <Select v-model="form.ObfsType" :options="[
-                        { label: '不启用', value: '' },
-                        { label: 'Salamander', value: 'salamander' },
-                        { label: 'Gecko (实验性)', value: 'gecko' },
-                    ]" />
+                    <Select
+                        v-model="form.ObfsType"
+                        :options="[
+                            { label: '不启用', value: '' },
+                            { label: 'Salamander', value: 'salamander' },
+                            { label: 'Gecko (实验性)', value: 'gecko' },
+                        ]"
+                    />
                 </div>
                 <template v-if="form.ObfsType">
                     <div class="form-row">
@@ -144,11 +187,14 @@
                 </div>
                 <div class="form-row half">
                     <span class="form-label">拥塞控制</span>
-                    <Select v-model="form.TuicCongestionControl" :options="[
-                        { label: 'Cubic', value: 'cubic' },
-                        { label: 'BBR', value: 'bbr' },
-                        { label: 'New Reno', value: 'new_reno' },
-                    ]" />
+                    <Select
+                        v-model="form.TuicCongestionControl"
+                        :options="[
+                            { label: 'Cubic', value: 'cubic' },
+                            { label: 'BBR', value: 'bbr' },
+                            { label: 'New Reno', value: 'new_reno' },
+                        ]"
+                    />
                 </div>
                 <div class="form-row quarter">
                     <span class="form-label">认证超时 (s)</span>
@@ -164,11 +210,14 @@
                 </div>
                 <div class="form-row half">
                     <span class="form-label">UDP 转发</span>
-                    <Select v-model="form.TuicUDPRelayMode" :options="[
-                        { label: '自动', value: '' },
-                        { label: 'Native', value: 'native' },
-                        { label: 'QUIC', value: 'quic' },
-                    ]" />
+                    <Select
+                        v-model="form.TuicUDPRelayMode"
+                        :options="[
+                            { label: '自动', value: '' },
+                            { label: 'Native', value: 'native' },
+                            { label: 'QUIC', value: 'quic' },
+                        ]"
+                    />
                 </div>
             </template>
 
@@ -192,15 +241,30 @@
             <template v-if="form.Protocol === 'anytls'">
                 <div class="form-row quarter">
                     <span class="form-label">检测间隔 (s)</span>
-                    <Input v-model="form.AnyTLSIdleSessionCheckInterval" type="number" :min="1" placeholder="30" />
+                    <Input
+                        v-model="form.AnyTLSIdleSessionCheckInterval"
+                        type="number"
+                        :min="1"
+                        placeholder="30"
+                    />
                 </div>
                 <div class="form-row quarter">
                     <span class="form-label">空闲超时 (s)</span>
-                    <Input v-model="form.AnyTLSIdleSessionTimeout" type="number" :min="1" placeholder="30" />
+                    <Input
+                        v-model="form.AnyTLSIdleSessionTimeout"
+                        type="number"
+                        :min="1"
+                        placeholder="30"
+                    />
                 </div>
                 <div class="form-row quarter">
                     <span class="form-label">最小空闲会话</span>
-                    <Input v-model="form.AnyTLSMinIdleSession" type="number" :min="1" placeholder="1" />
+                    <Input
+                        v-model="form.AnyTLSMinIdleSession"
+                        type="number"
+                        :min="1"
+                        placeholder="1"
+                    />
                 </div>
             </template>
         </Section>
@@ -209,15 +273,19 @@
         <Section title="安全">
             <div class="form-row">
                 <span class="form-label">安全</span>
-                    <RadioGroup
-                        v-model="form.TLSType"
-                        :options="[
-                            { label: '无', value: 'none' },
-                            { label: 'TLS', value: 'tls' },
-                            { label: 'Reality', value: 'reality' },
-                        ]"
-                        :disabled="form.Protocol === 'hysteria' || form.Protocol === 'trojan' || form.Protocol === 'tuic'"
-                    />
+                <RadioGroup
+                    v-model="form.TLSType"
+                    :options="[
+                        { label: '无', value: 'none' },
+                        { label: 'TLS', value: 'tls' },
+                        { label: 'Reality', value: 'reality' },
+                    ]"
+                    :disabled="
+                        form.Protocol === 'hysteria' ||
+                        form.Protocol === 'trojan' ||
+                        form.Protocol === 'tuic'
+                    "
+                />
             </div>
             <!-- tls 专用 -->
             <template v-if="form.TLSType === 'tls'">
@@ -227,19 +295,52 @@
                 </div>
                 <div class="form-row">
                     <span class="form-label">加密套件</span>
-                    <Select v-model="form.CipherSuites" :options="[
-                        { label: '自动', value: '' },
-                        { label: 'ECDHE_ECDSA_AES_128_CBC', value: 'TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA' },
-                        { label: 'ECDHE_ECDSA_AES_256_CBC', value: 'TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA' },
-                        { label: 'ECDHE_RSA_AES_128_CBC', value: 'TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA' },
-                        { label: 'ECDHE_RSA_AES_256_CBC', value: 'TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA' },
-                        { label: 'ECDHE_ECDSA_AES_128_GCM', value: 'TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256' },
-                        { label: 'ECDHE_ECDSA_AES_256_GCM', value: 'TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384' },
-                        { label: 'ECDHE_RSA_AES_128_GCM', value: 'TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256' },
-                        { label: 'ECDHE_RSA_AES_256_GCM', value: 'TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384' },
-                        { label: 'ECDHE_ECDSA_CHACHA20_POLY1305', value: 'TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256' },
-                        { label: 'ECDHE_RSA_CHACHA20_POLY1305', value: 'TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256' },
-                    ]" />
+                    <Select
+                        v-model="form.CipherSuites"
+                        :options="[
+                            { label: '自动', value: '' },
+                            {
+                                label: 'ECDHE_ECDSA_AES_128_CBC',
+                                value: 'TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA',
+                            },
+                            {
+                                label: 'ECDHE_ECDSA_AES_256_CBC',
+                                value: 'TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA',
+                            },
+                            {
+                                label: 'ECDHE_RSA_AES_128_CBC',
+                                value: 'TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA',
+                            },
+                            {
+                                label: 'ECDHE_RSA_AES_256_CBC',
+                                value: 'TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA',
+                            },
+                            {
+                                label: 'ECDHE_ECDSA_AES_128_GCM',
+                                value: 'TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256',
+                            },
+                            {
+                                label: 'ECDHE_ECDSA_AES_256_GCM',
+                                value: 'TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384',
+                            },
+                            {
+                                label: 'ECDHE_RSA_AES_128_GCM',
+                                value: 'TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256',
+                            },
+                            {
+                                label: 'ECDHE_RSA_AES_256_GCM',
+                                value: 'TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384',
+                            },
+                            {
+                                label: 'ECDHE_ECDSA_CHACHA20_POLY1305',
+                                value: 'TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256',
+                            },
+                            {
+                                label: 'ECDHE_RSA_CHACHA20_POLY1305',
+                                value: 'TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256',
+                            },
+                        ]"
+                    />
                 </div>
                 <div class="form-row quarter">
                     <span class="form-label">uTLS</span>
@@ -276,7 +377,12 @@
                 </div>
                 <div class="form-row">
                     <span class="form-label">证书</span>
-                    <Select :model-value="form.Certs[0]" @update:model-value="val => form.Certs[0] = val" :options="certOptions" placeholder="选择证书" />
+                    <Select
+                        :model-value="form.Certs[0]"
+                        @update:model-value="(val) => (form.Certs[0] = val)"
+                        :options="certOptions"
+                        placeholder="选择证书"
+                    />
                 </div>
                 <div class="form-row">
                     <span class="form-label">ECH</span>
@@ -298,7 +404,6 @@
                 </template>
             </template>
 
-
             <template v-if="form.TLSType === 'reality'">
                 <div class="form-row">
                     <span class="form-label">SNI</span>
@@ -309,13 +414,17 @@
                 <div class="form-row">
                     <span class="form-label">目标</span>
                     <RefreshBtn @click="genTarget">
-                        <Input :model-value="form.RealityServer + ':' + form.RealityServerPort"
-                            @update:model-value="val => {
-                                const parts = String(val).split(':')
-                                form.RealityServer = parts[0]
-                                form.RealityServerPort = parseInt(parts[1] ?? '443') || 443
-                            }"
-                            placeholder="www.example.com:443" />
+                        <Input
+                            :model-value="form.RealityServer + ':' + form.RealityServerPort"
+                            @update:model-value="
+                                (val) => {
+                                    const parts = String(val).split(':')
+                                    form.RealityServer = parts[0]
+                                    form.RealityServerPort = parseInt(parts[1] ?? '443') || 443
+                                }
+                            "
+                            placeholder="www.example.com:443"
+                        />
                     </RefreshBtn>
                 </div>
                 <div class="form-row quarter">
@@ -324,15 +433,17 @@
                 </div>
                 <div class="form-row quarter">
                     <span class="form-label">最大时间差</span>
-                    <Input v-model="form.RealityMaxTimeDiff" type="number" :min="0" placeholder="毫秒，0 不限制" />
+                    <Input
+                        v-model="form.RealityMaxTimeDiff"
+                        type="number"
+                        :min="0"
+                        placeholder="毫秒，0 不限制"
+                    />
                 </div>
                 <div class="form-row">
                     <span class="form-label">短 ID</span>
                     <RefreshBtn @click="genShortIDs">
-                        <MultiSelect
-                            v-model="form.RealityShortIDs"
-                            :options="shortIDOptions"
-                        />
+                        <MultiSelect v-model="form.RealityShortIDs" :options="shortIDOptions" />
                     </RefreshBtn>
                 </div>
                 <div class="form-row">
@@ -349,10 +460,13 @@
                 </div>
                 <div class="form-row half">
                     <span class="form-label">Flow</span>
-                    <Select v-model="form.Flow" :options="[
-                        { label: '无', value: '' },
-                        { label: 'xtls-rprx-vision', value: 'xtls-rprx-vision' },
-                    ]" />
+                    <Select
+                        v-model="form.Flow"
+                        :options="[
+                            { label: '无', value: '' },
+                            { label: 'xtls-rprx-vision', value: 'xtls-rprx-vision' },
+                        ]"
+                    />
                 </div>
             </template>
         </Section>
@@ -368,15 +482,23 @@ import Text from '@/component/ui/Text.vue'
 import RadioGroup from '@/component/ui/Radio.vue'
 import MultiSelect from '@/component/ui/MultiSelect.vue'
 import RefreshBtn from '@/component/ui/RefreshBtn.vue'
-import { generatePassword, generateRealityTarget, generateRealityKeyPair, generateShortIDs, generateECHKeyPair } from '@/api/generate'
+import {
+    generatePassword,
+    generateRealityTarget,
+    generateRealityKeyPair,
+    generateShortIDs,
+    generateECHKeyPair,
+} from '@/api/generate'
 import { getCert } from '@/api/cert'
 
-const form = defineModel<any>({ default: () => ({
-    Enable: true,
-    Name: '',
-    Protocol: 'vless',
-    Port: 0,
-}) })
+const form = defineModel<any>({
+    default: () => ({
+        Enable: true,
+        Name: '',
+        Protocol: 'vless',
+        Port: 0,
+    }),
+})
 
 const tlsVersions = [
     { label: '1.0', value: '1.0' },
@@ -406,20 +528,28 @@ onMounted(async () => {
     certOptions.value = certs.map((c: any) => ({ label: c.Domain, value: c.ID }))
 })
 
-watch(() => form.value.Protocol, (val) => {
-    if (val === 'hysteria' || val === 'trojan' || val === 'tuic' || val === 'anytls') {
-        form.value.TLSType = 'tls'
-        if (val === 'hysteria' || val === 'tuic') {
-            form.value.ALPN = ['h3']
+watch(
+    () => form.value.Protocol,
+    (val) => {
+        if (val === 'hysteria' || val === 'trojan' || val === 'tuic' || val === 'anytls') {
+            form.value.TLSType = 'tls'
+            if (val === 'hysteria' || val === 'tuic') {
+                form.value.ALPN = ['h3']
+            }
         }
-    }
-}, { immediate: true })
+    },
+    { immediate: true },
+)
 
-watch(() => form.value.RealityShortIDs, (val) => {
-    if (val?.length) {
-        shortIDOptions.value = val.map((id: string) => ({ label: id, value: id }))
-    }
-}, { immediate: true })
+watch(
+    () => form.value.RealityShortIDs,
+    (val) => {
+        if (val?.length) {
+            shortIDOptions.value = val.map((id: string) => ({ label: id, value: id }))
+        }
+    },
+    { immediate: true },
+)
 
 async function genTarget() {
     const res = await generateRealityTarget()

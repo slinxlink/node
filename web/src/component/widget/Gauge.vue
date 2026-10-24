@@ -3,13 +3,23 @@
     <div class="gauge">
         <div class="wrap">
             <svg viewBox="0 0 100 100">
-                <circle class="track" cx="50" cy="50" r="40"
+                <circle
+                    class="track"
+                    cx="50"
+                    cy="50"
+                    r="40"
                     :stroke-dasharray="`${full} ${circ}`"
-                    stroke-dashoffset="0"/>
-                <circle class="fill" cx="50" cy="50" r="40"
+                    stroke-dashoffset="0"
+                />
+                <circle
+                    class="fill"
+                    cx="50"
+                    cy="50"
+                    r="40"
                     :stroke="color"
                     :stroke-dasharray="`${full} ${circ}`"
-                    :stroke-dashoffset="offset"/>
+                    :stroke-dashoffset="offset"
+                />
             </svg>
             <div class="center">
                 <span class="pct">{{ pct.toFixed(1) }}%</span>
@@ -29,20 +39,20 @@
 </template>
 
 <script setup lang="ts">
-    import Tip from '@/component/ui/Tip.vue'
+import Tip from '@/component/ui/Tip.vue'
 
-    const props = defineProps<{
-        name: string
-        pct: number
-        color: string
-        detail?: string
-    }>()
+const props = defineProps<{
+    name: string
+    pct: number
+    color: string
+    detail?: string
+}>()
 
-    const ARC = 275
-    const R = 40
-    const circ = 2 * Math.PI * R
-    const full = circ * (ARC / 360)
-    const offset = computed(() => full - (props.pct / 100) * full)
+const ARC = 275
+const R = 40
+const circ = 2 * Math.PI * R
+const full = circ * (ARC / 360)
+const offset = computed(() => full - (props.pct / 100) * full)
 </script>
 
 <style scoped>

@@ -16,9 +16,17 @@
                             <div class="tags">
                                 <span class="tag primary">{{ ib.Protocol }}</span>
                                 <span class="tag green">
-                                    {{ ib.Protocol === 'hysteria' || ib.Protocol === 'tuic' ? 'UDP' : (ib.Transport === 'websocket' ? 'WS' : 'TCP') }}
+                                    {{
+                                        ib.Protocol === 'hysteria' || ib.Protocol === 'tuic'
+                                            ? 'UDP'
+                                            : ib.Transport === 'websocket'
+                                              ? 'WS'
+                                              : 'TCP'
+                                    }}
                                 </span>
-                                <span v-if="ib.TLSType !== 'none'" class="tag blue">{{ formatTLS(ib.TLSType) }}</span>
+                                <span v-if="ib.TLSType !== 'none'" class="tag blue">{{
+                                    formatTLS(ib.TLSType)
+                                }}</span>
                             </div>
                         </td>
                         <td>
@@ -51,7 +59,12 @@ import Drawer from '@/component/Drawer.vue'
 import List from '@/component/ui/List.vue'
 import Form from '@/view/panel/inbound/form/Form.vue'
 import { getInbounds, saveInbound, deleteInbound, toggleInbound } from '@/api/inbound'
-import { generatePort, generateRealityTarget, generateRealityKeyPair, generateShortIDs } from '@/api/generate'
+import {
+    generatePort,
+    generateRealityTarget,
+    generateRealityKeyPair,
+    generateShortIDs,
+} from '@/api/generate'
 import { getCert } from '@/api/cert'
 
 const modal = inject<any>('modal')
@@ -85,7 +98,7 @@ const baseInbound = () => ({
     ObfsPassword: '',
     ObfsMinPacketSize: 512,
     ObfsMaxPacketSize: 1200,
-    
+
     TuicCongestionControl: 'bbr',
     TuicAuthTimeout: 3,
     TuicZeroRTT: false,
@@ -136,8 +149,8 @@ onMounted(() => {
 
 function formatTLS(val: string) {
     const map: Record<string, string> = {
-        'tls': 'TLS',
-        'reality': 'Reality',
+        tls: 'TLS',
+        reality: 'Reality',
     }
     return map[val] ?? val
 }

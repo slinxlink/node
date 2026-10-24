@@ -32,7 +32,7 @@ defineProps<{ headers: string[] }>()
         font-size: var(--font-size);
         white-space: nowrap;
         table-layout: auto;
-        
+
         thead {
             th {
                 text-align: left;
@@ -63,7 +63,8 @@ defineProps<{ headers: string[] }>()
             }
         }
 
-        th, td {
+        th,
+        td {
             &:first-child {
                 padding-right: 10px;
             }

@@ -1,6 +1,6 @@
 <template>
-  <router-view />
-  <Modal ref="modal" />
+    <router-view />
+    <Modal ref="modal" />
 </template>
 
 <script setup lang="ts">

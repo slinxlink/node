@@ -1,7 +1,9 @@
 <template>
     <div class="info">
         <FormRow title="启用">
-            <span class="tag" :class="user.Enable ? 'green' : 'red'">{{ user.Enable ? '开启' : '关闭' }}</span>
+            <span class="tag" :class="user.Enable ? 'green' : 'red'">{{
+                user.Enable ? '开启' : '关闭'
+            }}</span>
         </FormRow>
         <FormRow title="名称">
             <span>{{ user.Name || '-' }}</span>
@@ -26,20 +28,30 @@
         </FormRow>
         <FormRow title="关联入站">
             <div class="tags">
-                <span
-                    v-for="ib in inboundTags"
-                    :key="ib.id"
-                    class="tag"
-                    :class="ib.color"
-                >
+                <span v-for="ib in inboundTags" :key="ib.id" class="tag" :class="ib.color">
                     {{ ib.port }}
                 </span>
             </div>
         </FormRow>
         <div class="divider">复制链接</div>
-        <Link v-for="uri in uris" :key="uri.value" :label="uri.label" :color="uri.color" :name="uri.name" :value="uri.value" :download="uri.download" />
+        <Link
+            v-for="uri in uris"
+            :key="uri.value"
+            :label="uri.label"
+            :color="uri.color"
+            :name="uri.name"
+            :value="uri.value"
+            :download="uri.download"
+        />
         <div class="divider">订阅信息</div>
-        <Link v-for="url in urls" :key="url.value" :label="url.label" :color="url.color" :name="url.name" :value="url.value" />
+        <Link
+            v-for="url in urls"
+            :key="url.value"
+            :label="url.label"
+            :color="url.color"
+            :name="url.name"
+            :value="url.value"
+        />
     </div>
 </template>
 
@@ -59,25 +71,55 @@ const props = defineProps<{
 const inboundTags = computed(() => {
     try {
         const ids: number[] = JSON.parse(props.user.Inbounds || '[]')
-        return ids.map(id => {
-            const ib = props.inbounds.find(i => i.ID === id)
-            return ib ? { id, port: ib.Port, name: ib.Name, protocol: ib.Protocol, color: protocol(ib.Protocol), inbound: ib } : null
-        }).filter((ib): ib is { id: number, port: any, name: string, protocol: string, color: string, inbound: any } => ib !== null)
+        return ids
+            .map((id) => {
+                const ib = props.inbounds.find((i) => i.ID === id)
+                return ib
+                    ? {
+                          id,
+                          port: ib.Port,
+                          name: ib.Name,
+                          protocol: ib.Protocol,
+                          color: protocol(ib.Protocol),
+                          inbound: ib,
+                      }
+                    : null
+            })
+            .filter(
+                (
+                    ib,
+                ): ib is {
+                    id: number
+                    port: any
+                    name: string
+                    protocol: string
+                    color: string
+                    inbound: any
+                } => ib !== null,
+            )
     } catch {
         return []
     }
 })
 
-const uris = ref<{ label: string, color: string, name: string, value: string, download?: string }[]>([])
-const urls = ref<{ label: string, color: string, name: string, value: string }[]>([])
+const uris = ref<
+    { label: string; color: string; name: string; value: string; download?: string }[]
+>([])
+const urls = ref<{ label: string; color: string; name: string; value: string }[]>([])
 
 onMounted(async () => {
     const [uriResults, urlResult, jsonResults] = await Promise.all([
-        Promise.all(inboundTags.value.map(ib => getUri({ user: props.user, inbound: ib.inbound }))),
+        Promise.all(
+            inboundTags.value.map((ib) => getUri({ user: props.user, inbound: ib.inbound })),
+        ),
         getUrl(props.user.Token),
-        Promise.all(inboundTags.value.map(ib => getJson({ user: props.user, inbound: ib.inbound, format: 'singbox' }))),
+        Promise.all(
+            inboundTags.value.map((ib) =>
+                getJson({ user: props.user, inbound: ib.inbound, format: 'singbox' }),
+            ),
+        ),
     ])
-    
+
     uris.value = inboundTags.value.map((ib, i) => ({
         label: ib.protocol.toUpperCase(),
         color: ib.color,

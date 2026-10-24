@@ -26,10 +26,7 @@
                 </div>
                 <div class="form-row">
                     <span class="form-label">关联入站</span>
-                    <MultiSelect
-                        v-model="form.Inbounds"
-                        :options="inboundOptions"
-                    />
+                    <MultiSelect v-model="form.Inbounds" :options="inboundOptions" />
                 </div>
                 <div class="form-row">
                     <span class="form-label">启用</span>
@@ -51,20 +48,22 @@ const props = defineProps<{
     inbounds: any[]
 }>()
 
-const form = defineModel<any>({ default: () => ({
-    Enable: true,
-    Name: '',
-    Token: '',
-    UUID: '',
-    Password: '',
-    Inbounds: '[]',
-}) })
+const form = defineModel<any>({
+    default: () => ({
+        Enable: true,
+        Name: '',
+        Token: '',
+        UUID: '',
+        Password: '',
+        Inbounds: '[]',
+    }),
+})
 
 const inboundOptions = computed(() =>
-    props.inbounds.map(ib => ({
+    props.inbounds.map((ib) => ({
         label: String(ib.Port),
         value: String(ib.ID),
-    }))
+    })),
 )
 
 async function genToken() {

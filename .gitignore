@@ -8,7 +8,7 @@ dist/
 web/dist/
 
 # 前端依赖
-web/node_modules/
+node_modules/
 
 # IDE
 .vscode/

@@ -1,7 +1,9 @@
 <template>
     <span class="copy" @click="handle">
         <slot />
-        <i class="icon" :class="{ sm: props.size === 'sm' }">{{ copied ? 'check' : 'content_copy' }}</i>
+        <i class="icon" :class="{ sm: props.size === 'sm' }">{{
+            copied ? 'check' : 'content_copy'
+        }}</i>
     </span>
 </template>
 
@@ -23,7 +25,7 @@ async function handle() {
         return
     }
     copied.value = true
-    setTimeout(() => copied.value = false, 2000)
+    setTimeout(() => (copied.value = false), 2000)
 }
 </script>
 

@@ -95,7 +95,14 @@
 import { ref, onMounted, inject } from 'vue'
 import FormRow from '@/component/ui/FormRow.vue'
 import Input from '@/component/ui/Input.vue'
-import { getWarp, deleteWarp, registerWarp, refreshWarp, setWarpAutoUpdate, setWarpLicense } from '@/api/warp'
+import {
+    getWarp,
+    deleteWarp,
+    registerWarp,
+    refreshWarp,
+    setWarpAutoUpdate,
+    setWarpLicense,
+} from '@/api/warp'
 import { getEndpoints, createWarpEndpoint } from '@/api/endpoint'
 
 const modal = inject<any>('modal')

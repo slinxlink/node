@@ -33,7 +33,7 @@ defineProps<{
         display: flex;
         flex-direction: column;
         gap: 0px;
-            color: var(--color-text-dark);
+        color: var(--color-text-dark);
 
         .subtitle {
             font-size: 8px;

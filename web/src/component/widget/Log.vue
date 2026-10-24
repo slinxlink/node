@@ -6,7 +6,7 @@
                 自动滚动
             </label>
             <div class="toolbar-right">
-                <Select v-model="filterLevel" :options="levelOptions" small/>
+                <Select v-model="filterLevel" :options="levelOptions" small />
                 <button @click="clear">清空</button>
             </div>
         </div>
@@ -15,7 +15,9 @@
                 <div class="line">
                     <div class="meta">
                         <span class="time">{{ line.time }}</span>
-                        <span class="level" :class="line.level.toLowerCase()">{{ line.level }}</span>
+                        <span class="level" :class="line.level.toLowerCase()">{{
+                            line.level
+                        }}</span>
                     </div>
                     <span class="message">{{ line.message }}</span>
                 </div>
@@ -52,7 +54,7 @@ const levelOptions = [
 
 const filteredLines = computed(() => {
     if (filterLevel.value === 'ALL') return lines.value
-    return lines.value.filter(l => l.level === filterLevel.value)
+    return lines.value.filter((l) => l.level === filterLevel.value)
 })
 
 function connect() {
@@ -158,11 +160,16 @@ onUnmounted(() => socket?.close())
                     flex-shrink: 0;
                     font-weight: bold;
 
-                    &.info  { color: var(--color-green); }
-                    &.warn  { color: var(--color-yellow); }
-                    &.error { color: var(--color-red); }
+                    &.info {
+                        color: var(--color-green);
+                    }
+                    &.warn {
+                        color: var(--color-yellow);
+                    }
+                    &.error {
+                        color: var(--color-red);
+                    }
                 }
-
             }
 
             .message {

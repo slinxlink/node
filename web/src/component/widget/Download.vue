@@ -23,7 +23,9 @@ function handle() {
         link.href = canvas.toDataURL()
         link.click()
     } else if (props.content) {
-        const blob = new Blob([props.content], { type: props.contentType ?? 'application/octet-stream' })
+        const blob = new Blob([props.content], {
+            type: props.contentType ?? 'application/octet-stream',
+        })
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url

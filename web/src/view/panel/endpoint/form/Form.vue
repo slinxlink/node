@@ -10,9 +10,7 @@
         </div>
         <div class="form-row half">
             <span class="form-label">协议</span>
-            <Select v-model="form.Type" :options="[
-                { label: 'WireGuard', value: 'wireguard' },
-            ]" />
+            <Select v-model="form.Type" :options="[{ label: 'WireGuard', value: 'wireguard' }]" />
         </div>
 
         <template v-if="form.Type === 'wireguard'">
@@ -42,13 +40,17 @@
             </div>
             <div class="form-row">
                 <span class="form-label">对端地址</span>
-                <Input :model-value="form.PeerAddress + ':' + form.PeerPort"
-                    @update:model-value="val => {
-                        const parts = String(val).split(':')
-                        form.PeerAddress = parts[0]
-                        form.PeerPort = parseInt(parts[1] ?? '0') || 0
-                    }"
-                    placeholder="engage.cloudflareclient.com:2408" />
+                <Input
+                    :model-value="form.PeerAddress + ':' + form.PeerPort"
+                    @update:model-value="
+                        (val) => {
+                            const parts = String(val).split(':')
+                            form.PeerAddress = parts[0]
+                            form.PeerPort = parseInt(parts[1] ?? '0') || 0
+                        }
+                    "
+                    placeholder="engage.cloudflareclient.com:2408"
+                />
             </div>
             <div class="form-row">
                 <span class="form-label">Reserved</span>
@@ -64,7 +66,12 @@
             </div>
             <div class="form-row quarter">
                 <span class="form-label">UDP 超时 (s)</span>
-                <Input v-model="form.UDPTimeout" type="number" :min="0" placeholder="秒，0 表示默认" />
+                <Input
+                    v-model="form.UDPTimeout"
+                    type="number"
+                    :min="0"
+                    placeholder="秒，0 表示默认"
+                />
             </div>
             <div class="form-row quarter">
                 <span class="form-label">Workers</span>
@@ -80,22 +87,24 @@ import Input from '@/component/ui/Input.vue'
 import Select from '@/component/ui/Select.vue'
 import { generateWireguardKeyPair } from '@/api/generate'
 
-const form = defineModel<any>({ default: () => ({
-    Enable: true,
-    Tag: '',
-    Type: 'wireguard',
-    Address: ['', ''],
-    PublicKey: '',
-    PrivateKey: '',
-    MTU: 1408,
-    Reserved: '',
-    PeerAddress: '',
-    PeerPort: 0,
-    PeerPublicKey: '',
-    AllowedIPs: '0.0.0.0/0,::/0',
-    UDPTimeout: 0,
-    Workers: 0,
-}) })
+const form = defineModel<any>({
+    default: () => ({
+        Enable: true,
+        Tag: '',
+        Type: 'wireguard',
+        Address: ['', ''],
+        PublicKey: '',
+        PrivateKey: '',
+        MTU: 1408,
+        Reserved: '',
+        PeerAddress: '',
+        PeerPort: 0,
+        PeerPublicKey: '',
+        AllowedIPs: '0.0.0.0/0,::/0',
+        UDPTimeout: 0,
+        Workers: 0,
+    }),
+})
 
 const reserved = computed({
     get() {
@@ -107,9 +116,12 @@ const reserved = computed({
         }
     },
     set(val: string) {
-        const nums = val.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n))
+        const nums = val
+            .split(',')
+            .map((s) => parseInt(s.trim()))
+            .filter((n) => !isNaN(n))
         form.value.Reserved = JSON.stringify(nums)
-    }
+    },
 })
 
 async function genKeyPair() {
