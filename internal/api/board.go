@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/slinxlink/node/internal/core"
 	"github.com/slinxlink/node/internal/database"
 	syncer "github.com/slinxlink/node/internal/sync"
+	"github.com/slinxlink/node/internal/sync/slinx"
 	"github.com/slinxlink/node/internal/util"
 )
 
@@ -52,6 +54,32 @@ func SaveBoard(c *gin.Context) {
 	syncer.Restart()
 	go core.Default.Apply()
 	c.JSON(http.StatusOK, p)
+}
+
+func ConnectBoard(c *gin.Context) {
+	var req struct {
+		Host   string `json:"Host"`
+		NodeID int    `json:"NodeID"`
+		Key    string `json:"Key"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+		return
+	}
+
+	board, ib, err := slinx.Connect(req.Host, req.NodeID, req.Key)
+	if err != nil {
+		status := http.StatusBadRequest
+		if errors.Is(err, slinx.ErrSave) {
+			status = http.StatusInternalServerError
+		}
+		c.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	syncer.Restart()
+	go core.Default.Apply()
+	c.JSON(http.StatusOK, gin.H{"board": board, "inbound": ib})
 }
 
 func DeleteBoard(c *gin.Context) {

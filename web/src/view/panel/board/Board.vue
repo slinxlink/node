@@ -2,10 +2,16 @@
     <main>
         <div class="page">
             <div class="body">
-                <button class="add-btn" @click="openCreate">
-                    <i class="icon">add</i>
-                    添加对接
-                </button>
+                <div class="buttons">
+                    <button class="add-btn" @click="openCreate">
+                        <i class="icon">add</i>
+                        添加对接
+                    </button>
+                    <button class="add-btn" @click="openConnect">
+                        <i class="icon">bolt</i>
+                        一键对接
+                    </button>
+                </div>
 
                 <List :headers="['ID', '备注', '关联入站', '启用', '操作']">
                     <tr v-for="b in boards" :key="b.ID">
@@ -44,6 +50,9 @@
     <Drawer v-model="showDrawer" :title="drawerTitle" @save="handleSave">
         <Form v-model="defaultBoard" :inbounds="inbounds" />
     </Drawer>
+    <Drawer v-model="showConnect" title="一键对接" save-text="对接" :loading="connecting" @save="handleConnect">
+        <Connect v-model="connectForm" />
+    </Drawer>
     <User v-model="showUserDrawer" :board="activeBoard" />
 </template>
 
@@ -52,8 +61,9 @@ import Toggle from '@/component/ui/Toggle.vue'
 import Drawer from '@/component/Drawer.vue'
 import List from '@/component/ui/List.vue'
 import Form from '@/view/panel/board/form/Form.vue'
+import Connect from '@/view/panel/board/form/Connect.vue'
 import User from '@/view/panel/board/widget/User.vue'
-import { getBoards, saveBoard, deleteBoard, toggleBoard } from '@/api/board'
+import { getBoards, saveBoard, connectBoard, deleteBoard, toggleBoard } from '@/api/board'
 import { getInbounds } from '@/api/inbound'
 import { protocol } from '@/util/tag'
 
@@ -139,6 +149,31 @@ async function handleSave() {
     }
 }
 
+// ── 一键对接 ───────────────────────────────────────────────
+
+const showConnect = ref(false)
+const connecting = ref(false)
+const connectForm = ref<any>({ Host: '', NodeID: 0, Key: '' })
+
+function openConnect() {
+    connectForm.value = { Host: '', NodeID: 0, Key: '' }
+    showConnect.value = true
+}
+
+async function handleConnect() {
+    connecting.value = true
+    try {
+        await connectBoard({ ...connectForm.value, NodeID: Number(connectForm.value.NodeID) })
+        await load()
+        showConnect.value = false
+        modal.value?.show('success', '对接成功')
+    } catch (err: any) {
+        modal.value?.show('error', err?.error)
+    } finally {
+        connecting.value = false
+    }
+}
+
 const showUserDrawer = ref(false)
 const activeBoard = ref<any>(null)
 
@@ -147,3 +182,10 @@ function openInfo(b: any) {
     showUserDrawer.value = true
 }
 </script>
+
+<style scoped>
+.buttons {
+    display: flex;
+    gap: 10px;
+}
+</style>

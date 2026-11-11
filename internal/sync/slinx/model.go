@@ -1,30 +1,26 @@
 package slinx
 
-import "encoding/json"
+type SyncRequest struct {
+	User []ReportUser `json:"user"`
+}
 
-type Response struct {
-	Ret  uint            `json:"ret"`
-	Data json.RawMessage `json:"data"`
+type ReportUser struct {
+	ID       int      `json:"id"`
+	Upload   int64    `json:"u"`
+	Download int64    `json:"d"`
+	IP       []string `json:"ip"`
+}
+
+type SyncResponse struct {
+	User []UserResponse `json:"user"`
 }
 
 type UserResponse struct {
-	ID      int    `json:"id"`
-	Passwd  string `json:"passwd"`
-	UUID    string `json:"uuid"`
-	AliveIP int    `json:"alive_ip"`
+	ID       int    `json:"id"`
+	UUID     string `json:"uuid"`
+	Password string `json:"password"`
 }
 
-type PostData struct {
-	Data interface{} `json:"data"`
-}
-
-type OnlineUser struct {
-	UID int    `json:"user_id"`
-	IP  string `json:"ip"`
-}
-
-type UserTraffic struct {
-	UID      int   `json:"user_id"`
-	Upload   int64 `json:"u"`
-	Download int64 `json:"d"`
+type ErrorResponse struct {
+	Message string `json:"message"`
 }

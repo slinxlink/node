@@ -6,6 +6,11 @@ export const saveBoard = (data: any) =>
         method: 'PUT',
         body: JSON.stringify(data),
     })
+export const connectBoard = (data: { Host: string; NodeID: number; Key: string }) =>
+    request('/api/board/connect', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    })
 export const deleteBoard = (id: number) =>
     request(`/api/board/${id}`, {
         method: 'DELETE',

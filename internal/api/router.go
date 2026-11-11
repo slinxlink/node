@@ -61,6 +61,7 @@ func RegisterRoute(engine *gin.Engine) {
 		// 对接
 		private.GET("/board", GetBoards)
 		private.PUT("/board/save", SaveBoard)
+		private.POST("/board/connect", ConnectBoard)
 		private.DELETE("/board/:id", DeleteBoard)
 		private.PUT("/board/:id/toggle", ToggleBoard)
 		private.GET("/board/:id/user", GetBoardUser)
