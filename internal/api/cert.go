@@ -61,6 +61,22 @@ func SaveCert(c *gin.Context) {
 	c.JSON(http.StatusOK, p.Cert)
 }
 
+func ToggleCertRenew(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	var dbCert database.Cert
+	if err := database.DB.First(&dbCert, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "证书不存在"})
+		return
+	}
+	if dbCert.Mode == "manual" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "手动上传的证书不支持自动续签"})
+		return
+	}
+	dbCert.AutoRenew = !dbCert.AutoRenew
+	database.DB.Model(&dbCert).Update("auto_renew", dbCert.AutoRenew)
+	c.JSON(http.StatusOK, dbCert)
+}
+
 func DeleteCert(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var dbCert database.Cert

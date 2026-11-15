@@ -128,7 +128,7 @@ func ToggleEndpoint(c *gin.Context) {
 		return
 	}
 	endpoint.Enable = !endpoint.Enable
-	database.DB.Save(&endpoint)
+	database.DB.Model(&endpoint).Update("enable", endpoint.Enable)
 
 	if !endpoint.Enable {
 		route.CleanupRule("endpoint", endpoint.Tag, "")

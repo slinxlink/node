@@ -51,12 +51,14 @@ func RegisterRoute(engine *gin.Engine) {
 		private.DELETE("/inbound/:id", DeleteInbound)
 		private.POST("/inbound/quick", QuickInbound)
 		private.PUT("/inbound/:id/toggle", ToggleInbound)
+		private.PUT("/inbound/:id/reset", ResetInboundTraffic)
 
 		// 用户
 		private.GET("/user", GetUsers)
 		private.PUT("/user/save", SaveUser)
 		private.DELETE("/user/:id", DeleteUser)
 		private.PUT("/user/:id/toggle", ToggleUser)
+		private.PUT("/user/:id/reset", ResetUserTraffic)
 
 		// 对接
 		private.GET("/board", GetBoards)
@@ -70,6 +72,7 @@ func RegisterRoute(engine *gin.Engine) {
 		private.GET("/cert", GetCert)
 		private.POST("/cert", SaveCert)
 		private.DELETE("/cert/:id", DeleteCert)
+		private.PUT("/cert/:id/renew", ToggleCertRenew)
 		private.POST("/cert/:id/apply", ApplyCert)
 		private.GET("/cert/:id/content", GetCertContent)
 

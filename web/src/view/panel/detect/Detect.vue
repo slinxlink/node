@@ -1,83 +1,59 @@
 <template>
-    <main>
-        <div class="page">
-            <div class="body">
-                <IPDetect />
-                <UnlockDetect />
-                <BackRouteDetect />
-            </div>
+    <Page class="detect" title="线路检测">
+        <div class="grid">
+            <IP />
+            <Unlock />
+            <BackRoute />
         </div>
-    </main>
+    </Page>
 </template>
 
 <script setup lang="ts">
-import IPDetect from '@/view/panel/detect/widget/IP.vue'
-import UnlockDetect from '@/view/panel/detect/widget/Unlock.vue'
-import BackRouteDetect from '@/view/panel/detect/widget/BackRoute.vue'
+import Page from '@/component/layout/Page.vue'
+import IP from '@/view/panel/detect/IP.vue'
+import Unlock from '@/view/panel/detect/Unlock.vue'
+import BackRoute from '@/view/panel/detect/BackRoute.vue'
 </script>
 
 <style scoped>
-:deep(.detect) {
+.grid {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    padding: 20px;
-    background-color: var(--color-bg-dark);
-    border-radius: 20px;
-    box-shadow: var(--box-shadow);
+    gap: 20px;
+    padding-bottom: 20px;
 
-    .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 10px;
+    /* 标题行做成 60px 高(和设置、核心页容器的标题行一样)：顶到卡片上沿，标题和右上角的控件在里面垂直居中 */
+    &:deep(.head) {
+        height: 60px;
+        margin: -20px -20px -10px; /* 下面的 -10px 抵掉卡片内部的 10px 间距，标题行下面不留空 */
+        padding: 0 13px 0 20px; /* 左边是标题，留 20px；右边是控件，离右边和离上边一样是 13px */
+    }
 
-        .title-wrap {
-            display: flex;
-            align-items: flex-end;
-            gap: 5px;
+    /* 右上角的下拉和检测按钮：都是标准尺寸，34px 高 */
+    &:deep(.action .select) {
+        width: 130px;
+    }
 
-            .title {
-                font-weight: bold;
-                color: var(--color-text-light);
-            }
+    &:deep(.action .run) {
+        width: auto;
+        height: 34px;
+        padding: 0 10px 0 5px;
+        background-color: var(--background-200);
 
-            .updated {
-                font-size: var(--font-size-sm);
-                color: var(--color-text-dark);
-            }
+        &:hover:not(:disabled),
+        &:focus-visible {
+            background-color: var(--background-100);
         }
 
-        .action {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-left: auto;
+        &:active:not(:disabled) {
+            background-color: var(--primary-600);
+        }
 
-            > button {
-                gap: 5px;
-                padding: 5px 15px 5px 10px;
-                font-size: var(--font-size-sm);
-                background-color: var(--color-bg-light);
-                color: var(--color-text-light);
+        @media (max-width: 768px) {
+            padding: 0 6px;
 
-                &:hover:not(:disabled) {
-                    background-color: var(--color-bg);
-                }
-
-                .icon {
-                    font-size: 12px;
-                }
-
-                @media (max-width: 768px) {
-                    padding: 6px;
-
-                    span {
-                        display: none;
-                    }
-                }
+            span {
+                display: none;
             }
         }
     }

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"os/exec"
 	"strings"
@@ -50,6 +49,11 @@ func (m *Manager) Start() error {
 	if err := os.MkdirAll("data", 0755); err != nil {
 		return err
 	}
+
+	if err := generateConfig(); err != nil {
+		return err
+	}
+
 	if _, err := os.Stat(m.ConfigPath); os.IsNotExist(err) {
 		if err := os.WriteFile(m.ConfigPath, []byte("{}"), 0644); err != nil {
 			return err
@@ -96,6 +100,10 @@ func (m *Manager) Stop() error {
 	m.running = false
 	m.cmd = nil
 	m.mu.Unlock()
+
+	if err := CollectTraffic(); err != nil {
+		util.Warn("[core] 停止前采集流量失败: %v", err)
+	}
 
 	cmd.Process.Signal(syscall.SIGTERM)
 
@@ -189,7 +197,7 @@ func (m *Manager) Process() (map[string]any, error) {
 		return nil, fmt.Errorf("核心未运行")
 	}
 
-	resp, err := http.Get("http://127.0.0.1:9090/memory")
+	resp, err := clashClient.Get("http://127.0.0.1:9090/memory")
 	if err != nil {
 		return nil, err
 	}

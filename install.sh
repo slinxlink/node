@@ -20,6 +20,19 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
+# 检测系统环境
+if [[ ! -d /run/systemd/system ]]; then
+    echo -e "${RED}需要使用 systemd 的系统${PLAIN}"
+    exit 1
+fi
+GLIBC=$(getconf GNU_LIBC_VERSION 2>/dev/null | awk '{print $2}')
+if [[ -z "$GLIBC" || "$(printf '%s\n' 2.31 "$GLIBC" | sort -V | head -1)" != "2.31" ]]; then
+    echo -e "${RED}系统 glibc 版本过低（当前: ${GLIBC:-未知}，需要 2.31 及以上）${PLAIN}"
+    echo -e "${RED}支持 Debian 11、Ubuntu 20.04、RHEL 系 9、Fedora 32 及以上版本${PLAIN}"
+    exit 1
+fi
+[[ -f /etc/os-release ]] && . /etc/os-release
+
 # 检测包管理器
 if command -v apt &>/dev/null; then
     PKG="apt"
@@ -32,16 +45,94 @@ else
     exit 1
 fi
 
-step "更新系统"
-$PKG update -y
+case $PKG in
+    apt)
+        CHRONY_SERVICE="chrony"
+        DEPS=("curl:curl" "wget:wget" "chronyd:chrony" "mtr:mtr-tiny" "gunzip:gzip" "nft:nftables" "pkill:procps")
+        ;;
+    *)
+        CHRONY_SERVICE="chronyd"
+        DEPS=("curl:curl" "wget:wget" "chronyd:chrony" "mtr:mtr" "gunzip:gzip" "nft:nftables" "pkill:procps-ng")
+        ;;
+esac
+
+# 已停止维护的系统，软件源迁到了归档站
+use_archive() {
+    case $ID in
+        debian)
+            step "切换 Debian 软件源到归档站"
+            for file in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do
+                [[ -f $file ]] || continue
+                cp -n "$file" "$file.bak"
+                sed -i -E \
+                    -e 's#https?://(deb|security|ftp[a-z.]*)\.debian\.org/debian-security#http://archive.debian.org/debian-security#g' \
+                    -e 's#https?://[a-z0-9.-]*debian\.org/debian/?( )#http://archive.debian.org/debian\1#g' \
+                    -e '/bullseye(-updates|-backports)/d' \
+                    "$file"
+            done
+            echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99slinx-archive
+            ;;
+        fedora)
+            step "切换 Fedora 软件源到归档站"
+            local archive="https://archives.fedoraproject.org/pub/archive/fedora/linux"
+            for file in /etc/yum.repos.d/fedora.repo /etc/yum.repos.d/fedora-updates.repo; do
+                [[ -f $file ]] || continue
+                cp -n "$file" "$file.bak"
+                sed -i -E \
+                    -e 's|^metalink=|#metalink=|' \
+                    -e "s|^#?baseurl=.*/pub/fedora/linux/releases/.*|baseurl=$archive/releases/\$releasever/Everything/\$basearch/os/|" \
+                    -e "s|^#?baseurl=.*/pub/fedora/linux/updates/.*|baseurl=$archive/updates/\$releasever/Everything/\$basearch/|" \
+                    "$file"
+            done
+            $PKG clean all
+            ;;
+    esac
+}
+
+step "更新软件源"
+case $PKG in
+    apt)
+        export DEBIAN_FRONTEND=noninteractive
+        if [[ $ID == "debian" && $VERSION_CODENAME == "bullseye" ]]; then
+            use_archive
+        fi
+        apt update -y || echo -e "${RED}更新软件源失败，继续安装${PLAIN}"
+        ;;
+    *)
+        if ! $PKG makecache -y; then
+            use_archive
+            $PKG makecache -y || echo -e "${RED}更新软件源失败，继续安装${PLAIN}"
+        fi
+        ;;
+esac
+
+has_cmd() {
+    command -v "$1" &>/dev/null || [[ -x /usr/sbin/$1 || -x /sbin/$1 ]]
+}
 
 step "安装依赖"
-$PKG install -y curl chrony mtr gzip sqlite3
+INSTALL=()
+for dep in "${DEPS[@]}"; do
+    has_cmd "${dep%%:*}" || INSTALL+=("${dep##*:}")
+done
+if [[ ${#INSTALL[@]} -gt 0 ]]; then
+    echo -e "${PINK}需要安装: ${INSTALL[*]}${PLAIN}"
+    $PKG install -y "${INSTALL[@]}" || echo -e "${RED}部分依赖安装失败，检查中${PLAIN}"
+fi
+
+MISSING=""
+for dep in "${DEPS[@]}"; do
+    has_cmd "${dep%%:*}" || MISSING="$MISSING ${dep##*:}"
+done
+if [[ -n "$MISSING" ]]; then
+    echo -e "${RED}缺少依赖:${MISSING}${PLAIN}"
+    exit 1
+fi
 
 step "设置系统时间同步"
 timedatectl set-timezone Asia/Shanghai
-systemctl enable chrony
-systemctl restart chrony
+systemctl enable $CHRONY_SERVICE
+systemctl restart $CHRONY_SERVICE
 
 step "检测 CPU 架构"
 ARCH=$(uname -m)

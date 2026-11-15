@@ -103,7 +103,7 @@ func ToggleBoard(c *gin.Context) {
 	if !p.Enable {
 		database.DB.Where("board_id = ?", id).Delete(&database.BoardUser{})
 	}
-	database.DB.Save(&p)
+	database.DB.Model(&p).Update("enable", p.Enable)
 	util.Info("[board] %s面板: %s", map[bool]string{true: "启用", false: "禁用"}[p.Enable], p.Name)
 	syncer.Restart()
 	go core.Default.Apply()

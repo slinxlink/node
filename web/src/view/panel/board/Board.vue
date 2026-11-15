@@ -1,191 +1,181 @@
 <template>
-    <main>
-        <div class="page">
-            <div class="body">
-                <div class="buttons">
-                    <button class="add-btn" @click="openCreate">
-                        <i class="icon">add</i>
-                        添加对接
-                    </button>
-                    <button class="add-btn" @click="openConnect">
-                        <i class="icon">bolt</i>
-                        一键对接
-                    </button>
-                </div>
-
-                <List :headers="['ID', '备注', '关联入站', '启用', '操作']">
-                    <tr v-for="b in boards" :key="b.ID">
-                        <td class="muted">{{ b.ID }}</td>
-                        <td>{{ b.Name || '-' }}</td>
-                        <td>
-                            <div class="tags">
-                                <template v-for="ib in getInboundTags(b.Inbound)" :key="ib.id">
-                                    <span class="tag" :class="ib.color">{{ ib.protocol }}</span>
-                                    <span class="tag" :class="ib.color">{{ ib.port }}</span>
-                                </template>
-                            </div>
-                        </td>
-                        <td>
-                            <Toggle :model-value="b.Enable" @update:model-value="toggle(b)" />
-                        </td>
-                        <td class="actions">
-                            <button class="icon-btn" @click="openInfo(b)" title="信息">
-                                <i class="icon">info</i>
-                            </button>
-                            <button class="icon-btn" @click="openEdit(b)" title="编辑">
-                                <i class="icon">edit</i>
-                            </button>
-                            <button class="icon-btn danger" @click="remove(b.ID)" title="删除">
-                                <i class="icon">delete</i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr v-if="boards.length === 0">
-                        <td colspan="5" class="empty">暂无对接</td>
-                    </tr>
-                </List>
-            </div>
-        </div>
-    </main>
-    <Drawer v-model="showDrawer" :title="drawerTitle" @save="handleSave">
-        <Form v-model="defaultBoard" :inbounds="inbounds" />
-    </Drawer>
-    <Drawer v-model="showConnect" title="一键对接" save-text="对接" :loading="connecting" @save="handleConnect">
-        <Connect v-model="connectForm" />
-    </Drawer>
-    <User v-model="showUserDrawer" :board="activeBoard" />
+    <Page class="board" title="面板对接" :motion="motion">
+        <Table :columns="columns" :data="rows" placeholder="暂无对接" :actions="actions" />
+    </Page>
 </template>
 
 <script setup lang="ts">
-import Toggle from '@/component/ui/Toggle.vue'
-import Drawer from '@/component/Drawer.vue'
-import List from '@/component/ui/List.vue'
-import Form from '@/view/panel/board/form/Form.vue'
-import Connect from '@/view/panel/board/form/Connect.vue'
-import User from '@/view/panel/board/widget/User.vue'
-import { getBoards, saveBoard, connectBoard, deleteBoard, toggleBoard } from '@/api/board'
+import type { Component } from 'vue'
+import type { Motion } from '@/component/layout/Header.vue'
+import Page from '@/component/layout/Page.vue'
+import Table from '@/component/module/Table.vue'
+import Toggle from '@/component/widget/Toggle.vue'
+import Stamp from '@/component/widget/Stamp.vue'
+import Connect from '@/view/panel/board/Connect.vue'
+import Form from '@/view/panel/board/Form.vue'
+import Info from '@/view/panel/board/Info.vue'
+import { display } from '@/view/panel/inbound/display'
+import { getBoards, deleteBoard, toggleBoard } from '@/api/board'
+import type { Board } from '@/api/board'
 import { getInbounds } from '@/api/inbound'
-import { protocol } from '@/util/tag'
+import type { Inbound } from '@/api/inbound'
+import { modal } from '@/composable/modal'
+import { bb } from '@/util/bbcode'
+import { toast } from '@/composable/toast'
+import { formatTime } from '@/util/format'
 
-const modal = inject<any>('modal')
+type Row = Record<string, unknown>
 
-// ── 状态 ──────────────────────────────────────────────────
+const boards = ref<Board[]>([])
+const inbounds = ref<Inbound[]>([])
 
-const boards = ref<any[]>([])
-const inbounds = ref<any[]>([])
-const showDrawer = ref(false)
+// 关联的入站写成「协议:端口」；入站被删了就显示短横线
+function inboundText(id: number) {
+    const item = inbounds.value.find((i) => i.ID === id)
 
-const baseBoard = () => ({
-    Enable: true,
-    Name: '',
-    Host: '',
-    NodeID: 0,
-    Key: '',
-    Inbound: 0,
-    Type: 'SLINX',
-    SyncInterval: 60,
-})
-
-const defaultBoard = ref<any>(baseBoard())
-
-// ── 生命周期 ───────────────────────────────────────────────
-
-onMounted(() => load())
-
-// ── 工具函数 ───────────────────────────────────────────────
-
-function getInboundTags(inboundID: number) {
-    const ib = inbounds.value.find((i) => i.ID === inboundID)
-    return ib
-        ? [{ id: ib.ID, port: ib.Port, protocol: ib.Protocol, color: protocol(ib.Protocol) }]
-        : []
+    return item ? `${item.Protocol}:${item.Port}` : '-'
 }
 
-// ── 列表操作 ───────────────────────────────────────────────
+// 表格按 id 认行，把接口的字段整理成小写的一行
+const rows = computed<Row[]>(() =>
+    boards.value.map((item) => ({
+        id: item.ID,
+        name: item.Name || '-',
+        host: item.Host,
+        inbound: inboundText(item.Inbound),
+        protocol: inbounds.value.find((i) => i.ID === item.Inbound)?.Protocol ?? '',
+        enable: item.Enable,
+        created: formatTime(item.CreatedAt),
+    })),
+)
 
 async function load() {
-    const [b, ib] = await Promise.all([getBoards(), getInbounds()])
-    boards.value = b
-    inbounds.value = ib
+    const [list, inboundList] = await Promise.all([getBoards(), getInbounds()])
+
+    boards.value = list
+    inbounds.value = inboundList
 }
 
-async function toggle(b: any) {
-    await toggleBoard(b.ID)
-    await load()
-}
-
-async function remove(id: number) {
-    modal.value?.show('confirm', '确认删除该对接？', async () => {
-        await deleteBoard(id)
+async function toggle(id: number) {
+    try {
+        await toggleBoard(id)
         await load()
+    } catch (err) {
+        toast.failure((err as { error?: string })?.error || '操作失败')
+    }
+}
+
+function remove(row: Row) {
+    modal.show({
+        title: '删除对接',
+        detail: bb`确认删除对接 ${row.name as string} ?`,
+        onConfirm: async () => {
+            try {
+                await deleteBoard(row.id as number)
+                await load()
+            } catch (err) {
+                toast.failure((err as { error?: string })?.error || '删除失败')
+                return false
+            }
+        },
     })
 }
 
-// ── Drawer 操作 ────────────────────────────────────────────
+const columns = [
+    {
+        key: 'enable',
+        label: '启用',
+        collation: ['true', 'false'],
+        render: (row: Row) => ({
+            component: Toggle as Component,
+            props: { value: row.enable, size: 'small', 'onUpdate:value': () => toggle(row.id as number) },
+        }),
+    },
+    { key: 'name', label: '备注' },
+    { key: 'host', label: '面板地址' },
+    {
+        key: 'inbound',
+        label: '关联入站',
+        render: (row: Row) => ({
+            component: Stamp as Component,
+            props: { color: display.protocolColor(row.protocol as string) },
+            text: row.inbound as string,
+        }),
+    },
+    { key: 'created', label: '创建时间' },
+]
 
-const drawerTitle = ref('添加对接')
+function add() {
+    modal.show({
+        title: '添加对接',
+        width: '600px',
+        form: true,
+        component: Form,
+        props: { inbounds: inbounds.value },
+        onConfirm: async (form) => {
+            if (!(await form.submit())) return false
 
-async function openCreate() {
-    defaultBoard.value = baseBoard()
-    drawerTitle.value = '添加对接'
-    showDrawer.value = true
+            await load()
+        },
+    })
 }
 
-function openEdit(b: any) {
-    defaultBoard.value = { ...b }
-    drawerTitle.value = '编辑对接'
-    showDrawer.value = true
+function connect() {
+    modal.show({
+        title: '一键对接',
+        width: '600px',
+        form: true,
+        component: Connect,
+        onConfirm: async (form) => {
+            if (!(await form.submit())) return false
+
+            await load()
+        },
+    })
 }
 
-async function handleSave() {
-    const data = { ...defaultBoard.value }
-    try {
-        await saveBoard(data)
-        await load()
-        showDrawer.value = false
-    } catch (err: any) {
-        const msg = err?.error
-        modal.value?.show('error', msg)
-    }
+function edit(row: Row) {
+    const target = boards.value.find((item) => item.ID === row.id)
+    if (!target) return
+
+    modal.show({
+        title: '编辑对接',
+        width: '600px',
+        form: true,
+        component: Form,
+        props: { inbounds: inbounds.value, board: target },
+        onConfirm: async (form) => {
+            if (!(await form.submit())) return false
+
+            await load()
+        },
+    })
 }
 
-// ── 一键对接 ───────────────────────────────────────────────
+// 面板那边的用户，只看，没有确认按钮
+function info(row: Row) {
+    const target = boards.value.find((item) => item.ID === row.id)
+    if (!target) return
 
-const showConnect = ref(false)
-const connecting = ref(false)
-const connectForm = ref<any>({ Host: '', NodeID: 0, Key: '' })
-
-function openConnect() {
-    connectForm.value = { Host: '', NodeID: 0, Key: '' }
-    showConnect.value = true
+    modal.show({
+        title: '面板用户',
+        width: '800px',
+        form: true,
+        component: Info,
+        props: { board: target },
+    })
 }
 
-async function handleConnect() {
-    connecting.value = true
-    try {
-        await connectBoard({ ...connectForm.value, NodeID: Number(connectForm.value.NodeID) })
-        await load()
-        showConnect.value = false
-        modal.value?.show('success', '对接成功')
-    } catch (err: any) {
-        modal.value?.show('error', err?.error)
-    } finally {
-        connecting.value = false
-    }
-}
+const motion: Motion[] = [
+    { icon: 'bolt', tip: '一键对接', onClick: connect },
+    { icon: 'add', tip: '添加对接', onClick: add },
+]
 
-const showUserDrawer = ref(false)
-const activeBoard = ref<any>(null)
+const actions = [
+    { icon: 'info', tip: '信息', onClick: info },
+    { icon: 'edit', tip: '编辑', onClick: edit },
+    { icon: 'delete', tip: '删除', danger: true, onClick: remove },
+]
 
-function openInfo(b: any) {
-    activeBoard.value = b
-    showUserDrawer.value = true
-}
+onMounted(load)
 </script>
-
-<style scoped>
-.buttons {
-    display: flex;
-    gap: 10px;
-}
-</style>

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/slinxlink/node/internal/core"
@@ -30,6 +31,16 @@ func SaveInbound(c *gin.Context) {
 	usedPorts := database.UsedPorts(ib.ID)
 
 	if msg := util.ValidatePort(ib.Port, usedPorts); msg != "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		return
+	}
+
+	if ib.TrafficLimit < 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "流量上限不能小于 0"})
+		return
+	}
+
+	if msg := core.ValidateReset(ib.ResetCycle, ib.ResetDay); msg != "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 		return
 	}
@@ -112,12 +123,16 @@ func SaveInbound(c *gin.Context) {
 	}
 
 	if ib.ID == 0 {
+		ib.ResetAt = time.Now()
 		database.DB.Create(&ib)
 		util.Info("[inbound] 添加入站: %s:%d", ib.Protocol, ib.Port)
 	} else {
 		var old database.Inbound
 		database.DB.First(&old, ib.ID)
-		database.DB.Save(&ib)
+		database.DB.Omit("Upload", "Download", "ResetAt").Save(&ib)
+		if old.ResetCycle != ib.ResetCycle || old.ResetDay != ib.ResetDay {
+			database.DB.Model(&ib).Update("reset_at", time.Now())
+		}
 		util.Info("[inbound] 更新入站: %s:%d", ib.Protocol, ib.Port)
 
 		if old.Port != ib.Port {
@@ -171,7 +186,7 @@ func ToggleInbound(c *gin.Context) {
 		return
 	}
 	ib.Enable = !ib.Enable
-	database.DB.Save(&ib)
+	database.DB.Model(&ib).Update("enable", ib.Enable)
 	util.Info("[inbound] %s入站: %s:%d", map[bool]string{true: "启用", false: "禁用"}[ib.Enable], ib.Protocol, ib.Port)
 
 	if !ib.Enable {
@@ -183,5 +198,18 @@ func ToggleInbound(c *gin.Context) {
 }
 
 func QuickInbound(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "ok"})
+}
+
+func ResetInboundTraffic(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	var ib database.Inbound
+	if database.DB.First(&ib, id).Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "不存在"})
+		return
+	}
+	database.DB.Model(&ib).Updates(map[string]any{"upload": 0, "download": 0})
+	util.Info("[inbound] 重置入站流量: %s:%d", ib.Protocol, ib.Port)
+	go core.CheckLimits()
 	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }

@@ -1,241 +1,174 @@
 <template>
-    <main>
-        <div class="page">
-            <div class="body">
-                <button class="add-btn" @click="openCreate">
-                    <i class="icon">add</i>
-                    添加入站
-                </button>
-
-                <List :headers="['ID', '备注', '端口', '协议', '启用', '操作']">
-                    <tr v-for="ib in inbounds" :key="ib.ID">
-                        <td class="muted">{{ ib.ID }}</td>
-                        <td>{{ ib.Name || '-' }}</td>
-                        <td>{{ ib.Port }}</td>
-                        <td>
-                            <div class="tags">
-                                <span class="tag primary">{{ ib.Protocol }}</span>
-                                <span class="tag green">
-                                    {{
-                                        ib.Protocol === 'hysteria' || ib.Protocol === 'tuic'
-                                            ? 'UDP'
-                                            : ib.Transport === 'websocket'
-                                              ? 'WS'
-                                              : 'TCP'
-                                    }}
-                                </span>
-                                <span v-if="ib.TLSType !== 'none'" class="tag blue">{{
-                                    formatTLS(ib.TLSType)
-                                }}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <Toggle :model-value="ib.Enable" @update:model-value="toggle(ib)" />
-                        </td>
-                        <td class="actions">
-                            <button class="icon-btn" @click="openEdit(ib)" title="编辑">
-                                <i class="icon">edit</i>
-                            </button>
-                            <button class="icon-btn danger" @click="remove(ib.ID)" title="删除">
-                                <i class="icon">delete</i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr v-if="inbounds.length === 0">
-                        <td colspan="6" class="empty">暂无入站协议</td>
-                    </tr>
-                </List>
-            </div>
-        </div>
-    </main>
-    <Drawer v-model="showDrawer" :title="drawerTitle" @save="handleSave">
-        <Form v-model="defaultInbound" />
-    </Drawer>
+    <Page class="inbound" title="入站" :motion="motion">
+        <Table :columns="columns" :data="rows" placeholder="暂无入站协议" :actions="actions" />
+    </Page>
 </template>
 
 <script setup lang="ts">
-import Toggle from '@/component/ui/Toggle.vue'
-import Drawer from '@/component/Drawer.vue'
-import List from '@/component/ui/List.vue'
-import Form from '@/view/panel/inbound/form/Form.vue'
-import { getInbounds, saveInbound, deleteInbound, toggleInbound } from '@/api/inbound'
-import {
-    generatePort,
-    generateRealityTarget,
-    generateRealityKeyPair,
-    generateShortIDs,
-} from '@/api/generate'
-import { getCert } from '@/api/cert'
+import type { Component } from 'vue'
+import type { Motion } from '@/component/layout/Header.vue'
+import Page from '@/component/layout/Page.vue'
+import Table from '@/component/module/Table.vue'
+import Traffic from '@/component/module/Traffic.vue'
+import Toggle from '@/component/widget/Toggle.vue'
+import Stamp from '@/component/widget/Stamp.vue'
+import Form from '@/view/panel/inbound/Form.vue'
+import { display } from '@/view/panel/inbound/display'
+import { getInbounds, deleteInbound, resetInboundTraffic, toggleInbound } from '@/api/inbound'
+import type { Inbound } from '@/api/inbound'
+import { modal } from '@/composable/modal'
+import { bb } from '@/util/bbcode'
+import { formatTime } from '@/util/format'
+import { toast } from '@/composable/toast'
 
-const modal = inject<any>('modal')
+type Row = Record<string, unknown>
 
-// ── 状态 ──────────────────────────────────────────────────
+const inbounds = ref<Inbound[]>([])
 
-const inbounds = ref<any[]>([])
-const showDrawer = ref(false)
-
-const baseInbound = () => ({
-    Enable: true,
-    Name: '',
-    Protocol: 'vless',
-    Port: 0,
-
-    Transport: 'raw',
-    WsPath: '/',
-    WsHost: '',
-    WsPingInterval: 0,
-
-    UDPTimeout: 60,
-    MasqueradeEnabled: false,
-    MasqueradeType: 'default',
-    MasqueradeURL: '',
-    RewriteHost: false,
-    IgnoreTLSVerify: false,
-    MasqueradePath: '',
-    MasqueradeCode: 200,
-    MasqueradeBody: '',
-    ObfsType: '',
-    ObfsPassword: '',
-    ObfsMinPacketSize: 512,
-    ObfsMaxPacketSize: 1200,
-
-    TuicCongestionControl: 'bbr',
-    TuicAuthTimeout: 3,
-    TuicZeroRTT: false,
-    TuicHeartbeat: 10,
-    TuicUDPRelayMode: 'native',
-
-    HopEnabled: false,
-    HopPort: '10000-11000',
-    HopInterval: '5-10',
-
-    AnyTLSIdleSessionCheckInterval: 30,
-    AnyTLSIdleSessionTimeout: 30,
-    AnyTLSMinIdleSession: 1,
-
-    TLSType: 'none',
-    ServerName: '',
-    CipherSuites: '',
-    ALPN: ['h2', 'http/1.1'],
-    TLSMinVersion: '1.2',
-    TLSMaxVersion: '1.3',
-    UTLS: 'chrome',
-    Insecure: false,
-    Certs: [1],
-    ECHEnabled: false,
-    ECHKey: '',
-    ECHConfig: '',
-
-    RealityServerName: '',
-    RealityServer: '',
-    RealityServerPort: 443,
-    RealityMaxTimeDiff: 0,
-    RealityShortIDs: [],
-    RealityPublicKey: '',
-    RealityPrivateKey: '',
-    Flow: 'xtls-rprx-vision',
-})
-
-const generatedDefaults = ref<any>({})
-const defaultInbound = ref<any>(baseInbound())
-
-// ── 生命周期 ───────────────────────────────────────────────
-
-onMounted(() => {
-    load()
-})
-
-// ── 工具函数 ───────────────────────────────────────────────
-
-function formatTLS(val: string) {
-    const map: Record<string, string> = {
-        tls: 'TLS',
-        reality: 'Reality',
-    }
-    return map[val] ?? val
-}
-
-// ── 列表操作 ───────────────────────────────────────────────
+// 表格按 id 认行，把接口的字段整理成小写的一行
+const rows = computed<Row[]>(() =>
+    inbounds.value.map((item) => ({
+        id: item.ID,
+        name: item.Name || '-',
+        port: item.Port,
+        protocol: item.Protocol,
+        transport: display.transport(item.Protocol, item.Transport),
+        tls: display.tls(item.TLSType) || '-',
+        used: item.Upload + item.Download,
+        limit: item.TrafficLimit,
+        enable: item.Enable,
+        created: formatTime(item.CreatedAt),
+    })),
+)
 
 async function load() {
     inbounds.value = await getInbounds()
 }
 
-async function toggle(ib: any) {
-    await toggleInbound(ib.ID)
-    await load()
+async function toggle(id: number) {
+    try {
+        await toggleInbound(id)
+        await load()
+    } catch (err) {
+        toast.failure((err as { error?: string })?.error || '操作失败')
+    }
 }
 
-async function remove(id: number) {
-    modal.value?.show('confirm', '确认删除该入站？', async () => {
-        await deleteInbound(id)
-        await load()
+function remove(row: Row) {
+    const item = inbounds.value.find((i) => i.ID === row.id)
+    const label = item ? `${item.Protocol}:${item.Port}${item.Name ? ` - ${item.Name}` : ''}` : ''
+
+    modal.show({
+        title: '删除入站',
+        detail: bb`确认删除入站 ${label} ?`,
+        onConfirm: async () => {
+            try {
+                await deleteInbound(row.id as number)
+                await load()
+            } catch (err) {
+                toast.failure((err as { error?: string })?.error || '删除失败')
+                return false
+            }
+        },
     })
 }
-// ── Drawer 操作 ────────────────────────────────────────────
-const drawerTitle = ref('添加入站')
 
-async function openCreate() {
-    drawerTitle.value = '添加入站'
-    defaultInbound.value = baseInbound()
-    showDrawer.value = true
+function reset(row: Row) {
+    const item = inbounds.value.find((i) => i.ID === row.id)
+    const label = item ? `${item.Protocol}:${item.Port}${item.Name ? ` - ${item.Name}` : ''}` : ''
 
-    const [portRes, targetRes, keyPairRes, shortIDsRes, certsRes] = await Promise.all([
-        generatePort(),
-        generateRealityTarget(),
-        generateRealityKeyPair(),
-        generateShortIDs(),
-        getCert(),
-    ])
-    const firstCertID = certsRes.length > 0 ? certsRes[0].ID : 0
-    defaultInbound.value = {
-        ...defaultInbound.value,
-        Port: portRes.port,
-        RealityServerName: targetRes.domain,
-        RealityServer: targetRes.domain,
-        RealityServerPort: 443,
-        RealityPrivateKey: keyPairRes.private_key,
-        RealityPublicKey: keyPairRes.public_key,
-        RealityShortIDs: shortIDsRes.short_ids,
-        Certs: [firstCertID],
-    }
+    modal.show({
+        title: '重置流量',
+        detail: bb`确认重置入站 ${label} 的流量 ?`,
+        onConfirm: async () => {
+            try {
+                await resetInboundTraffic(row.id as number)
+                await load()
+            } catch (err) {
+                toast.failure((err as { error?: string })?.error || '重置失败')
+                return false
+            }
+        },
+    })
 }
 
-function openEdit(ib: any) {
-    defaultInbound.value = {
-        ...defaultInbound.value,
-        ...ib,
-        ALPN: ib.ALPN ? ib.ALPN.split(',') : [],
-        RealityShortIDs: ib.RealityShortIDs ? JSON.parse(ib.RealityShortIDs) : [],
-        Certs: ib.Certs ? JSON.parse(ib.Certs) : [0],
-    }
-    drawerTitle.value = '编辑入站'
-    showDrawer.value = true
+const columns = [
+    {
+        key: 'enable',
+        label: '启用',
+        collation: ['true', 'false'],
+        render: (row: Row) => ({
+            component: Toggle as Component,
+            props: { value: row.enable, size: 'small', 'onUpdate:value': () => toggle(row.id as number) },
+        }),
+    },
+    { key: 'name', label: '备注' },
+    { key: 'port', label: '端口' },
+    {
+        key: 'protocol',
+        label: '协议',
+        collation: ['vless', 'vmess', 'trojan', 'hysteria', 'tuic', 'anytls'],
+        render: (row: Row) => ({
+            component: Stamp as Component,
+            props: { color: display.protocolColor(row.protocol as string) },
+            text: row.protocol as string,
+        }),
+    },
+    { key: 'transport', label: '传输', collation: ['TCP', 'WS', 'UDP'] },
+    // 没加密的入站显示短横线
+    { key: 'tls', label: '安全', collation: ['TLS', 'Reality'] },
+    {
+        key: 'used',
+        label: '流量',
+        width: 260,
+        collation: 'number' as const,
+        render: (row: Row) => ({
+            component: Traffic as Component,
+            props: { used: row.used, limit: row.limit },
+        }),
+    },
+    { key: 'created', label: '创建时间' },
+]
+
+function add() {
+    modal.show({
+        title: '添加入站',
+        width: '800px',
+        form: true,
+        component: Form,
+        onConfirm: async (form) => {
+            if (!(await form.submit())) return false
+
+            await load()
+        },
+    })
 }
 
-async function handleSave() {
-    const data = { ...defaultInbound.value }
+function edit(row: Row) {
+    const target = inbounds.value.find((item) => item.ID === row.id)
+    if (!target) return
 
-    if (Array.isArray(data.ALPN)) {
-        data.ALPN = data.ALPN.join(',')
-    }
+    modal.show({
+        title: '编辑入站',
+        width: '800px',
+        form: true,
+        component: Form,
+        props: { inbound: target },
+        onConfirm: async (form) => {
+            if (!(await form.submit())) return false
 
-    if (Array.isArray(data.RealityShortIDs)) {
-        data.RealityShortIDs = JSON.stringify(data.RealityShortIDs)
-    }
-
-    if (Array.isArray(data.Certs)) {
-        data.Certs = JSON.stringify(data.Certs)
-    }
-
-    try {
-        await saveInbound(data)
-        await load()
-        showDrawer.value = false
-        modal.value?.show('success', '保存成功')
-    } catch (err: any) {
-        const msg = err?.error
-        modal.value?.show('error', msg)
-    }
+            await load()
+        },
+    })
 }
+
+const motion: Motion[] = [{ icon: 'add', tip: '添加入站', onClick: add }]
+
+const actions = [
+    { icon: 'restart_alt', tip: '重置流量', onClick: reset },
+    { icon: 'edit', tip: '编辑', onClick: edit },
+    { icon: 'delete', tip: '删除', danger: true, onClick: remove },
+]
+
+onMounted(load)
 </script>

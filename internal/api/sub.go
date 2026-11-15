@@ -41,6 +41,7 @@ func GetSubscription(c *gin.Context, fs embed.FS) {
 		return
 	}
 
+	c.Header("Subscription-Userinfo", sub.Usage(token))
 	c.Header("Profile-Update-Interval", "24")
 	c.Data(http.StatusOK, "text/plain; charset=utf-8", []byte(result))
 }
@@ -54,6 +55,7 @@ func GetClashSubscription(c *gin.Context) {
 	}
 	c.Header("Content-Disposition",
 		fmt.Sprintf("attachment; filename*=UTF-8''%s", url.QueryEscape(name)))
+	c.Header("Subscription-Userinfo", sub.Usage(token))
 	c.Data(http.StatusOK, "text/yaml; charset=utf-8", []byte(result))
 }
 
@@ -66,6 +68,7 @@ func GetSurgeSubscription(c *gin.Context) {
 	}
 	c.Header("Content-Disposition",
 		fmt.Sprintf("attachment; filename*=UTF-8''%s.conf", url.QueryEscape(name)))
+	c.Header("Subscription-Userinfo", sub.Usage(token))
 	c.Data(http.StatusOK, "text/plain; charset=utf-8", []byte(result))
 }
 

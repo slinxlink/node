@@ -119,6 +119,20 @@ func Info(token string) *Data {
 	}
 }
 
+func Usage(token string) string {
+	user, _ := getUser(token)
+	if user == nil {
+		return ""
+	}
+
+	var expire int64
+	if !user.ExpireAt.IsZero() {
+		expire = user.ExpireAt.Unix()
+	}
+
+	return fmt.Sprintf("upload=%d; download=%d; total=%d; expire=%d", user.Upload, user.Download, user.TrafficLimit, expire)
+}
+
 func Url(token string) []string {
 	var config database.Config
 	database.DB.First(&config)

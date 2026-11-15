@@ -112,7 +112,7 @@ func fetchNodeConfig(host string, nodeID int, key string) (nodeConfig, error) {
 	req.Header.Set("Node-Id", fmt.Sprintf("%d", nodeID))
 	req.Header.Set("Node-Key", key)
 
-	res, err := client.Do(req)
+	res, err := do(req)
 	if err != nil {
 		return cfg, fmt.Errorf("连不上面板: %w", err)
 	}

@@ -1,11 +1,15 @@
 <template>
-    <router-view />
-    <Modal ref="modal" />
+    <RouterView />
+    <Toast />
+    <Modal />
 </template>
 
 <script setup lang="ts">
-import Modal from '@/component/Modal.vue'
+import Toast from '@/component/module/Toast.vue'
+import Modal from '@/component/module/Modal.vue'
+import { initTheme } from '@/composable/theme'
 
-const modal = ref()
-provide('modal', modal)
+onMounted(() => {
+    initTheme()
+})
 </script>

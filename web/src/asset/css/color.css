@@ -1,0 +1,169 @@
+:root {
+    --primary-100: rgb(255, 182, 182);
+    --primary-200: rgb(255, 140, 140);
+    --primary-300: rgb(240, 128, 128);
+    --primary-400: rgb(255, 105, 105);
+    --primary-500: rgb(220, 90, 90);
+    --primary-600: rgb(200, 60, 60);
+
+    --white: rgb(255, 255, 255);
+    --black: rgb(0, 0, 0);
+
+    --gray-23: rgb(23, 23, 23);
+    --gray-30: rgb(30, 30, 30);
+    --gray-34: rgb(34, 34, 34);
+    --gray-50: rgb(50, 50, 50);
+    --gray-86: rgb(86, 86, 86);
+    --gray-114: rgb(114, 114, 114);
+    --gray-154: rgb(154, 154, 154);
+    --gray-169: rgb(169, 169, 169);
+    --gray-214: rgb(214, 214, 214);
+    --gray-221: rgb(221, 221, 221);
+    --gray-228: rgb(228, 228, 228);
+    --gray-241: rgb(241, 241, 241);
+
+    --red: rgb(214, 57, 57);
+    --orange: rgb(255, 102, 0);
+    --yellow: rgb(224, 160, 48);
+    --green: rgb(47, 179, 68);
+    --cyan: rgb(10, 186, 181);
+    --blue: rgb(33, 150, 243);
+    --purple: rgb(156, 39, 176);
+    --gray: rgb(50, 50, 50);
+}
+
+.dark {
+    --text-100: var(--gray-221);
+    --text-200: var(--gray-154);
+    --text-300: var(--gray-86);
+
+    --background-100: var(--gray-50);
+    --background-200: var(--gray-30);
+    --background-300: var(--gray-23);
+
+    --shadow: none;
+    --border: transparent;
+    --invert: 1;
+}
+
+.light {
+    --text-100: var(--gray-34);
+    --text-200: var(--gray-114);
+    --text-300: var(--gray-169);
+
+    --background-100: var(--gray-214);
+    --background-200: var(--gray-228);
+    --background-300: var(--gray-241);
+
+    --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --border: var(--gray-214);
+    --invert: 0;
+}
+
+/* 预渲染 */
+body:not(.light):not(.dark) {
+    --text-100: var(--gray-221);
+    --text-200: var(--gray-154);
+    --text-300: var(--gray-86);
+    --background-100: var(--gray-50);
+    --background-200: var(--gray-30);
+    --background-300: var(--gray-23);
+    --shadow: none;
+    --border: transparent;
+    --invert: 1;
+
+    @media (prefers-color-scheme: light) {
+        --text-100: var(--gray-34);
+        --text-200: var(--gray-114);
+        --text-300: var(--gray-169);
+        --background-100: var(--gray-214);
+        --background-200: var(--gray-228);
+        --background-300: var(--gray-241);
+        --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        --border: var(--gray-214);
+        --invert: 0;
+    }
+}
+
+/* 切换主题时整页淡入淡出的时长 */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.3s;
+}
+
+/* 文字灰度 */
+.text-100 {
+    color: var(--text-100);
+}
+
+.text-200 {
+    color: var(--text-200);
+}
+
+.text-300 {
+    color: var(--text-300);
+}
+
+/* 强调色 */
+.red {
+    color: var(--red);
+}
+
+.orange {
+    color: var(--orange);
+}
+
+.yellow {
+    color: var(--yellow);
+}
+
+.green {
+    color: var(--green);
+}
+
+.cyan {
+    color: var(--cyan);
+}
+
+.blue {
+    color: var(--blue);
+}
+
+.purple {
+    color: var(--purple);
+}
+
+/* 彩虹色 */
+.rainbow {
+    background: repeating-linear-gradient(
+        105deg,
+        #ff5f6d 0,
+        #ffc371 8.57px,
+        #f9f871 17.14px,
+        #7be495 25.71px,
+        #4dd0e1 34.29px,
+        #5c9eff 42.86px,
+        #b57bff 51.43px,
+        #ff5f6d 60px
+    );
+    background-size: 62.12px 100%;
+    background-clip: text;
+    color: transparent;
+    font-weight: bold;
+    animation: rainbow 1.8s linear infinite;
+}
+
+@keyframes rainbow {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 62.12px 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rainbow {
+        animation: none;
+    }
+}

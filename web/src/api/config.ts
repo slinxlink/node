@@ -1,8 +1,36 @@
 import { request } from '@/util/request'
 
-export const getConfig = () => request('/api/config')
+export interface Config {
+    ID: number
+    Username: string
 
-export const updateConfig = (data: any) =>
+    Port: number
+    Path: string
+    Domain: string
+    IPv4: string
+    IPv6: string
+
+    SubEnable: boolean
+    SubPath: string
+    SubPort: number
+    RulesetAutoUpdate: boolean
+
+    LogEnable: boolean
+    LogLevel: string
+    LogPath: string
+
+    BoardEnable: boolean
+
+    BBR: boolean
+
+    Repo: string
+    StartedAt: string
+    Dir: string
+}
+
+export const getConfig = (): Promise<Config> => request('/api/config')
+
+export const updateConfig = (data: Partial<Config>) =>
     request('/api/config', {
         method: 'PUT',
         body: JSON.stringify(data),

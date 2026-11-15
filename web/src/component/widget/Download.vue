@@ -1,63 +1,38 @@
 <template>
-    <span class="download" @click="handle">
-        <slot />
-        <i class="icon">{{ props.icon ?? 'download' }}</i>
-    </span>
+    <Button variant="text" aria-label="下载" @click="download">
+        <Icon :name="icon ?? 'download'" />
+    </Button>
 </template>
 
 <script setup lang="ts">
+import Button from '@/component/widget/Button.vue'
+import Icon from '@/component/widget/Icon.vue'
+
+// 点一下下载：url 是已经生成好的文件地址(比如二维码图片)，content 是要存成文件的文本，二选一；位置和大小由使用的地方定
 const props = defineProps<{
     filename: string
-    icon?: string
-    getCanvas?: () => HTMLCanvasElement | undefined
+    icon?: string // 图标名，默认 download
+    url?: string
     content?: string
     contentType?: string
 }>()
 
-function handle() {
-    if (props.getCanvas) {
-        const canvas = props.getCanvas()
-        if (!canvas) return
-        const link = document.createElement('a')
-        link.download = props.filename + '.png'
-        link.href = canvas.toDataURL()
+function download() {
+    const link = document.createElement('a')
+    link.download = props.filename
+
+    if (props.url) {
+        link.href = props.url
         link.click()
-    } else if (props.content) {
-        const blob = new Blob([props.content], {
-            type: props.contentType ?? 'application/octet-stream',
-        })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = props.filename
-        a.click()
-        URL.revokeObjectURL(url)
+
+        return
     }
+
+    if (props.content === undefined) return
+
+    const blob = new Blob([props.content], { type: props.contentType ?? 'application/octet-stream' })
+    link.href = URL.createObjectURL(blob)
+    link.click()
+    URL.revokeObjectURL(link.href)
 }
 </script>
-
-<style scoped>
-.download {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-    color: var(--color-text-light);
-
-    .icon {
-        font-size: 20px;
-        color: var(--color-text-dark);
-        transition: color 0.3s;
-    }
-
-    &:hover {
-        background-color: var(--color-bg-light);
-
-        .icon {
-            color: var(--color-text-light);
-        }
-    }
-}
-</style>

@@ -71,6 +71,8 @@ func Boot(fs embed.FS) {
 
 	// ── 9. 启动后台任务 ──────────────────────────────────────────────────────
 	job.Stats()
+	job.Traffic()
+	job.TrafficReset()
 	job.SystemLog()
 	job.CoreLogRotate()
 	job.CertRenew()

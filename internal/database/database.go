@@ -51,6 +51,7 @@ func Init() (bool, error) {
 	initCore()
 	initSystemLog()
 	initStats()
+	fillUserNames()
 
 	isFirstRun, err := initConfig()
 	if err != nil {
@@ -156,6 +157,10 @@ func initStats() {
 		return
 	}
 	DB.Create(&Stats{InboundID: 0})
+}
+
+func fillUserNames() {
+	DB.Exec("UPDATE user SET name = 'User_' || id WHERE name IS NULL OR TRIM(name) = ''")
 }
 
 func patchDefaults() {

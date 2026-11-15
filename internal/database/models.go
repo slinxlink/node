@@ -97,11 +97,20 @@ type DnsAccount struct {
 func (DnsAccount) TableName() string { return "dns_account" }
 
 type Inbound struct {
-	ID        uint `gorm:"primarykey"`
-	Enable    bool
-	Name      string // 备注名
-	Protocol  string // vless / vmess / hysteria / trojan / tuic
-	Port      int    // 监听端口
+	ID       uint `gorm:"primarykey"`
+	Enable   bool
+	Name     string // 备注名
+	Protocol string // vless / vmess / hysteria / trojan / tuic
+	Port     int    // 监听端口
+
+	Upload       int64 // 累计上行
+	Download     int64 // 累计下行
+	TrafficLimit int64 // 流量上限，0 为不限
+
+	ResetCycle string    // 流量重置周期：day / week / month，空为不重置
+	ResetDay   int       // 重置日：week 为 1-7(周一到周日)，month 为 1-31(超过当月天数取月末)
+	ResetAt    time.Time // 上次重置时间
+
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
@@ -170,20 +179,42 @@ type Inbound struct {
 
 func (Inbound) TableName() string { return "inbound" }
 
+func (ib Inbound) Usable() bool {
+	return ib.TrafficLimit <= 0 || ib.Upload+ib.Download < ib.TrafficLimit
+}
+
 type User struct {
-	ID        uint `gorm:"primarykey"`
-	Enable    bool
-	Name      string // 备注名
-	Token     string `gorm:"unique"` // 订阅 token
-	Inbounds  string // JSON 数组 [1, 3, 5]，绑定的入站 ID
-	UUID      string // VLESS / VMess 用
-	Password  string // Hysteria 用
+	ID       uint `gorm:"primarykey"`
+	Enable   bool
+	Name     string // 备注名
+	Token    string `gorm:"unique"` // 订阅 token
+	Inbounds string // JSON 数组 [1, 3, 5]，绑定的入站 ID
+	UUID     string // VLESS / VMess 用
+	Password string // Hysteria 用
+
+	Upload       int64 // 累计上行
+	Download     int64 // 累计下行
+	TrafficLimit int64 // 流量上限，0 为不限
+
+	ResetCycle string    // 流量重置周期：day / week / month，空为不重置
+	ResetDay   int       // 重置日：week 为 1-7(周一到周日)，month 为 1-31(超过当月天数取月末)
+	ResetAt    time.Time // 上次重置时间
+
+	AliveIP string // 在线 IP，JSON 数组
+
 	ExpireAt  time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
 func (User) TableName() string { return "user" }
+
+func (u User) Usable() bool {
+	if !u.ExpireAt.IsZero() && !u.ExpireAt.After(time.Now()) {
+		return false
+	}
+	return u.TrafficLimit <= 0 || u.Upload+u.Download < u.TrafficLimit
+}
 
 type Board struct {
 	ID           uint `gorm:"primarykey"`
@@ -279,18 +310,19 @@ type SystemLog struct {
 func (SystemLog) TableName() string { return "system_log" }
 
 type IP struct {
-	ID              uint      `gorm:"primarykey"`
-	IP              string    // 用于缓存验证
-	Source          string    // 数据来源平台
-	IPVersion       string    // v4 / v6
-	ASN             string    // ASN号
-	ASNOrg          string    // ASN组织
-	RegisterCountry string    // 注册地国家代码
-	Country         string    // 使用地国家代码
-	City            string    // 城市
-	IPType          string    // IP类型 住宅/机房/企业等
-	OrgType         string    // 组织类型 hosting/isp/business...
-	UpdatedAt       time.Time // 最后更新时间
+	ID        uint      `gorm:"primarykey"`
+	IP        string    // 用于缓存验证
+	Source    string    // 数据来源平台
+	IPVersion string    // v4 / v6
+	ASN       string    // ASN号
+	ASNOrg    string    // ASN组织
+	Country   string    // 使用地国家代码
+	City      string    // 城市
+	Latitude  float64   // 纬度，和经度都是 0 表示没查到
+	Longitude float64   // 经度
+	IPType    string    // IP类型 住宅/机房/企业等
+	Native    string    // 原生性 native / broadcast，空表示查不出来
+	UpdatedAt time.Time // 最后更新时间
 }
 
 func (IP) TableName() string { return "ip" }

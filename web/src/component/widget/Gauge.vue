@@ -1,4 +1,4 @@
-<!-- components/widget/Gauge.vue -->
+<!-- component/widget/Gauge.vue -->
 <template>
     <div class="gauge">
         <div class="wrap">
@@ -21,15 +21,13 @@
                     :stroke-dashoffset="offset"
                 />
             </svg>
-            <div class="center">
-                <span class="pct">{{ pct.toFixed(1) }}%</span>
-            </div>
+            <span class="pct">{{ pct.toFixed(1) }}%</span>
         </div>
-        <span class="name">{{ name }}</span>
+        <strong>{{ name }}</strong>
         <div class="meta">
             <span>{{ detail }}</span>
-            <Tip v-if="$slots.tip">
-                <i class="icon">memory</i>
+            <Tip v-if="$slots.tip" :msg="name">
+                <Icon name="memory" />
                 <template #content>
                     <slot name="tip" />
                 </template>
@@ -39,7 +37,8 @@
 </template>
 
 <script setup lang="ts">
-import Tip from '@/component/ui/Tip.vue'
+import Icon from '@/component/widget/Icon.vue'
+import Tip from '@/component/widget/Tip.vue'
 
 const props = defineProps<{
     name: string
@@ -66,57 +65,52 @@ const offset = computed(() => full - (props.pct / 100) * full)
         position: relative;
         width: 100px;
         height: 100px;
+
+        svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-227.5deg);
+        }
+
+        circle {
+            fill: none;
+            stroke-width: 6;
+            stroke-linecap: round;
+        }
+
+        .track {
+            stroke: var(--background-100);
+        }
+
+        .fill {
+            transition: stroke-dashoffset 0.6s ease;
+        }
+
+        .pct {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-100);
+            font-size: 15px;
+            font-weight: bold;
+        }
     }
 
-    svg {
-        width: 100px;
-        height: 100px;
-        transform: rotate(-227.5deg);
-    }
-
-    .track {
-        fill: none;
-        stroke: var(--color-bg-light);
-        stroke-width: 6;
-        stroke-linecap: round;
-    }
-
-    .fill {
-        fill: none;
-        stroke-width: 6;
-        stroke-linecap: round;
-        transition: stroke-dashoffset 0.6s ease;
-    }
-
-    .center {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
-
-    .pct {
-        font-size: 15px;
-        font-weight: bold;
-        color: var(--color-text-light);
-    }
-
-    .name {
+    strong {
+        color: var(--text-100);
         font-size: 13px;
-        font-weight: bold;
-        color: var(--color-text-light);
     }
 
     .meta {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 5px;
+        color: var(--text-300);
         font-size: 12px;
-        color: var(--color-text-dark);
 
         .icon {
             font-size: 14px;
-            color: var(--color-text-dark);
             cursor: pointer;
         }
     }

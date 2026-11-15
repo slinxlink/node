@@ -1,6 +1,6 @@
 const orgTypeMap: Record<string, string> = {
     hosting: '机房',
-    isp: '家宽',
+    isp: '住宅',
     business: '企业',
     education: '教育',
     government: '政府',
@@ -11,19 +11,17 @@ const orgTypeMap: Record<string, string> = {
 
 export function translateType(type?: string): string {
     if (!type) return '-'
+
     return orgTypeMap[type] || type
 }
 
-export function typeClass(type?: string): string {
+// 家宽、教育、政府是好的，机房、企业、金融、代理是差的，移动居中；返回 color.css 里的令牌名，没有归类的返回空
+export function typeColor(type?: string): string {
     if (!type) return ''
-    const green = ['isp', 'education', 'government']
-    const red = ['hosting', 'business', 'banking', 'proxy']
-    const yellow = ['mobile']
-    return green.includes(type)
-        ? 'c-yes'
-        : red.includes(type)
-          ? 'c-no'
-          : yellow.includes(type)
-            ? 'c-reject'
-            : ''
+
+    if (['isp', 'education', 'government'].includes(type)) return 'green'
+    if (['hosting', 'business', 'banking', 'proxy'].includes(type)) return 'red'
+    if (type === 'mobile') return 'yellow'
+
+    return ''
 }

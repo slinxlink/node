@@ -21,3 +21,17 @@ export function formatTime(t: string): string {
     if (!t) return '-'
     return new Date(t).toLocaleString('sv-SE', { hour12: false }).replace('T', ' ')
 }
+
+export function formatExpire(expireAt: string): string {
+    return expireAt.startsWith('0001') ? '长期' : formatTime(expireAt)
+}
+
+export function expireLevel(expireAt: string): 'expired' | 'soon' | '' {
+    if (expireAt.startsWith('0001')) return ''
+
+    const left = new Date(expireAt).getTime() - Date.now()
+
+    if (left <= 0) return 'expired'
+
+    return left < 7 * 86400000 ? 'soon' : ''
+}

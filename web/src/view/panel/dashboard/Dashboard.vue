@@ -1,235 +1,165 @@
 <template>
-    <main>
-        <div class="page">
-            <div class="body">
-                <div class="card fluid">
-                    <div class="gauge-card">
-                        <Gauge
-                            name="CPU"
-                            :pct="system.cpu?.percent ?? 0"
-                            color="#378ADD"
-                            :detail="`${system.cpu?.cores ?? 0} Core`"
-                        >
-                            <template #tip>
-                                <div>逻辑处理器: {{ system.cpu?.cores ?? 0 }}</div>
-                                <div>频率: {{ system.cpu?.mhz ?? 0 }} MHz</div>
-                            </template>
-                        </Gauge>
-                        <Gauge
-                            name="RAM"
-                            :pct="system.ram?.percent ?? 0"
-                            color="#1D9E75"
-                            :detail="`${formatBytes(system.ram?.used)} / ${formatBytes(system.ram?.total)}`"
-                        />
-                        <Gauge
-                            name="Swap"
-                            :pct="system.swap?.percent ?? 0"
-                            color="#888780"
-                            :detail="`${formatBytes(system.swap?.used)} / ${formatBytes(system.swap?.total)}`"
-                        />
-                        <Gauge
-                            name="存储"
-                            :pct="system.disk?.percent ?? 0"
-                            color="#D85A30"
-                            :detail="`${formatBytes(system.disk?.used)} / ${formatBytes(system.disk?.total)}`"
-                        />
-                    </div>
+    <Page class="dashboard" title="仪表盘" :motion="themeMotion">
+        <div class="grid">
+            <Box class="full">
+                <div class="gauges">
+                    <Gauge
+                        name="CPU"
+                        :pct="system?.cpu.percent ?? 0"
+                        color="#378ADD"
+                        :detail="`${system?.cpu.cores ?? 0} Core`"
+                    >
+                        <template #tip>
+                            <div>逻辑处理器: {{ system?.cpu.cores ?? 0 }}</div>
+                            <div>频率: {{ system?.cpu.mhz ?? 0 }} MHz</div>
+                        </template>
+                    </Gauge>
+                    <Gauge
+                        name="RAM"
+                        :pct="system?.ram.percent ?? 0"
+                        color="#1D9E75"
+                        :detail="usage(system?.ram)"
+                    />
+                    <Gauge
+                        name="Swap"
+                        :pct="system?.swap.percent ?? 0"
+                        color="#888780"
+                        :detail="usage(system?.swap)"
+                    />
+                    <Gauge
+                        name="存储"
+                        :pct="system?.disk.percent ?? 0"
+                        color="#D85A30"
+                        :detail="usage(system?.disk)"
+                    />
                 </div>
-                <CoreCard />
-                <PanelCard />
-                <div class="card md">
-                    <div class="header">
-                        <div class="title">运行时间</div>
-                    </div>
-                    <div class="body">
-                        <div class="info">
-                            <div class="title">核心</div>
-                            <div class="detail">
-                                <i class="icon">bolt</i>
-                                <span>{{ formatUptime(core.StartedAt) }}</span>
-                            </div>
-                        </div>
-                        <div class="info">
-                            <div class="title">面板</div>
-                            <div class="detail">
-                                <i class="icon">monitor</i>
-                                <span>{{ formatUptime(Config.StartedAt) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card md">
-                    <div class="header">
-                        <div class="title">整体速率</div>
-                    </div>
-                    <div class="body">
-                        <div class="info">
-                            <div class="title">上传</div>
-                            <div class="detail">
-                                <i class="icon">upload</i>
-                                <span>{{ formatBytes(system.network?.upload ?? 0) }}/s</span>
-                            </div>
-                        </div>
-                        <div class="info">
-                            <div class="title">下载</div>
-                            <div class="detail">
-                                <i class="icon">download</i>
-                                <span>{{ formatBytes(system.network?.download ?? 0) }}/s</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card md">
-                    <div class="header">
-                        <div class="title">进程开销</div>
-                    </div>
-                    <div class="body">
-                        <div class="info">
-                            <div class="title">RAM</div>
-                            <div class="detail">
-                                <i class="icon">dns</i>
-                                <span>{{ formatBytes(process.memory ?? 0) }}</span>
-                            </div>
-                        </div>
-                        <div class="info">
-                            <div class="title">线程</div>
-                            <div class="detail">
-                                <i class="icon">account_tree</i>
-                                <span>{{ process.threads ?? 0 }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card md">
-                    <div class="header">
-                        <div class="title">总数据</div>
-                    </div>
-                    <div class="body">
-                        <div class="info">
-                            <div class="title">发送</div>
-                            <div class="detail">
-                                <i class="icon">cloud_upload</i>
-                                <span>{{ formatBytes(stats.Upload ?? 0) }}</span>
-                            </div>
-                        </div>
-                        <div class="info">
-                            <div class="title">接收</div>
-                            <div class="detail">
-                                <i class="icon">cloud_download</i>
-                                <span>{{ formatBytes(stats.Download ?? 0) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card md">
-                    <div class="header">
-                        <div class="title">连接数</div>
-                    </div>
-                    <div class="body">
-                        <div class="info">
-                            <div class="title">TCP</div>
-                            <div class="detail">
-                                <i class="icon">swap_horiz</i>
-                                <span>{{ system.connections?.tcp ?? 0 }}</span>
-                            </div>
-                        </div>
-                        <div class="info">
-                            <div class="title">UDP</div>
-                            <div class="detail">
-                                <i class="icon">swap_horiz</i>
-                                <span>{{ system.connections?.udp ?? 0 }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card md">
-                    <div class="header">
-                        <div class="title">IP 地址</div>
-                    </div>
-                    <div class="body">
-                        <div class="info">
-                            <div class="title">IPv4</div>
-                            <div class="detail">
-                                <i class="icon">public</i>
-                                <span>{{ Config?.IPv4 }}</span>
-                            </div>
-                        </div>
-                        <div class="info">
-                            <div class="title">IPv6</div>
-                            <div class="detail">
-                                <i class="icon">public</i>
-                                <span>{{ Config?.IPv6 || '无' }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card fluid">
-                    <Chart :logs="logs" />
-                </div>
-                <Quick />
-                <Ad />
-            </div>
+            </Box>
+            <CoreCard />
+            <PanelCard />
+            <Metric
+                title="运行时间"
+                :items="[
+                    { label: '核心', icon: 'bolt', value: formatUptime(core?.StartedAt ?? '') },
+                    { label: '面板', icon: 'monitor', value: formatUptime(config?.StartedAt ?? '') },
+                ]"
+            />
+            <Metric
+                title="整体速率"
+                :items="[
+                    { label: '上传', icon: 'upload', value: `${formatBytes(system?.network.upload)}/s` },
+                    { label: '下载', icon: 'download', value: `${formatBytes(system?.network.download)}/s` },
+                ]"
+            />
+            <Metric
+                title="进程开销"
+                :items="[
+                    { label: 'RAM', icon: 'dns', value: formatBytes(process?.memory) },
+                    { label: '线程', icon: 'account_tree', value: process?.threads ?? 0 },
+                ]"
+            />
+            <Metric
+                title="总数据"
+                :items="[
+                    { label: '发送', icon: 'cloud_upload', value: formatBytes(stats?.Upload) },
+                    { label: '接收', icon: 'cloud_download', value: formatBytes(stats?.Download) },
+                ]"
+            />
+            <Metric
+                title="连接数"
+                :items="[
+                    { label: 'TCP', icon: 'swap_horiz', value: system?.connections.tcp ?? 0 },
+                    { label: 'UDP', icon: 'swap_horiz', value: system?.connections.udp ?? 0 },
+                ]"
+            />
+            <Metric
+                title="IP 地址"
+                :items="[
+                    { label: 'IPv4', icon: 'public', value: config?.IPv4 ?? '' },
+                    { label: 'IPv6', icon: 'public', value: config?.IPv6 || '无' },
+                ]"
+            />
+            <Chart class="full" :logs="logs" />
+            <Quick />
+            <Ad />
         </div>
-    </main>
+    </Page>
 </template>
 
 <script setup lang="ts">
-PanelCard
+import Page from '@/component/layout/Page.vue'
+import Box from '@/component/layout/Box.vue'
 import Gauge from '@/component/widget/Gauge.vue'
-import CoreCard from '@/component/widget/CoreCard.vue'
-import PanelCard from '@/component/widget/PanelCard.vue'
-import Chart from '@/component/widget/Chart.vue'
-import Quick from '@/view/panel/dashboard/widget/Quick.vue'
-import Ad from '@/view/panel/dashboard/widget/Ad.vue'
+import Metric from '@/component/module/Metric.vue'
+import Chart from '@/component/module/Chart.vue'
+import CoreCard from '@/view/panel/dashboard/CoreCard.vue'
+import PanelCard from '@/view/panel/dashboard/PanelCard.vue'
+import Quick from '@/view/panel/dashboard/Quick.vue'
+import Ad from '@/view/panel/dashboard/Ad.vue'
 import { getConfig } from '@/api/config'
+import type { Config } from '@/api/config'
 import { getCore, getCoreProcess } from '@/api/core'
+import type { Core, CoreProcess } from '@/api/core'
 import { getSystem, getStats, getSystemLog } from '@/api/system'
+import type { SystemStatus, Stats, SystemLog } from '@/api/system'
 import { formatBytes, formatUptime } from '@/util/format'
+import { themeMotion } from '@/composable/theme'
 
-const Config = ref<any>({})
-const core = ref<any>({})
-const process = ref<any>({})
-const system = ref<any>({})
-const stats = ref<any>({})
-const logs = ref<any[]>([])
+const config = ref<Config>()
+const core = ref<Core>()
+const process = ref<CoreProcess>()
+const system = ref<SystemStatus>()
+const stats = ref<Stats>()
+const logs = ref<SystemLog[]>([])
 
-async function fetchSystem() {
-    system.value = await getSystem()
+const usage = (item?: { used: number; total: number }) =>
+    `${formatBytes(item?.used)} / ${formatBytes(item?.total)}`
+
+async function loadConfig() {
+    config.value = await getConfig()
 }
-async function fetchCore() {
+
+async function loadCore() {
     core.value = await getCore()
 }
-async function fetchProcess() {
-    process.value = await getCoreProcess()
+
+// 核心没运行时拿不到进程信息，保持上一次的值
+async function loadProcess() {
+    try {
+        process.value = await getCoreProcess()
+    } catch {
+        process.value = undefined
+    }
 }
-async function fetchStats() {
+
+async function loadSystem() {
+    system.value = await getSystem()
+}
+
+async function loadStats() {
     stats.value = await getStats()
 }
-async function fetchLog() {
+
+async function loadLog() {
     logs.value = await getSystemLog()
 }
 
 const timers: ReturnType<typeof setInterval>[] = []
 
-onMounted(async () => {
-    const [config] = await Promise.all([getConfig()])
-    Config.value = config
-
-    fetchCore()
-    fetchProcess()
-    fetchSystem()
-    fetchLog()
-    fetchStats()
+onMounted(() => {
+    loadConfig()
+    loadCore()
+    loadProcess()
+    loadSystem()
+    loadLog()
+    loadStats()
 
     timers.push(
-        setInterval(fetchSystem, 5000),
-        setInterval(fetchCore, 60 * 1000),
-        setInterval(fetchProcess, 5000),
-        setInterval(fetchStats, 15 * 60 * 1000),
-        setInterval(fetchLog, 15 * 60 * 1000),
-        setInterval(async () => {
-            Config.value = await getConfig()
-        }, 60 * 1000),
+        setInterval(loadSystem, 5000),
+        setInterval(loadCore, 60 * 1000),
+        setInterval(loadProcess, 5000),
+        setInterval(loadStats, 15 * 60 * 1000),
+        setInterval(loadLog, 15 * 60 * 1000),
+        setInterval(loadConfig, 60 * 1000),
     )
 })
 
@@ -237,12 +167,32 @@ onUnmounted(() => timers.forEach(clearInterval))
 </script>
 
 <style scoped>
-.gauge-card {
+.dashboard {
+    &:deep(.motion button) {
+        border-radius: 999px;
+    }
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    padding-bottom: 20px;
+
+    .full {
+        grid-column: 1 / -1;
+    }
+
+    @media (max-width: 768px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.gauges {
     display: flex;
-    flex-direction: row;
     align-items: center;
-    gap: 10px;
     justify-content: space-between;
+    gap: 10px;
 
     > * {
         flex: 1;

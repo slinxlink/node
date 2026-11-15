@@ -18,6 +18,14 @@ import (
 
 var client = &http.Client{Timeout: 30 * time.Second}
 
+func do(req *http.Request) (*http.Response, error) {
+	res, err := client.Do(req)
+	if err != nil {
+		client.CloseIdleConnections()
+	}
+	return res, err
+}
+
 var (
 	pendingMu sync.Mutex
 	pending   = map[uint]map[int]*ReportUser{}
@@ -46,29 +54,28 @@ func collect(b database.Board) []ReportUser {
 	usage := take(b.ID)
 
 	if core.Default.Status() != "stopped" {
-		traffic, err := core.GetUserTraffic()
-		if err != nil {
+		if err := core.CollectTraffic(); err != nil {
 			util.Error("[board:%s] 获取流量失败: %v", b.Name, err)
 		}
+	}
 
-		for _, t := range traffic {
-			var uid int
-			fmt.Sscanf(t.Name, "BoardUser_%d", &uid)
-			if uid <= 0 || (t.Upload == 0 && t.Download == 0) {
-				continue
-			}
-
-			entry(usage, uid).Upload += t.Upload
-			entry(usage, uid).Download += t.Download
-
-			database.DB.Model(&database.BoardUser{}).
-				Where("board_id = ? AND user_id = ?", b.ID, uid).
-				Updates(map[string]interface{}{
-					"upload":   gorm.Expr("upload + ?", t.Upload),
-					"download": gorm.Expr("download + ?", t.Download),
-				})
+	for uid, t := range core.TakeBoardTraffic() {
+		if t.Upload == 0 && t.Download == 0 {
+			continue
 		}
 
+		entry(usage, uid).Upload += t.Upload
+		entry(usage, uid).Download += t.Download
+
+		database.DB.Model(&database.BoardUser{}).
+			Where("board_id = ? AND user_id = ?", b.ID, uid).
+			Updates(map[string]interface{}{
+				"upload":   gorm.Expr("upload + ?", t.Upload),
+				"download": gorm.Expr("download + ?", t.Download),
+			})
+	}
+
+	if core.Default.Status() != "stopped" {
 		online, err := core.GetOnlineUsers()
 		if err != nil {
 			util.Error("[board:%s] 获取在线用户失败: %v", b.Name, err)
@@ -152,7 +159,7 @@ func post(b database.Board, report []ReportUser) ([]UserResponse, error) {
 	req.Header.Set("Node-Id", strconv.Itoa(b.NodeID))
 	req.Header.Set("Node-Key", b.Key)
 
-	res, err := client.Do(req)
+	res, err := do(req)
 	if err != nil {
 		return nil, fmt.Errorf("请求失败: %w", err)
 	}

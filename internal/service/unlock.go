@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -598,6 +599,9 @@ func checkChatGPT() UnlockResult {
 	return UnlockResult{Platform: "chatgpt", Status: "false"}
 }
 
+// 页面里的 45631641 是 Gemini 是否对当前地区开放的开关：嵌在转义 JSON 里，写成 \"45631641\":true
+var geminiFlag = regexp.MustCompile(`45631641\\?":true`)
+
 func checkGemini() UnlockResult {
 	req, _ := http.NewRequest("GET", "https://gemini.google.com", nil)
 	req.Header.Set("User-Agent", uaBrowser)
@@ -610,7 +614,7 @@ func checkGemini() UnlockResult {
 	body, _ := io.ReadAll(resp.Body)
 	content := string(body)
 
-	if !strings.Contains(content, "45631641,null,true") {
+	if !geminiFlag.MatchString(content) {
 		return UnlockResult{Platform: "gemini", Status: "false"}
 	}
 

@@ -1,59 +1,49 @@
 <template>
-    <span class="copy" @click="handle">
-        <slot />
-        <i class="icon" :class="{ sm: props.size === 'sm' }">{{
-            copied ? 'check' : 'content_copy'
-        }}</i>
-    </span>
+    <Button variant="text" aria-label="复制" @click="copy">
+        <span class="icons">
+            <Icon name="content_copy" :class="{ hidden: copied }" />
+            <Icon name="check" :class="{ hidden: !copied }" />
+        </span>
+    </Button>
 </template>
 
 <script setup lang="ts">
+import { toast } from '@/composable/toast'
+import Button from '@/component/widget/Button.vue'
+import Icon from '@/component/widget/Icon.vue'
 import { copyText } from '@/util/clipboard'
 
+// 点一下复制 value,成功后图标变成对勾,2 秒后恢复;位置和大小由使用的地方定
 const props = defineProps<{
     value: string
-    size?: 'sm'
 }>()
 
-const modal = inject<any>('modal')
 const copied = ref(false)
 
-async function handle() {
-    const ok = await copyText(props.value)
-    if (!ok) {
-        modal.value.show('error', '复制失败')
+async function copy() {
+    if (!(await copyText(props.value))) {
+        toast.failure('复制失败')
+
         return
     }
+
     copied.value = true
+
     setTimeout(() => (copied.value = false), 2000)
 }
 </script>
 
 <style scoped>
-.copy {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-    color: var(--color-text-light);
+/* 两个图标叠在同一格里,切换时 300ms 交叉淡入淡出 */
+.icons {
+    display: grid;
 
-    .icon {
-        font-size: 20px;
-        color: var(--color-text-dark);
-        transition: color 0.3s;
+    i {
+        grid-area: 1 / 1;
+        transition: opacity 0.3s;
 
-        &.sm {
-            font-size: 14px;
-        }
-    }
-
-    &:hover {
-        background-color: var(--color-bg-light);
-
-        .icon {
-            color: var(--color-text-light);
+        &.hidden {
+            opacity: 0;
         }
     }
 }

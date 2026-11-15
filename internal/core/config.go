@@ -170,6 +170,9 @@ func loadDatabase() (db, error) {
 	database.DB.Where("enable = ?", true).Find(&d.Inbounds)
 	database.DB.Where("enable = ?", true).Find(&d.Users)
 	database.DB.Where("enable = ?", true).Find(&d.Endpoints)
+
+	d.Inbounds = usableInbounds(d.Inbounds)
+	d.Users = usableUsers(d.Users)
 	database.DB.Order("sort asc, `index` asc").Find(&d.Rules)
 
 	var config database.Config
@@ -197,6 +200,14 @@ func loadDatabase() (db, error) {
 	return d, nil
 }
 
+func inboundTags(list []database.Inbound) []string {
+	var tags []string
+	for _, ib := range list {
+		tags = append(tags, fmt.Sprintf("%d", ib.Port))
+	}
+	return tags
+}
+
 // ── config generator ─────────────────────────────────────────────────────────
 
 func generateConfig() error {
@@ -220,8 +231,9 @@ func generateConfig() error {
 			V2RayAPI: &v2rayAPI{
 				Listen: "127.0.0.1:2048",
 				Stats: stats{
-					Enabled: true,
-					Users:   d.UserNames,
+					Enabled:  true,
+					Inbounds: inboundTags(d.Inbounds),
+					Users:    d.UserNames,
 				},
 			},
 			ClashAPI: &clashAPI{
@@ -289,7 +301,13 @@ func generateConfig() error {
 		return err
 	}
 
-	return os.WriteFile(Default.ConfigPath, data, 0644)
+	if err := os.WriteFile(Default.ConfigPath, data, 0644); err != nil {
+		return err
+	}
+
+	recordUsable(d.Inbounds, d.Users)
+
+	return nil
 }
 
 // ── inbound builders ─────────────────────────────────────────────────────────

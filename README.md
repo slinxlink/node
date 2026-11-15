@@ -54,7 +54,14 @@ SLINX node 专为普通自建节点用户设计，化繁为简，让搭建节点
 
 ## 支持的平台
 
-**操作系统：** Ubuntu、Debian、Oracle Linux
+**操作系统：**
+
+- Debian 11 及以上
+- Ubuntu 20.04 及以上
+- RHEL 系 9 及以上（RHEL、Rocky Linux、AlmaLinux、CentOS Stream、Oracle Linux）
+- Fedora 32 及以上
+
+需使用 systemd，且 glibc ≥ 2.31。
 
 **架构：** `amd64` · `arm64`
 

@@ -35,8 +35,10 @@ type connEntry struct {
 	UserName string
 }
 
+var clashClient = &http.Client{Timeout: 10 * time.Second}
+
 func GetOnlineUsers() ([]OnlineUser, error) {
-	res, err := http.Get("http://127.0.0.1:9090/connections")
+	res, err := clashClient.Get("http://127.0.0.1:9090/connections")
 	if err != nil {
 		return nil, fmt.Errorf("获取连接失败: %w", err)
 	}
@@ -193,15 +195,15 @@ func parseLogLineInto(line string, connMap map[string]*connEntry) {
 		connMap[connID].IP = ip
 
 	} else if strings.Contains(line, "] inbound connection to ") || strings.Contains(line, "] inbound packet connection to ") {
-		s := strings.Index(line, "[BoardUser_")
+		e := strings.Index(line, "] inbound connection to ")
+		if e == -1 {
+			e = strings.Index(line, "] inbound packet connection to ")
+		}
+		s := strings.LastIndex(line[:e], "[")
 		if s == -1 {
 			return
 		}
-		e := strings.Index(line[s:], "]")
-		if e == -1 {
-			return
-		}
-		userName := line[s+1 : s+e]
+		userName := line[s+1 : e]
 		if connMap[connID] == nil {
 			connMap[connID] = &connEntry{}
 		}
